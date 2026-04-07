@@ -286,7 +286,64 @@ Todas as vars são definidas em `apps/web/.env` (gitignored) e validadas em buil
 
 ---
 
-## 10. Ultracite Code Standards
+## 10. Design System — Ferrari-Inspired
+
+O projeto segue uma linguagem visual inspirada no site Ferrari. Referência completa em `design/DESIGN.md`.
+
+### Paleta de Cores
+
+| Token | Light (padrão) | Dark (`.dark`) | Papel |
+|-------|----------------|----------------|-------|
+| `--primary` | `#DA291C` Ferrari Red | `#DA291C` | CTAs de alta prioridade. Usar com **parcimônia**. |
+| `--secondary` | `#FFFFFF` branco | `#181818` | Botão padrão (Configure, etc.) |
+| `--background` | `#FFFFFF` | `#181818` Near Black | Superfície base |
+| `--foreground` | `#181818` | `#FFFFFF` | Texto principal |
+| `--muted` | `#D2D2D2` | `#303030` | Superfícies sutis, dividers |
+| `--muted-foreground` | `#666666` | `#8F8F8F` | Texto secundário |
+| `--destructive` | `#F13A2C` | `#F13A2C` | Warning (distinto do brand red) |
+| `--border` | `#CCCCCC` | `rgba(255,255,255,0.1)` | Bordas |
+| `--ring` | `#DA291C` | `#DA291C` | Focus ring (Ferrari Red) |
+
+### Tipografia
+
+- **Barlow** (`--font-sans`): Headings, botões, nav, body text. Pesos 400–700.
+- **Barlow Condensed** (`--font-display`): Labels, captions, tags. Sempre **uppercase** com `letter-spacing: 1px`.
+
+```tsx
+// Usar --font-display via Tailwind (quando o token estiver em uso):
+<span className="font-display uppercase tracking-wider text-xs">Label</span>
+```
+
+### Chiaroscuro — Seções Alternadas
+
+Não há toggle de dark mode global. Seções individuais alternam entre light e dark adicionando `className="dark"`:
+
+```tsx
+<section>
+  {/* conteúdo editorial — branco (#FFFFFF) */}
+</section>
+<section className="dark">
+  {/* conteúdo cinemático — Near Black (#181818) */}
+</section>
+```
+
+O `@custom-variant dark (&:is(.dark *))` no Tailwind CSS v4 garante que `dark:bg-*`, `dark:text-*` etc. funcionam dentro de qualquer ancestral com `class="dark"`.
+
+### Do's
+- Ferrari Red (`--primary`) apenas em CTAs de alta prioridade — sua força vem da parcimônia
+- `rounded-none` em todos os componentes — "razor precision"
+- Barlow Condensed apenas para labels/tags em uppercase
+- Cada seção da página deve ser uma "vinheta" com um foco claro
+
+### Don'ts
+- Não espalhe Ferrari Red como decoração — é sinal de CTA, não cor de tema
+- Não use border-radius arredondados (exceto modais: até 8px)
+- Não adicione box-shadows em cards — profundidade vem do contraste de superfícies
+- Não misture Barlow e Barlow Condensed no mesmo bloco de texto
+
+---
+
+## 11. Ultracite Code Standards
 
 Este projeto usa **Ultracite**, um preset zero-config que aplica formatação e linting rigorosos via Biome.
 
