@@ -300,29 +300,6 @@ export const products: Product[] = [
 		sku: "EMC-DC-1151",
 		inStock: true,
 	},
-	{
-		id: "12",
-		slug: "martelete-rotativo-800w",
-		name: "Martelete Rotativo SDS+ 800W",
-		category: "Ferramentas Elétricas",
-		categorySlug: "eletricas",
-		price: 109_900,
-		description:
-			"Martelete rotativo SDS+ com 3 modos de operação: rotação, rotação com impacto e cinzelamento. Motor de 800W, energia de impacto de 2.6J.",
-		shortDescription: "800W, SDS+, 3 modos, 2.6J de impacto.",
-		specs: {
-			Potência: "800W",
-			"Energia de impacto": "2.6J",
-			"Capacidade concreto": "26mm",
-			Velocidade: "0–1.100 RPM",
-			Peso: "2.8 kg",
-		},
-		images: ["/images/products/martelete-800w.png"],
-		badge: "Profissional",
-		sku: "EMC-MR-8001",
-		inStock: true,
-		voltage: ["110V", "220V"],
-	},
 ];
 
 export function formatPrice(cents: number): string {
