@@ -1,20 +1,20 @@
 "use client";
 
+import { Button } from "@emach/ui/components/button";
+import {
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+} from "@emach/ui/components/sheet";
+import { CircleCheckBig, ShoppingBag } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { EmachButton } from "@/components/emach-button";
 import { ProductImage } from "@/components/product-image";
 import { SectionLabel } from "@/components/section-label";
 import { useCart } from "@/lib/cart-context";
 import { fmtBRL } from "@/lib/format";
-import { Button } from "@emach/ui/components/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@emach/ui/components/sheet";
-import { CircleCheckBig, ShoppingBag } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
 
 const FREE_SHIPPING_THRESHOLD = 29_900;
 
@@ -194,7 +194,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 												<div className="emach-qty__val">{quantity}</div>
 												<button
 													aria-label="Aumentar"
-													className="emach-qty__btn emach-qty__btn--plus "
+													className="emach-qty__btn emach-qty__btn--plus"
 													onClick={() => setQty(product.id, quantity + 1)}
 													type="button"
 												>

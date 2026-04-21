@@ -132,7 +132,7 @@ export function CategoryTile({ category, size = "md" }: CategoryTileProps) {
 				>
 					{category.description}
 				</div>
-				<div className="mt-2.5 flex items-center gap-2 font-semibold text-[12px] text-white">
+				<div className="mt-2.5 flex items-end gap-2 font-semibold text-white text-xs">
 					<span>Explorar</span>
 					<ArrowRight
 						size={14}
