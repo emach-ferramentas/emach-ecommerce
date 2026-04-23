@@ -3,10 +3,10 @@
 import { cn } from "@emach/ui/lib/utils";
 import Link from "next/link";
 import { ProductImage } from "@/components/product-image";
-import { QuantityStepper } from "@/components/quantity-stepper";
 import { SectionLabel } from "@/components/section-label";
 import { fmtBRL } from "@/lib/format";
 import type { Product } from "@/lib/mock-data";
+import { QuantityPicker } from "./quantity-picker";
 
 interface CartItemRowProps {
 	leaving?: boolean;
@@ -88,11 +88,7 @@ export function CartItemRow({
 							: "mt-3 flex-wrap items-center gap-4"
 					)}
 				>
-					<QuantityStepper
-						compact
-						onChange={onQuantityChange}
-						value={quantity}
-					/>
+					<QuantityPicker onChange={onQuantityChange} value={quantity} />
 					<button
 						className="cursor-pointer border-none bg-transparent text-[12px] text-gray-60 underline hover:text-near-black"
 						onClick={onRemove}

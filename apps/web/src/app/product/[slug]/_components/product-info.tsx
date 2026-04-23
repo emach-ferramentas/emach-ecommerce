@@ -16,7 +16,7 @@ import { EmachBadge } from "@/components/emach-badge";
 import { EmachButton } from "@/components/emach-button";
 import { FreightCalculator } from "@/components/freight-calculator";
 import { ProductRating } from "@/components/product-rating";
-import { QuantityStepper } from "@/components/quantity-stepper";
+import { QuantityPicker } from "@/components/quantity-picker";
 import { SectionLabel } from "@/components/section-label";
 import { useCart } from "@/lib/cart-context";
 import { fmtBRL } from "@/lib/format";
@@ -127,7 +127,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
 			{product.voltage && product.voltage.length > 1 && (
 				<div>
-					<div className="mb-2.5 font-semibold text-[13px]">Voltagem</div>
+					<div className="mb-2.5 font-semibold text-md">Voltagem</div>
 					<div className="flex gap-2">
 						{product.voltage.map((v) => (
 							<button
@@ -145,12 +145,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
 			<div className="space-y-3">
 				<div className="flex items-stretch gap-3">
-					<QuantityStepper onChange={setQty} value={qty} />
+					<QuantityPicker onChange={setQty} value={qty} />
 					<EmachButton
 						full
 						icon={<ShoppingBag size={16} />}
 						onClick={handleAddToCart}
-						size="lg"
+						size="md"
 						variant="dark"
 					>
 						Adicionar ao carrinho
@@ -160,7 +160,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 					full
 					icon={<Zap size={16} />}
 					onClick={handleBuyNow}
-					size="lg"
+					size="md"
 					variant="primary"
 				>
 					Comprar agora

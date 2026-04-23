@@ -1,16 +1,16 @@
 "use client";
 
-import { ProductImage } from "@/components/product-image";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
 } from "@emach/ui/components/carousel";
 import { cn } from "@emach/ui/lib/utils";
 import { useState } from "react";
 import InnerImageZoom from "react-inner-image-zoom";
+import { ProductImage } from "@/components/product-image";
 import "react-inner-image-zoom/es/styles.min.css";
 import "./product-gallery.css";
 
