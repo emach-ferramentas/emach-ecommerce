@@ -12,6 +12,7 @@ import { env } from "@emach/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { createGoogleProviderConfig } from "./google";
 
 const db = createDb();
 const schema = { client, clientSession, clientAccount, clientVerification };
@@ -44,6 +45,12 @@ export const authEcommerce = betterAuth({
 				react: VerifyEmailEmail({ name: user.name, url }),
 			});
 		},
+	},
+	socialProviders: {
+		google: createGoogleProviderConfig({
+			clientId: env.GOOGLE_CLIENT_ID,
+			clientSecret: env.GOOGLE_CLIENT_SECRET,
+		}),
 	},
 	databaseHooks: {
 		user: {

@@ -10,6 +10,7 @@ import {
 } from "@emach/ui/components/tabs";
 import { cn } from "@emach/ui/lib/utils";
 import { useForm } from "@tanstack/react-form";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,8 +25,27 @@ const TRIGGER_CLASS =
 
 export default function LoginPage() {
 	const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+	const [isGooglePending, setIsGooglePending] = useState(false);
 	const router = useRouter();
 	const { isPending } = authClient.useSession();
+
+	const handleGoogleSignIn = async () => {
+		setIsGooglePending(true);
+		try {
+			const result = await authClient.signIn.social({
+				callbackURL: "/dashboard",
+				provider: "google",
+			});
+
+			if (result.error) {
+				toast.error(result.error.message || result.error.statusText);
+				setIsGooglePending(false);
+			}
+		} catch {
+			toast.error("Não foi possível iniciar o login com Google.");
+			setIsGooglePending(false);
+		}
+	};
 
 	const signInForm = useForm({
 		defaultValues: { email: "", password: "" },
@@ -418,14 +438,20 @@ export default function LoginPage() {
 
 					{/* Social login */}
 					<div className="flex flex-col gap-2">
-						<Button className="h-12 w-full" variant="outline">
-							<img
-								alt="Google"
+						<Button
+							className="h-12 w-full"
+							disabled={isGooglePending}
+							onClick={handleGoogleSignIn}
+							type="button"
+							variant="outline"
+						>
+							<Image
+								alt=""
 								height={18}
 								src="/images/logos/google.png"
 								width={18}
 							/>
-							Continuar com Google
+							{isGooglePending ? "Redirecionando..." : "Continuar com Google"}
 						</Button>
 					</div>
 				</div>
