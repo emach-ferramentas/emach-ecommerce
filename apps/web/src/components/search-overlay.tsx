@@ -1,14 +1,15 @@
 "use client";
 
+import type { ToolSearchResult } from "@emach/db/queries/catalog";
 import { cn } from "@emach/ui/lib/utils";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProductImage } from "@/components/product-image";
 import { SectionLabel } from "@/components/section-label";
-import { fmtBRL } from "@/lib/format";
-import { products } from "@/lib/mock-data";
+import { searchToolsAction } from "@/lib/actions/search";
+import { fmtNumericBRL } from "@/lib/format";
 
 interface SearchOverlayProps {
 	onClose: () => void;
@@ -97,6 +98,8 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 	const [query, setQuery] = useState("");
 	const [highlight, setHighlight] = useState(0);
 	const [recent, setRecent] = useState<string[]>([]);
+	const [results, setResults] = useState<ToolSearchResult[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -156,19 +159,20 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 		}
 	}, [open]);
 
-	const results = useMemo(() => {
-		if (!query.trim()) {
-			return [];
+	useEffect(() => {
+		const trimmed = query.trim();
+		if (trimmed.length < 2) {
+			setResults([]);
+			setIsLoading(false);
+			return;
 		}
-		const q = query.toLowerCase();
-		return products
-			.filter(
-				(p) =>
-					p.name.toLowerCase().includes(q) ||
-					p.category.toLowerCase().includes(q) ||
-					p.sku.toLowerCase().includes(q)
-			)
-			.slice(0, 6);
+		setIsLoading(true);
+		const handle = window.setTimeout(async () => {
+			const data = await searchToolsAction(trimmed);
+			setResults(data);
+			setIsLoading(false);
+		}, 300);
+		return () => window.clearTimeout(handle);
 	}, [query]);
 
 	useEffect(() => {
@@ -207,7 +211,8 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 		return null;
 	}
 
-	const showEmpty = Boolean(query.trim()) && results.length === 0;
+	const showEmpty =
+		query.trim().length >= 2 && !isLoading && results.length === 0;
 
 	return (
 		<div
@@ -292,6 +297,12 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 						</div>
 					)}
 
+					{isLoading && query.trim().length >= 2 && (
+						<div className="py-6 text-center font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
+							Buscando…
+						</div>
+					)}
+
 					{showEmpty && (
 						<div className="py-10 text-center">
 							<div className="font-display font-semibold text-[11px] text-emach-red uppercase tracking-[0.14em]">
@@ -306,37 +317,40 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 						</div>
 					)}
 
-					{results.map((p, i) => {
-						const active = i === highlight;
-						return (
-							<Link
-								className={cn(
-									"grid cursor-pointer grid-cols-[60px_1fr_auto] items-center gap-4 rounded-[2px] border-gray-10 border-b px-2 py-3 transition-colors",
-									active ? "bg-gray-10" : "bg-transparent"
-								)}
-								href={`/product/${p.slug}`}
-								key={p.id}
-								onClick={handleResultClick}
-								onMouseEnter={() => setHighlight(i)}
-							>
-								<div className="relative size-[60px] overflow-hidden rounded-[2px] bg-image-bg">
-									<ProductImage
-										alt={p.name}
-										categorySlug={p.categorySlug}
-										sizes="60px"
-										src={p.images[0]}
-									/>
-								</div>
-								<div>
-									<SectionLabel>{p.category}</SectionLabel>
-									<div className="mt-0.5 font-medium text-[14px]">
-										{highlightMatch(p.name, query)}
+					{!isLoading &&
+						results.map((r, i) => {
+							const active = i === highlight;
+							return (
+								<Link
+									className={cn(
+										"grid cursor-pointer grid-cols-[60px_1fr_auto] items-center gap-4 rounded-[2px] border-gray-10 border-b px-2 py-3 transition-colors",
+										active ? "bg-gray-10" : "bg-transparent"
+									)}
+									href={`/product/${r.slug}`}
+									key={r.id}
+									onClick={handleResultClick}
+									onMouseEnter={() => setHighlight(i)}
+								>
+									<div className="relative size-[60px] overflow-hidden rounded-[2px] bg-image-bg">
+										<ProductImage
+											alt={r.name}
+											categorySlug=""
+											sizes="60px"
+											src={r.primaryImage?.url ?? ""}
+										/>
 									</div>
-								</div>
-								<div className="font-bold tabular-nums">{fmtBRL(p.price)}</div>
-							</Link>
-						);
-					})}
+									<div>
+										<SectionLabel>SKU {r.defaultVariant.sku}</SectionLabel>
+										<div className="mt-0.5 font-medium text-[14px]">
+											{highlightMatch(r.name, query)}
+										</div>
+									</div>
+									<div className="font-bold tabular-nums">
+										{fmtNumericBRL(r.defaultVariant.priceAmount)}
+									</div>
+								</Link>
+							);
+						})}
 				</div>
 			</div>
 		</div>
