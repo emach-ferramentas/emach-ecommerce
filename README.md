@@ -1,98 +1,91 @@
-# emach
+# emach-ecommerce
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, and more.
+E-commerce de ferramentas elétricas e manuais (furadeiras, serras, chaves, alicates, EPIs) para o mercado brasileiro. Repo storefront — admin staff vive no repo irmão [`emach-dashboard`](https://github.com/othavioquiliao/emach-dashboard) que compartilha a mesma DB Supabase.
 
-## Features
+## Stack
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Biome** - Linting and formatting
-- **Turborepo** - Optimized monorepo build system
+| | |
+|---|---|
+| **Frontend** | Next.js 16 + React 19 (App Router, RSC, typed routes, React Compiler) |
+| **Banco** | PostgreSQL via Supabase (compartilhado com dashboard) |
+| **ORM** | Drizzle 0.45 + node-postgres |
+| **Auth** | Better Auth — instância `ecommerce` (cliente BR, tabelas `client*`) |
+| **UI** | shadcn `base-lyra` (Base UI, não Radix) + Tailwind CSS v4 |
+| **Forms** | TanStack Form + Zod |
+| **Lint/Format** | Biome via Ultracite |
+| **Logging** | evlog (instrumentation + request middleware + server actions) |
+| **Email** | Resend + React Email |
+| **Monorepo** | Turborepo 2 + Bun 1.3 |
+| **Design** | Ferrari-inspired chiaroscuro — Barlow / Barlow Condensed / `#DA291C` |
 
-## Getting Started
+## Estrutura
 
-First, install the dependencies:
+```
+emach-ecommerce/
+├── apps/
+│   └── web/                 Next.js storefront (porta 3001)
+└── packages/
+    ├── config/              tsconfig base
+    ├── env/                 env vars tipadas (T3 Env + Zod)
+    ├── db/                  Drizzle schema + migrations + triggers PL/pgSQL + seeds
+    ├── auth/                Better Auth (instâncias dashboard + ecommerce isoladas)
+    ├── email/               Resend client + templates React Email
+    └── ui/                  shadcn `base-lyra` compartilhado
+```
+
+## Setup
 
 ```bash
 bun install
+cp apps/web/.env.example apps/web/.env  # se existir, senão criar baseado em packages/env/src/server.ts
+bun run db:push                          # sync schema → DB (dev local)
+bun --cwd packages/db db:apply-triggers  # triggers PL/pgSQL (Drizzle Kit não gera)
+bun --cwd packages/db db:seed-categories
+bun --cwd packages/db db:seed-attributes
+bun run dev:web                          # http://localhost:3001
 ```
 
-## Database Setup
+## Comandos
 
-This project uses PostgreSQL with Drizzle ORM.
-
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
-
+### Desenvolvimento
 ```bash
-bun run db:push
+bun run dev               # tudo via Turbo
+bun run dev:web           # só apps/web
+bun run build             # build prod
+bun run check-types       # tsc em todos workspaces
+bun run check             # Ultracite/Biome lint
+bun run fix               # auto-fix
 ```
 
-Then, run the development server:
-
+### Banco de dados
 ```bash
-bun run dev
+bun run db:push           # dev: sync schema (sem migration)
+bun run db:generate       # gera migration versionada (staging/prod)
+bun run db:migrate        # aplica migrations
+bun run db:studio         # Drizzle Studio
+bun --cwd packages/db db:apply-triggers       # idempotente, sempre após push/migrate
+bun --cwd packages/db db:seed-categories      # 5 raízes
+bun --cwd packages/db db:seed-attributes      # specs iniciais
+bun --cwd packages/db db:anonymize-client <id># LGPD direito ao esquecimento
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
-
-## UI Customization
-
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
+### shadcn
 ```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
+bunx shadcn@latest add <nome> -c packages/ui
+bunx shadcn@latest diff -c packages/ui
 ```
 
-Import shared components like this:
+## Documentação para agentes
 
-```tsx
-import { Button } from "@emach/ui/components/button";
-```
+- **`.claude/CLAUDE.md`** — instruções completas: packages, ownership de tabelas, invariantes P0 auth, anti-patterns, MCP servers, workflow.
+- **`AGENTS.md`** — pointer pra agentes externos (Codex, Amp, Cursor).
+- **`DESIGN.md`** — tokens completos do design Ferrari-inspired (cores, tipografia, princípios, componentes EMACH custom).
+- **`packages/db/CLAUDE.md`** — convenções de schema Drizzle (FKs, enums, money, triggers, queries compartilhadas).
 
-### Add app-specific blocks
+## Invariantes críticos
 
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Git Hooks and Formatting
-
-- Format and lint fix: `bun run check`
-
-## Project Structure
-
-```
-emach/
-├── apps/
-│   └── web/         # Fullstack application (Next.js)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `bun run dev`: Start all applications in development mode
-- `bun run build`: Build all applications
-- `bun run dev:web`: Start only the web application
-- `bun run check-types`: Check TypeScript types across all apps
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
-- `bun run db:studio`: Open database studio UI
-- `bun run check`: Run Biome formatting and linting
+1. **Auth isolada por host:** ecommerce usa `authEcommerce` (tabelas `client*`). NUNCA importar `authDashboard` ou schema `auth` aqui — quebra isolamento P0 staff × cliente.
+2. **DB compartilhada com dashboard:** mudanças em tabelas owned-by-dashboard (`tool`, `category`, `promotion`, etc) começam no repo dashboard via PR; este repo sincroniza schema manualmente.
+3. **Commits:** Conventional Commits em **PT** (`feat:`/`fix:`/`refactor:`/`chore:`). Confirmação explícita do user antes de qualquer `git commit`/`push`.
+4. **Money:** `numeric(10,2)` em preços/custos variant, `numeric(12,2)` em totais order. Nunca `real`/`double`.
+5. **IDs:** `crypto.randomUUID()` no caller (server actions/scripts). Sem nanoid.

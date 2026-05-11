@@ -12,7 +12,7 @@ Drizzle 0.45 + node-postgres + Supabase Postgres. Schemas em `src/schema/*.ts`, 
 | ------------------------------------------------------------- | ----------------------------------------- |
 | Convenções deste workspace (FKs, enums, money, JSONB, scripts)| `packages/db/CLAUDE.md`                   |
 | Stack, auth, anti-patterns, gotchas globais                   | `.claude/CLAUDE.md`                       |
-| Contrato DB compartilhada com app ecomerce                    | `docs/integration/admin-ecommerce.md`     |
+| Contrato DB compartilhada com dashboard (fonte de verdade)    | Repo irmão `emach-dashboard` (PR cruzado) |
 
 ## Invariantes locais
 

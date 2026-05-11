@@ -417,6 +417,6 @@ New DRY helpers. Prefer composing these over raw markup when the pattern applies
 | `<Dialog>` | Custom zoom modal inside `ProductGallery` | shadcn supplies focus trap, escape handler and scroll lock. Override `className="bg-black/95 p-0 border-none ring-0"` for the image viewer |
 | `<Separator>` | `<hr>` / `<div className="h-px bg-border" />` | Used in cart summary total divider, login "ou" divider, footer bottom rule, related-products band |
 
-### Typography utility classes status
+### Typography utilities
 
-The `.h1 / .h2 / .h3 / .subheading / .ui-heading / .body / .body-bold / .button-label / .nav-link / .caption / .label / .micro-label / .price` classes in `globals.css` are **legacy** — they are not used in current components and were retained for backwards compatibility during the DESIGN.md split. New work must use the size scale from §3 "Hierarchy (EMACH — actual implementation)" via Tailwind arbitrary values or `font-display` / `font-sans` utilities. Planned cleanup: drop the unused typography classes once the site consumes only the new scale.
+Use the size scale from §3 "Hierarchy (EMACH — actual implementation)" via Tailwind arbitrary values (`text-[14px]`, etc.) combined with `font-sans` (Barlow) or `font-display` (Barlow Condensed). The legacy `.h1/.h2/.h3/.subheading/.body/.label/.micro-label/.price` utility classes have been removed from `globals.css` — never reintroduce them.
