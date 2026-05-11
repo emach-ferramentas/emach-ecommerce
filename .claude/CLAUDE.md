@@ -18,7 +18,7 @@
 | **Moeda** | R$ (Real brasileiro) — formato `R$ 899,00` |
 | **Mercado** | Brasil (pt-BR) |
 | **Personalidade** | Precisa, Robusta, Profissional |
-| **Package manager** | Bun 1.3.11 |
+| **Package manager** | Bun 1.3 (catalog workspaces) |
 | **Orquestração** | Turborepo 2 |
 | **Frontend** | Next.js 16 + React 19 (App Router) |
 | **Banco de dados** | PostgreSQL via Supabase (compartilhado com dashboard) |
@@ -140,7 +140,8 @@ emach-ecommerce/
   - `apps/web/src/app/api/auth/[...all]/route.ts` — handler catch-all (instância ecommerce)
   - `apps/web/src/lib/auth-client.ts` — `createAuthClient()` Better Auth client SDK
   - `apps/web/src/lib/session.ts` — helper `getClientSession()` server-side
-  - `apps/web/src/middleware.ts` — guarda de rotas autenticadas
+  - `apps/web/src/lib/evlog-auth.ts` — `identifyEvlogClient()` que injeta `authEcommerce` em request logs
+  - `apps/web/src/middleware.ts` — guarda `/dashboard` + composição com `evlogMiddleware`
 
 **Invariantes P0 (qualquer violação é bug crítico):**
 
@@ -202,35 +203,26 @@ emach-ecommerce/
 
 ```
 apps/web/src/
-├── index.css                       ← @import "@emach/ui/globals.css"
-├── middleware.ts                   ← Guard de rotas autenticadas (/dashboard etc.)
-├── lib/
-│   ├── auth-client.ts              ← createAuthClient() Better Auth client SDK
-│   ├── session.ts                  ← getClientSession() server-side helper
-│   ├── cart-context.tsx, cart-store.ts, constants.ts, format.ts, mock-data.ts
-│   └── validators/
-│       └── cpf-cnpj.ts             ← maskCpfCnpj, isValidCpfCnpj, maskPhone (uso: checkout)
-├── components/                     ← Componentes de negócio compartilhados
-│   ├── site-header.tsx, site-footer.tsx, search-overlay.tsx
-│   ├── product-card.tsx, product-image.tsx, product-rating.tsx
-│   ├── cart-sheet.tsx, cart-item-row.tsx, freight-calculator.tsx, free-shipping-progress.tsx
-│   ├── checkout-header.tsx, quantity-stepper.tsx, category-tile.tsx
-│   ├── emach-button.tsx, emach-badge.tsx, ticker.tsx, loader.tsx
-│   ├── page-container.tsx, section-header.tsx, section-label.tsx
-│   ├── product-card-skeleton.tsx, providers.tsx
-└── app/
-    ├── layout.tsx                  ← Root layout (fontes, Providers, Header)
-    ├── page.tsx                    ← Landing "/"
-    ├── not-found.tsx, manifest.ts, robots.ts, sitemap.ts
-    ├── login/page.tsx              ← Tabs Entrar/Cadastrar + Google OAuth (UI placeholder)
-    ├── esqueci-senha/              ← Solicitar link de redefinição
-    ├── redefinir-senha/            ← Confirmar nova senha via token
-    ├── verificar-email/            ← Verificar e-mail via token
-    ├── sobre/                      ← Página institucional
-    ├── dashboard/                  ← Área autenticada (cliente logado)
-    ├── catalog/, product/, cart/, checkout/   ← Páginas ecommerce (em construção)
-    └── api/auth/[...all]/route.ts  ← Better Auth catch-all (instância ecommerce)
+├── index.css            @import "@emach/ui/globals.css"
+├── middleware.ts        Guard /dashboard + evlog request tracing
+├── instrumentation.ts   Hook Next 16 → evlog instrumentation
+├── lib/                 Singletons + helpers compartilhados
+│   ├── auth-client.ts, session.ts          Better Auth wiring
+│   ├── evlog.ts, evlog-auth.ts             Logger factory + identify cliente
+│   ├── cart-context.tsx, cart-store.ts     Cart state (localStorage)
+│   ├── constants.ts, format.ts             Tokens BR (R$, frete grátis)
+│   ├── actions/                            Server actions globais (search etc)
+│   └── validators/cpf-cnpj.ts              CPF/CNPJ + telefone
+├── components/          Componentes de negócio compartilhados (ver `ls` pra lista viva)
+└── app/                 App Router
+    ├── layout.tsx, page.tsx, not-found.tsx, manifest.ts, robots.ts, sitemap.ts
+    ├── (auth flows)     login/, esqueci-senha/, redefinir-senha/, verificar-email/
+    ├── (storefront)     catalog/, product/, cart/, checkout/, pedidos/, sobre/
+    ├── dashboard/       Cliente logado (pedidos, dados-pessoais)
+    └── api/auth/[...all]/route.ts   Better Auth catch-all (instância ecommerce)
 ```
+
+> Lista viva sempre via `ls apps/web/src/components/` ou IDE. Não atualizar listagem aqui em cada componente novo.
 
 ### Padrões de import
 
@@ -391,7 +383,6 @@ Vars definidas em `apps/web/.env` (gitignored) e validadas em build time pelo `@
 - **`loading.tsx`, `error.tsx`** — Nenhuma rota tem esses (apenas `not-found.tsx` global).
 - **Route groups** (`(shop)`, `(auth)`, etc.) — Não utilizados ainda.
 - **Coleta de CPF/CNPJ** — Movida do signup para o checkout (campo `client.document` existe e validator `cpf-cnpj.ts` está pronto para reuso).
-- **Cabear `mock-data.ts` → queries reais** — Catálogo storefront ainda lê de mock; integrar com `tool` + `toolVariant` + `toolImage` reais.
 - **CI/CD e Docker** — Nenhuma configuração de deploy existe.
 
 ## 9.1. O que já existe (referência)

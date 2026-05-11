@@ -82,12 +82,24 @@ Site ecomerce escreve em `order`, `orderItem`, `stockMovement`, `client*`, `revi
 
 ## Queries compartilhadas com dashboard
 
-`packages/db/src/queries/*.ts` é **owned-by-dashboard**: ferramentas de leitura/regra de negócio que este storefront consome. Lista atual: `reviews.ts` (`canCreateReview`), `catalog.ts` (10 funções de catálogo: `getTools`, `getToolBySlug`, `getCategoryTree`, `getCategoryBySlug`, `getActivePromotions`, `getRecentTools`, `searchTools`, `getReviews`, `getReviewStats`, `getAllToolSlugs`/`getAllCategorySlugs`).
+`packages/db/src/queries/*.ts` é **owned-by-dashboard**: ferramentas de leitura/regra de negócio que este storefront consome. Lista atual:
+- `reviews.ts` — `canCreateReview`
+- `catalog.ts` — funções de catálogo (`getTools`, `getToolBySlug`, `getCategoryTree`, `getCategoryBySlug`, `getActivePromotions`, `getRecentTools`, `searchTools`, `getReviews`, `getReviewStats`, `getAllToolSlugs`, `getAllCategorySlugs`)
+
+Lista viva via `grep -E "^export (async )?function " packages/db/src/queries/*.ts`.
 
 **Regra de sync:** dashboard é fonte de verdade. Este repo sincroniza byte-a-byte (cópia manual a cada mudança). **Não editar em isolamento aqui** — mudanças de regra de negócio começam no dashboard e propagam.
 
 Padrão de assinatura: `db: NodePgDatabase<Record<string, unknown>>` parametrizado (não usar singleton `db` exportado), tipos exportados via `export type`, sem `select *` nas projeções (esconder `costAmount` em endpoints públicos).
 
-## Testes (futuro)
+## Testes
 
-Suíte vitest em `test/` virá na Fase F (requer Supabase local CLI + Docker). Hoje cobertura única é `apps/web/__tests__/permissions.test.ts` (puro unit, sem DB).
+Vitest configurado em `packages/db` com scripts:
+```bash
+bun test                        # roda suite vitest
+bun test:watch                  # watch mode
+bun test:supabase:start         # boot Supabase local (Docker)
+bun test:supabase:stop          # stop local instance
+```
+
+Tests vivem em `packages/db/test/`. Outros workspaces adicionarão suites próprias conforme cobertura cresce.
