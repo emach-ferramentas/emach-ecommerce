@@ -13,6 +13,7 @@ import { and, eq, gt, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
 
+import { log } from "@/lib/evlog";
 import { requireCurrentClient } from "@/lib/session";
 import { isValidCpfCnpj, onlyDigits } from "@/lib/validators/cpf-cnpj";
 
@@ -493,6 +494,14 @@ export async function createOrderAction(
 		return { ok: true, ...result };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
+		log.error({
+			action: "create_order_failed",
+			clientId,
+			branchId,
+			totalCents,
+			lineCount: lines.length,
+			error: message,
+		});
 		return { ok: false, error: message };
 	}
 }
