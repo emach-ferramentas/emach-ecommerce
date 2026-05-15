@@ -6,11 +6,11 @@ import { review } from "../schema/reviews";
 
 export const REVIEW_WINDOW_DAYS = 90;
 
-export type CanCreateReviewInput = {
+export interface CanCreateReviewInput {
 	clientId: string;
 	orderId: string;
 	toolId: string;
-};
+}
 
 export type CanCreateReviewReason =
 	| "order_not_found"
