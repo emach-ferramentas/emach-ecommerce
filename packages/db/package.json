@@ -21,7 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:supabase:start": "supabase start --workdir .",
-    "test:supabase:stop": "supabase stop --workdir ."
+    "test:supabase:stop": "supabase stop --workdir .",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@emach/env": "workspace:*",
