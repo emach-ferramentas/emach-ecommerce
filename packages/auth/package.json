@@ -9,7 +9,9 @@
       "default": "./src/ecommerce.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "dependencies": {
     "@emach/db": "workspace:*",
     "@emach/email": "workspace:*",
@@ -18,6 +20,6 @@
   },
   "devDependencies": {
     "@emach/config": "workspace:*",
-    "typescript": "^5"
+    "typescript": "^6"
   }
 }

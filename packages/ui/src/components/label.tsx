@@ -1,3 +1,4 @@
+// biome-ignore-all lint/a11y/noLabelWithoutControl: componente shadcn base-lyra — markup fiel ao registry upstream
 import { cn } from "@emach/ui/lib/utils";
 import type * as React from "react";
 

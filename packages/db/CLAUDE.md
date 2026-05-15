@@ -17,11 +17,13 @@ Drizzle 0.45 + node-postgres + Supabase Postgres. Regras gerais ver `.claude/CLA
 bun db:apply-triggers   # idempotente (CREATE OR REPLACE FUNCTION + DROP TRIGGER IF EXISTS)
 ```
 
+⚠️ **`packages/db/src/migrations/` não existe neste repo hoje** — `_triggers.sql` (e `_rls.sql`, se aplicar RLS daqui) são owned-by-dashboard. Copiar do repo dashboard para `packages/db/src/migrations/` antes de rodar `db:apply-triggers`; sem o arquivo o script falha.
+
 ## Convenções de schema
 
 - ID: `text("id").primaryKey()` — preencher com `crypto.randomUUID()` no caller (server actions/scripts).
 - Timestamps: `timestamp("created_at").defaultNow().notNull()`. Soft delete: `deleted_at timestamp` quando aplicável.
-- Enums: `pgEnum`, derivar tipo. Ex: `export const userRoleEnum = pgEnum("user_role", ["admin","manager","user"]); export type UserRole = (typeof userRoleEnum.enumValues)[number]`.
+- Enums: `pgEnum`, derivar tipo. Ex: `export const userRoleEnum = pgEnum("user_role", ["super_admin","admin","manager","user"]); export type UserRole = (typeof userRoleEnum.enumValues)[number]`.
 - FK: explicitar `onDelete: "cascade" | "restrict" | "set null"`. Default = restrict pra integridade.
 - `unique()` em colunas busca natural (sku, barcode, slug, document).
 - Money: `numeric(10, 2)` preço/custo produto (`tool_variant.priceAmount`, `costAmount`); `numeric(12, 2)` totais pedido (`order.totalAmount`). Nunca `real`/`double`.
@@ -67,7 +69,7 @@ await client.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL 
 
 ## Schema compartilhado com app ecomerce
 
-Site ecomerce escreve em `order`, `orderItem`, `stockMovement`, `client*`, `review`, `lead`. Cópia versionada do schema sincronizada manual a cada migration. Mudanças nessas tabelas exigem coordenação cruzada via PR no repo dashboard (fonte de verdade).
+Site ecomerce escreve em `order`, `orderItem`, `stockMovement`, `client*`, `review`, `consentLog`. Cópia versionada do schema sincronizada manual a cada migration. Mudanças nessas tabelas exigem coordenação cruzada via PR no repo dashboard (fonte de verdade).
 
 **Atenção pós-refactor variants:** `stock_level`, `stock_movement` e `order_item` agora referenciam `tool_variant.id` (não mais `tool.id`). App ecomerce precisa enviar `variantId` em pedidos e movimentos, não `toolId`. Ler `tool_variant` pro SKU vendável; `tool` é produto-pai (info comum).
 
@@ -94,12 +96,12 @@ Padrão de assinatura: `db: NodePgDatabase<Record<string, unknown>>` parametriza
 
 ## Testes
 
-Vitest configurado em `packages/db` com scripts:
+Vitest tem scripts configurados em `packages/db`, mas **ainda não há testes escritos** (diretório `test/` não existe):
 ```bash
-bun test                        # roda suite vitest
+bun test                        # roda suite vitest (vazia hoje)
 bun test:watch                  # watch mode
 bun test:supabase:start         # boot Supabase local (Docker)
 bun test:supabase:stop          # stop local instance
 ```
 
-Tests vivem em `packages/db/test/`. Outros workspaces adicionarão suites próprias conforme cobertura cresce.
+Quando forem adicionados, os testes vivem em `packages/db/test/`.

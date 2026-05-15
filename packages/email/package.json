@@ -1,6 +1,9 @@
 {
   "name": "@emach/email",
   "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "exports": {
     "./send": {
       "default": "./src/send.ts"
@@ -22,6 +25,6 @@
   "devDependencies": {
     "@emach/config": "workspace:*",
     "@types/react": "catalog:",
-    "typescript": "^5"
+    "typescript": "^6"
   }
 }

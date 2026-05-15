@@ -1,3 +1,4 @@
+// biome-ignore-all lint/a11y/noRedundantRoles: componente shadcn base-lyra — markup fiel ao registry upstream
 import { Button } from "@emach/ui/components/button";
 
 import { cn } from "@emach/ui/lib/utils";

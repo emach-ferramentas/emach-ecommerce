@@ -188,7 +188,7 @@ export const mockOrderDetails: Record<string, OrderDetail> = {
 export function getOrderDetail(id: string): OrderDetail | undefined {
 	const detail = mockOrderDetails[id];
 	if (!detail) {
-		return undefined;
+		return;
 	}
 	const refund = mockRefunds.find((r) => r.orderId === id);
 	return refund ? { ...detail, refund } : detail;

@@ -25,6 +25,7 @@
     "next": "^16.2.0",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-inner-image-zoom": "^4.0.1",
     "sonner": "catalog:",
     "zod": "catalog:",
     "evlog": "^2.14.1"
@@ -32,10 +33,10 @@
   "devDependencies": {
     "@emach/config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
-    "@types/node": "^20",
+    "@types/node": "^22.13.14",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "tailwindcss": "catalog:",
-    "typescript": "^5"
+    "typescript": "^6"
   }
 }

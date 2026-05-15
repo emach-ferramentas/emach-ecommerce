@@ -26,8 +26,13 @@ function PriceRow({
 	);
 }
 
+const PAYMENT_BADGE_TEXT: Partial<Record<PaymentInfo["kind"], string>> = {
+	boleto: "BOL",
+	pix: "PIX",
+};
+
 function PaymentBadge({ kind }: { kind: PaymentInfo["kind"] }) {
-	const text = kind === "pix" ? "PIX" : kind === "boleto" ? "BOL" : "CRD";
+	const text = PAYMENT_BADGE_TEXT[kind] ?? "CRD";
 	return (
 		<div className="flex h-7 w-7 shrink-0 items-center justify-center border border-near-black font-bold font-display text-[10px] tracking-[0.06em]">
 			{text}

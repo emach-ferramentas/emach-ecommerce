@@ -5,7 +5,8 @@ node_modules
 .superpowers/
 .pnp
 .pnp.js
-bun.lock
+# bun.lock (lockfile do gerenciador do projeto) é versionado — builds reproduzíveis.
+# Lockfiles de outros gerenciadores ficam ignorados.
 bun.lockb
 package-lock.json
 yarn.lock
@@ -59,8 +60,10 @@ coverage
 tmp
 temp
 
+# Claude Code — artefatos transitórios de sessão
+.claude/scheduled_tasks.lock
+
 # Drizzle Kit migrations geradas (DB owned-by-dashboard — schema TS é a fonte de verdade local)
-# Triggers/RLS manuais (_triggers.sql, _rls.sql) permanecem versionados.
+# Triggers/RLS manuais (_triggers.sql, _rls.sql) permanecem versionados — NÃO ignorar o diretório.
 packages/db/src/migrations/[0-9]*.sql
 packages/db/src/migrations/meta/
-packages/db/src/migrations

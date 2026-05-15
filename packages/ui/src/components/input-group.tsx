@@ -1,3 +1,6 @@
+// biome-ignore-all lint/a11y/useSemanticElements: componente shadcn base-lyra — markup fiel ao registry upstream
+// biome-ignore-all lint/a11y/noNoninteractiveElementInteractions: componente shadcn base-lyra — fiel ao registry upstream
+// biome-ignore-all lint/a11y/useKeyWithClickEvents: componente shadcn base-lyra — fiel ao registry upstream
 "use client";
 
 import { Button } from "@emach/ui/components/button";

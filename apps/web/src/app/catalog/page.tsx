@@ -56,7 +56,7 @@ function parseVoltages(value: string | undefined): VoltageKey[] {
 
 function parsePositiveInt(value: string | undefined): number | undefined {
 	if (!value) {
-		return undefined;
+		return;
 	}
 	const n = Number(value);
 	return Number.isFinite(n) && n >= 0 ? n : undefined;

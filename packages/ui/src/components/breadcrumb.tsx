@@ -1,3 +1,5 @@
+// biome-ignore-all lint/a11y/useFocusableInteractive: componente shadcn base-lyra — markup fiel ao registry upstream
+// biome-ignore-all lint/a11y/useSemanticElements: componente shadcn base-lyra — markup fiel ao registry upstream
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cn } from "@emach/ui/lib/utils";

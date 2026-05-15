@@ -7,7 +7,7 @@ const runEvlog = evlogMiddleware({
 	exclude: ["/api/auth/**", "/_next/**", "/favicon/**"],
 });
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
 	const isProtected = PROTECTED.some((p) => req.nextUrl.pathname.startsWith(p));
 
 	if (isProtected) {

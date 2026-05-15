@@ -1,3 +1,4 @@
+// biome-ignore-all lint/performance/noNamespaceImport: componente shadcn base-lyra — fiel ao registry upstream
 "use client";
 
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
