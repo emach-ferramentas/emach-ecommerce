@@ -8,6 +8,8 @@
   "files": {
     "ignoreUnknown": false,
     "includes": [
+      "!**/.agents",
+      "!**/.codex",
       "!**/.next",
       "!**/dist",
       "!**/.turbo",

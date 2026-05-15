@@ -63,7 +63,10 @@ temp
 # Claude Code — artefatos transitórios de sessão
 .claude/scheduled_tasks.lock
 
+# Agent skills instaladas (npx skills add) — reinstaláveis via skills-lock.json
+.agents/skills/
+
 # Drizzle Kit migrations geradas (DB owned-by-dashboard — schema TS é a fonte de verdade local)
-# Triggers/RLS manuais (_triggers.sql, _rls.sql) permanecem versionados — NÃO ignorar o diretório.
+# _triggers.sql (manual) permanece versionado — NÃO ignorar o diretório.
 packages/db/src/migrations/[0-9]*.sql
 packages/db/src/migrations/meta/
