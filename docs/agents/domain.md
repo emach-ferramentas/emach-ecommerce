@@ -2,41 +2,38 @@
 
 How the engineering skills should consume this repo's domain documentation when exploring the codebase.
 
-This repo is **multi-context** (a Turborepo monorepo): one app (`apps/web`) and several packages (`packages/db`, `packages/auth`, `packages/email`, `packages/env`, `packages/ui`, `packages/config`).
+This is a **multi-context** repo: the EMACH domain is decomposed into bounded contexts in `CONTEXT-MAP.md`. The contexts are **domain contexts, not code folders** — `packages/db/src/schema/` holds tables from every context, so the per-context docs live in a dedicated `docs/contexts/` tree rather than co-located with code.
 
 ## Before exploring, read these
 
-- **`CONTEXT-MAP.md`** at the repo root — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- The per-context **`CONTEXT.md`** under `apps/<app>/` or `packages/<pkg>/`.
-- **`docs/adr/`** at the root — monorepo-wide architectural decisions. Also check `apps/<app>/docs/adr/` and `packages/<pkg>/docs/adr/` for context-scoped decisions.
+- **`CONTEXT-MAP.md`** at the repo root — lists the bounded contexts, where each `CONTEXT.md` lives, and how the contexts relate. Read it first.
+- The per-context **`CONTEXT.md`** under `docs/contexts/<slug>/` — read the one(s) relevant to the topic.
+- **`docs/adr/`** at the root — system-wide architectural decisions. Also check `docs/contexts/<slug>/docs/adr/` for context-scoped decisions.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`) creates them lazily when terms or decisions actually get resolved.
+If any of these files don't exist yet, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`) creates them lazily as terms and decisions get resolved.
 
-> Note: today the architectural documentation is centralised in `CLAUDE.md`, `DESIGN.md`, and `packages/db/CLAUDE.md`. `CONTEXT.md`/`CONTEXT-MAP.md`/`docs/adr/` files don't exist yet — they will be created lazily by `/grill-with-docs` as the domain glossary and decisions get pinned down.
+> The real PostgreSQL database (Supabase) is the source of truth for the schema. The Drizzle files in `packages/db/src/schema/` are a versioned mirror and may be out of date — verify against the live DB (via `psql` with `DATABASE_URL`, or the `supabase` MCP) before trusting them.
 
 ## File structure
 
-Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
-
 ```
 /
-├── CONTEXT-MAP.md                     ← points to each context's CONTEXT.md
+├── CONTEXT-MAP.md                     ← index of bounded contexts + relationships
 ├── CLAUDE.md                          ← canonical project guide (architecture, invariants)
 ├── DESIGN.md                          ← design system tokens + principles
 ├── docs/
-│   ├── adr/                           ← monorepo-wide decisions
-│   └── agents/                        ← this skill's config (issue-tracker, triage, domain)
+│   ├── adr/                           ← system-wide decisions
+│   ├── agents/                        ← engineering-skills config (this file lives here)
+│   └── contexts/
+│       ├── catalog/
+│       │   ├── CONTEXT.md
+│       │   └── docs/adr/              ← catalog-specific decisions (lazy)
+│       ├── ordering/
+│       │   ├── CONTEXT.md
+│       │   └── docs/adr/
+│       └── …                          ← one folder per bounded context
 ├── apps/
-│   └── web/
-│       ├── CONTEXT.md
-│       └── docs/adr/                  ← web-specific decisions
 └── packages/
-    ├── db/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/
-    └── auth/
-        ├── CONTEXT.md
-        └── docs/adr/
 ```
 
 ## Use the glossary's vocabulary
@@ -49,4 +46,4 @@ If the concept you need isn't in the glossary yet, that's a signal — either yo
 
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
-> _Contradicts ADR-0007 (event-sourced orders) — but worth reopening because…_
+> _Contradicts ADR-0001 (débito de estoque na criação do pedido) — but worth reopening because…_
