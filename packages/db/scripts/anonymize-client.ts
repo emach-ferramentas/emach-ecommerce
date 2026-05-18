@@ -47,7 +47,6 @@ async function main() {
 
 		await tx.insert(consentLog).values({
 			id: crypto.randomUUID(),
-			actorType: "client",
 			clientId: id,
 			kind: "privacy",
 			granted: false,

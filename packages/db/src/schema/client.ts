@@ -1,5 +1,22 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	pgEnum,
+	pgTable,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
+
+export const clientStatusEnum = pgEnum("client_status", [
+	"active",
+	"inactive",
+	"blocked",
+]);
+export type ClientStatus = (typeof clientStatusEnum.enumValues)[number];
+
+export const clientTypeEnum = pgEnum("client_type", ["b2c", "b2b"]);
+export type ClientType = (typeof clientTypeEnum.enumValues)[number];
 
 export const client = pgTable("client", {
 	id: text("id").primaryKey(),
@@ -9,6 +26,10 @@ export const client = pgTable("client", {
 	image: text("image"),
 	phone: text("phone"),
 	document: text("document").unique(),
+	status: clientStatusEnum("status").notNull().default("active"),
+	clientType: clientTypeEnum("client_type"),
+	internalNotes: text("internal_notes"),
+	lastSeenAt: timestamp("last_seen_at"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()

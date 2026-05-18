@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	boolean,
 	check,
 	index,
 	integer,
@@ -41,7 +40,6 @@ export const review = pgTable(
 		title: text("title"),
 		body: text("body").notNull(),
 		status: reviewStatusEnum("status").notNull().default("pending"),
-		verifiedPurchase: boolean("verified_purchase").notNull().default(false),
 		moderatedBy: text("moderated_by").references(() => user.id, {
 			onDelete: "set null",
 		}),

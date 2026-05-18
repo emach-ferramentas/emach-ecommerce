@@ -1,5 +1,5 @@
 import { db } from "@emach/db";
-import type { OrderStatus, PaymentStatus } from "@emach/db/schema/orders";
+import type { OrderStatus } from "@emach/db/schema/orders";
 import { order, orderItem } from "@emach/db/schema/orders";
 import { Separator } from "@emach/ui/components/separator";
 import { and, eq } from "drizzle-orm";
@@ -36,14 +36,8 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 	delivered: "Entregue",
 	canceled: "Cancelado",
 	refunded: "Reembolsado",
-};
-
-const PAYMENT_LABEL: Record<PaymentStatus, string> = {
-	pending: "Pendente",
-	authorized: "Autorizado",
-	paid: "Pago",
-	failed: "Falhou",
-	refunded: "Reembolsado",
+	payment_failed: "Pagamento falhou",
+	returned: "Devolvido",
 };
 
 export default async function OrderConfirmationPage({
@@ -86,11 +80,6 @@ export default async function OrderConfirmationPage({
 						<div className="mt-2 flex flex-wrap gap-3 text-[13px] text-gray-60">
 							<span>
 								Status: <strong>{STATUS_LABEL[orderRow.status]}</strong>
-							</span>
-							<span>·</span>
-							<span>
-								Pagamento:{" "}
-								<strong>{PAYMENT_LABEL[orderRow.paymentStatus]}</strong>
 							</span>
 							<span>·</span>
 							<span>

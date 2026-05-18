@@ -378,7 +378,6 @@ export async function createOrderAction(
 			await tx.insert(consentLog).values(
 				consentRows.map((c) => ({
 					id: crypto.randomUUID(),
-					actorType: "client" as const,
 					clientId,
 					kind: c.kind,
 					granted: c.granted,
@@ -410,7 +409,6 @@ export async function createOrderAction(
 				clientId,
 				branchId,
 				status: "pending_payment",
-				paymentStatus: "pending",
 				subtotalAmount,
 				discountAmount: "0",
 				shippingAmount: input.shippingAmount,

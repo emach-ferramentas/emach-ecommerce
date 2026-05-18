@@ -11,7 +11,6 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 
-import { apiKey } from "./api-keys";
 import { user } from "./auth";
 import { client } from "./client";
 import { branch } from "./inventory";
@@ -28,17 +27,10 @@ export const orderStatusEnum = pgEnum("order_status", [
 	"delivered",
 	"canceled",
 	"refunded",
+	"payment_failed",
+	"returned",
 ]);
 export type OrderStatus = (typeof orderStatusEnum.enumValues)[number];
-
-export const paymentStatusEnum = pgEnum("payment_status", [
-	"pending",
-	"authorized",
-	"paid",
-	"failed",
-	"refunded",
-]);
-export type PaymentStatus = (typeof paymentStatusEnum.enumValues)[number];
 
 // --- Tables ---
 
@@ -54,9 +46,6 @@ export const order = pgTable(
 			onDelete: "set null",
 		}),
 		status: orderStatusEnum("status").notNull().default("pending_payment"),
-		paymentStatus: paymentStatusEnum("payment_status")
-			.notNull()
-			.default("pending"),
 		paymentMethod: text("payment_method"),
 		paymentProviderRef: text("payment_provider_ref"),
 		subtotalAmount: numeric("subtotal_amount", {
@@ -151,9 +140,6 @@ export const orderStatusHistory = pgTable(
 		actorUserId: text("actor_user_id").references(() => user.id, {
 			onDelete: "set null",
 		}),
-		actorApiKeyId: text("actor_api_key_id").references(() => apiKey.id, {
-			onDelete: "set null",
-		}),
 		reason: text("reason"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 	},
@@ -165,9 +151,8 @@ export const orderStatusHistory = pgTable(
 		check(
 			"actor_coherence",
 			sql`(
-				(${table.actorType} = 'user'   AND ${table.actorUserId}   IS NOT NULL AND ${table.actorApiKeyId} IS NULL)
-				OR (${table.actorType} = 'apiKey' AND ${table.actorApiKeyId} IS NOT NULL AND ${table.actorUserId} IS NULL)
-				OR (${table.actorType} = 'system' AND ${table.actorUserId} IS NULL  AND ${table.actorApiKeyId} IS NULL)
+				(${table.actorType} = 'user' AND ${table.actorUserId} IS NOT NULL)
+				OR (${table.actorType} = 'system' AND ${table.actorUserId} IS NULL)
 			)`
 		),
 	]
@@ -220,10 +205,6 @@ export const orderStatusHistoryRelations = relations(
 		actorUser: one(user, {
 			fields: [orderStatusHistory.actorUserId],
 			references: [user.id],
-		}),
-		actorApiKey: one(apiKey, {
-			fields: [orderStatusHistory.actorApiKeyId],
-			references: [apiKey.id],
 		}),
 	})
 );
