@@ -12,6 +12,8 @@ import { type CreateOrderInput, placeOrder } from "./place-order";
 
 const ROLLBACK = Symbol("rollback");
 const RE_ESTOQUE = /estoque/i;
+const RE_DOC_DUP = /cadastrado em outra conta/i;
+const RE_SQL_LEAK = /Failed query|update "client"/i;
 
 /** Roda `fn` numa transação e sempre dá ROLLBACK — zero resíduo no banco. */
 async function withRollback(
@@ -159,6 +161,35 @@ describe("placeOrder", () => {
 					userAgent: null,
 				})
 			).rejects.toThrow(RE_ESTOQUE);
+		});
+	});
+
+	it("rejeita com erro amigável quando o documento já pertence a outra conta", async () => {
+		await withRollback(async (tx) => {
+			const { clientId, branchId, toolId, variantId } = await seed(tx, 10);
+
+			// Documento único por execução: evita colisão com dados reais
+			// da DB; placeOrder não revalida o formato do documento.
+			const takenDoc = crypto.randomUUID();
+			const otherId = crypto.randomUUID();
+			await tx.insert(client).values({
+				id: otherId,
+				name: "Outro Cliente",
+				email: `o-${otherId}@test.local`,
+				document: takenDoc,
+			});
+
+			const input = { ...buildInput(toolId, variantId, 1), document: takenDoc };
+			const call = placeOrder(tx, {
+				clientId,
+				branchId,
+				input,
+				ipAddress: null,
+				userAgent: null,
+			});
+
+			await expect(call).rejects.toThrow(RE_DOC_DUP);
+			await expect(call).rejects.not.toThrow(RE_SQL_LEAK);
 		});
 	});
 });

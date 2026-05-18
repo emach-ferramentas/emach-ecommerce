@@ -11,8 +11,12 @@ import {
 	type CreateOrderInput,
 	type CreateOrderResult,
 	inputSchema,
+	OrderError,
 	placeOrder,
 } from "../_lib/place-order";
+
+const GENERIC_ORDER_ERROR =
+	"Não foi possível concluir o pedido. Tente novamente.";
 
 export type { CreateOrderInput, CreateOrderResult } from "../_lib/place-order";
 
@@ -46,13 +50,17 @@ export async function createOrderAction(
 		);
 		return { ok: true, ...result };
 	} catch (err) {
-		const message = err instanceof Error ? err.message : "Erro inesperado";
+		const rawMessage = err instanceof Error ? err.message : "Erro inesperado";
 		log.error({
 			action: "create_order_failed",
 			clientId,
 			branchId,
-			error: message,
+			error: rawMessage,
 		});
-		return { ok: false, error: message };
+		// Só erros de negócio (OrderError) têm mensagem segura para o cliente;
+		// qualquer outra falha vira mensagem genérica para não vazar detalhe.
+		const userError =
+			err instanceof OrderError ? err.message : GENERIC_ORDER_ERROR;
+		return { ok: false, error: userError };
 	}
 }

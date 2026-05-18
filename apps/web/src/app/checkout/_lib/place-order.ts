@@ -16,6 +16,30 @@ const PRICE_TOLERANCE_CENTS = 1;
 
 const newAddressSchema = addressFieldsSchema;
 
+/**
+ * Erro de negócio do checkout cuja `message` é segura para exibir ao
+ * cliente. Tudo que não for `OrderError` é tratado como falha inesperada
+ * de infraestrutura e nunca deve ter a mensagem repassada ao navegador.
+ */
+export class OrderError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = "OrderError";
+	}
+}
+
+const PG_UNIQUE_VIOLATION = "23505";
+
+/** Detecta a violação de unicidade de `client.document` (DrizzleQueryError → cause pg). */
+function isDocumentUniqueViolation(err: unknown): boolean {
+	const cause = (err as { cause?: { code?: string; constraint?: string } })
+		?.cause;
+	return (
+		cause?.code === PG_UNIQUE_VIOLATION &&
+		cause?.constraint === "client_document_unique"
+	);
+}
+
 export const inputSchema = z.object({
 	name: z.string().min(2),
 	email: z.email(),
@@ -86,7 +110,7 @@ async function buildAddressSnapshot(params: {
 			.limit(1);
 		const row = rows[0];
 		if (!row) {
-			throw new Error("Endereço não encontrado");
+			throw new OrderError("Endereço não encontrado");
 		}
 		return {
 			addressId: row.id,
@@ -105,7 +129,7 @@ async function buildAddressSnapshot(params: {
 	}
 
 	if (!newAddress) {
-		throw new Error("Endereço não fornecido");
+		throw new OrderError("Endereço não fornecido");
 	}
 
 	const id = crypto.randomUUID();
@@ -249,7 +273,7 @@ async function prepareLines(
 	]);
 
 	if (variantRows.length !== variantIds.length) {
-		throw new Error("Variante inválida no carrinho");
+		throw new OrderError("Variante inválida no carrinho");
 	}
 
 	const toolById = new Map(toolRows.map((t) => [t.id, t]));
@@ -260,7 +284,7 @@ async function prepareLines(
 		const variant = variantById.get(cartItem.variantId);
 		const toolRow = toolById.get(cartItem.toolId);
 		if (!(variant && toolRow) || variant.toolId !== cartItem.toolId) {
-			throw new Error("Inconsistência cart/DB");
+			throw new OrderError("Inconsistência cart/DB");
 		}
 		const pct = discountPctByToolId.get(cartItem.toolId) ?? 0;
 		const basePriceCents = centsFromString(variant.priceAmount);
@@ -268,7 +292,7 @@ async function prepareLines(
 			pct > 0 ? Math.round(basePriceCents * (1 - pct / 100)) : basePriceCents;
 		const submittedCents = centsFromString(cartItem.priceAmount);
 		if (Math.abs(submittedCents - finalPriceCents) > PRICE_TOLERANCE_CENTS) {
-			throw new Error("Preços atualizados, refaça o checkout");
+			throw new OrderError("Preços atualizados, refaça o checkout");
 		}
 		lines.push({
 			cartItem,
@@ -305,7 +329,7 @@ async function checkStock(
 	for (const line of lines) {
 		const available = stockByVariant.get(line.variant.id) ?? 0;
 		if (available < line.cartItem.quantity) {
-			throw new Error(`Sem estoque para ${line.tool.name}`);
+			throw new OrderError(`Sem estoque para ${line.tool.name}`);
 		}
 	}
 }
@@ -329,14 +353,21 @@ export async function placeOrder(
 	const shippingCents = centsFromString(input.shippingAmount);
 	const totalCents = subtotalCents + shippingCents;
 
-	await tx
-		.update(client)
-		.set({
-			name: input.name,
-			phone: input.phone,
-			document: input.document,
-		})
-		.where(eq(client.id, clientId));
+	try {
+		await tx
+			.update(client)
+			.set({
+				name: input.name,
+				phone: input.phone,
+				document: input.document,
+			})
+			.where(eq(client.id, clientId));
+	} catch (err) {
+		if (isDocumentUniqueViolation(err)) {
+			throw new OrderError("Este CPF/CNPJ já está cadastrado em outra conta.");
+		}
+		throw err;
+	}
 
 	const { snapshot } = await buildAddressSnapshot({
 		clientId,
@@ -372,7 +403,7 @@ export async function placeOrder(
 			(seqRow as unknown as Array<{ seq: number }>)[0]?.seq
 	);
 	if (!Number.isFinite(seq)) {
-		throw new Error("Falha ao gerar número do pedido");
+		throw new OrderError("Falha ao gerar número do pedido");
 	}
 	const orderNumber = formatOrderNumber(seq);
 
@@ -436,7 +467,7 @@ export async function placeOrder(
 			.returning({ quantity: stockLevel.quantity });
 		const after = updated[0];
 		if (!after) {
-			throw new Error(`Stock insuficiente para ${line.tool.name}`);
+			throw new OrderError(`Stock insuficiente para ${line.tool.name}`);
 		}
 		const previousQty = after.quantity + line.cartItem.quantity;
 
