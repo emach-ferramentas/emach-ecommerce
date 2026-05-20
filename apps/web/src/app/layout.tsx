@@ -8,55 +8,55 @@ import { Ticker } from "@/components/ticker";
 import "../index.css";
 
 const barlow = Barlow({
-	subsets: ["latin"],
-	weight: ["400", "500", "600", "700"],
-	variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-barlow",
 });
 
 const barlowCondensed = Barlow_Condensed({
-	subsets: ["latin"],
-	weight: ["400", "500", "600", "700"],
-	variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-barlow-condensed",
 });
 
 export const metadata: Metadata = {
-	metadataBase: new URL(
-		process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"
-	),
-	title: {
-		default: "EMACH — Ferramentas Profissionais",
-		template: "%s",
-	},
-	description:
-		"Ferramentas elétricas e manuais de alta performance para profissionais.",
-	applicationName: "EMACH",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001",
+  ),
+  title: {
+    default: "EMACH — Ferramentas Profissionais",
+    template: "%s",
+  },
+  description:
+    "Ferramentas elétricas e manuais de alta performance para profissionais.",
+  applicationName: "EMACH",
 };
 
 export const viewport: Viewport = {
-	width: "device-width",
-	initialScale: 1,
-	themeColor: [
-		{ media: "(prefers-color-scheme: light)", color: "#000000" },
-		{ media: "(prefers-color-scheme: dark)", color: "#000000" },
-	],
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#000000" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<html lang="pt-BR">
-			<body
-				className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
-				suppressHydrationWarning
-			>
-				<Ticker />
-				<Providers>{children}</Providers>
-				<Analytics />
-				<SpeedInsights />
-			</body>
-		</html>
-	);
+  return (
+    <html lang="pt-BR">
+      <body
+        className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
+        suppressHydrationWarning
+      >
+        <Ticker />
+        <Providers>{children}</Providers>
+        <Analytics />
+        <SpeedInsights />
+      </body>
+    </html>
+  );
 }

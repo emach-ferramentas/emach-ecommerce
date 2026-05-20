@@ -95,7 +95,7 @@ function HeroSlideContent({
       <motion.div
         animate={glowAnimate}
         aria-hidden="true"
-        className="-translate-x-1/2 -translate-y-1/2 pointer-events-none absolute top-1/2 left-1/2 z-[5] h-[900px] w-[900px] rounded-full"
+        className="-translate-x-1/2 -translate-y-1/2 pointer-events-none absolute top-1/2 left-1/2 z-5 h-[900px] w-[900px] rounded-full"
         style={{
           background:
             "radial-gradient(circle, rgba(230,0,18,0.25) 0%, rgba(230,0,18,0.08) 40%, transparent 70%)",
@@ -192,7 +192,7 @@ export function HeroCarousel() {
           <button
             aria-label={`Ir para slide ${index + 1}`}
             className={cn(
-              "h-[2px] w-10 cursor-pointer transition-colors duration-200",
+              "h-[4px] w-10 cursor-pointer transition-colors duration-200",
               index === selectedIndex ? "bg-emach-red" : "bg-white/30",
             )}
             key={slide.bg}

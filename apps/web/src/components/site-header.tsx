@@ -54,10 +54,15 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           <Link href="/">
             <Image
               alt="EMACH"
-              height={26}
+              className={
+                overlay && !scrolled
+                  ? "h-[37px] w-[200px] transition-all duration-300"
+                  : "h-[26px] w-[140px] transition-all duration-300"
+              }
+              height={37}
               priority
               src="/emach-logo.svg"
-              width={140}
+              width={200}
             />
           </Link>
           <Suspense fallback={<nav className="flex items-center gap-[22px]" />}>
@@ -72,7 +77,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             onClick={() => setSearchOpen(true)}
             type="button"
           >
-            <Search className="size-[18px]" />
+            <Search className="size-6" />
           </button>
           <button
             aria-label={`Carrinho com ${totalCount} itens`}
@@ -80,7 +85,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             onClick={() => setCartOpen(true)}
             type="button"
           >
-            <ShoppingBag className="size-[18px]" />
+            <ShoppingBag className="size-6" />
             {totalCount > 0 && (
               <span
                 aria-hidden="true"
