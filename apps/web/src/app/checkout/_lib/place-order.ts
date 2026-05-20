@@ -4,9 +4,8 @@ import { consentLog } from "@emach/db/schema/consent-log";
 import { stockLevel } from "@emach/db/schema/inventory";
 import { order, orderItem } from "@emach/db/schema/orders";
 import { promotion, promotionTool } from "@emach/db/schema/promotions";
-import { stockMovement } from "@emach/db/schema/stock-movements";
 import { tool, toolVariant } from "@emach/db/schema/tools";
-import { and, eq, gt, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { addressFieldsSchema } from "@/lib/validators/address";
@@ -306,29 +305,24 @@ async function prepareLines(
 	return lines;
 }
 
-async function checkStock(
+async function checkAggregateStock(
 	tx: typeof db,
-	lines: PreparedLine[],
-	branchId: string
+	lines: PreparedLine[]
 ): Promise<void> {
-	const stockRows = await tx
-		.select()
+	const variantIds = lines.map((l) => l.variant.id);
+	const rows = await tx
+		.select({
+			variantId: stockLevel.variantId,
+			total: sql<number>`COALESCE(SUM(${stockLevel.quantity}), 0)::int`,
+		})
 		.from(stockLevel)
-		.where(
-			and(
-				eq(stockLevel.branchId, branchId),
-				inArray(
-					stockLevel.variantId,
-					lines.map((l) => l.variant.id)
-				)
-			)
-		);
-	const stockByVariant = new Map(
-		stockRows.map((s) => [s.variantId, s.quantity])
-	);
+		.where(inArray(stockLevel.variantId, variantIds))
+		.groupBy(stockLevel.variantId);
+
+	const totalByVariant = new Map(rows.map((r) => [r.variantId, r.total]));
 	for (const line of lines) {
-		const available = stockByVariant.get(line.variant.id) ?? 0;
-		if (available < line.cartItem.quantity) {
+		const total = totalByVariant.get(line.variant.id) ?? 0;
+		if (total < line.cartItem.quantity) {
 			throw new OrderError(`Sem estoque para ${line.tool.name}`);
 		}
 	}
@@ -338,16 +332,15 @@ export async function placeOrder(
 	tx: typeof db,
 	params: {
 		clientId: string;
-		branchId: string;
 		input: CreateOrderInput;
 		ipAddress: string | null;
 		userAgent: string | null;
 	}
 ): Promise<{ orderId: string; orderNumber: string }> {
-	const { clientId, branchId, input, ipAddress, userAgent } = params;
+	const { clientId, input, ipAddress, userAgent } = params;
 
 	const lines = await prepareLines(tx, input);
-	await checkStock(tx, lines, branchId);
+	await checkAggregateStock(tx, lines);
 
 	const subtotalCents = lines.reduce((s, l) => s + l.lineTotalCents, 0);
 	const shippingCents = centsFromString(input.shippingAmount);
@@ -415,7 +408,7 @@ export async function placeOrder(
 		id: orderId,
 		number: orderNumber,
 		clientId,
-		branchId,
+		branchId: null,
 		status: "pending_payment",
 		subtotalAmount,
 		discountAmount: "0",
@@ -450,38 +443,6 @@ export async function placeOrder(
 			lengthCm: line.tool.lengthCm,
 			widthCm: line.tool.widthCm,
 			heightCm: line.tool.heightCm,
-		});
-
-		const updated = await tx
-			.update(stockLevel)
-			.set({
-				quantity: sql`${stockLevel.quantity} - ${line.cartItem.quantity}`,
-			})
-			.where(
-				and(
-					eq(stockLevel.variantId, line.variant.id),
-					eq(stockLevel.branchId, branchId),
-					gte(stockLevel.quantity, line.cartItem.quantity)
-				)
-			)
-			.returning({ quantity: stockLevel.quantity });
-		const after = updated[0];
-		if (!after) {
-			throw new OrderError(`Stock insuficiente para ${line.tool.name}`);
-		}
-		const previousQty = after.quantity + line.cartItem.quantity;
-
-		await tx.insert(stockMovement).values({
-			id: crypto.randomUUID(),
-			variantId: line.variant.id,
-			branchId,
-			previousQty,
-			newQty: after.quantity,
-			delta: -line.cartItem.quantity,
-			reason: "saida_venda",
-			orderId,
-			orderItemId,
-			actorType: "system",
 		});
 	}
 
