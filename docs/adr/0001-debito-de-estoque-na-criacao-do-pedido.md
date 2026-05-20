@@ -1,5 +1,7 @@
 # Débito de estoque na criação do pedido
 
+> **Superseded by [ADR-0003](./0003-estoque-multi-filial.md) em 2026-05-20.**
+
 O storefront debita o estoque de forma síncrona no momento em que o pedido é criado (`order.status = pending_payment`), dentro da mesma transação que insere o `order` e os `order_item` — não há reserva, e o débito não espera a confirmação do pagamento. O storefront só debita; o crédito de volta (cancelamento, estorno, devolução) é responsabilidade do dashboard. O ledger compartilhado é `stock_movement`, com `actor_type = 'system'` para o débito de venda (`reason = 'saida_venda'`).
 
 ## Considered Options
