@@ -21,14 +21,14 @@ export function CategoryTile({ category, index }: CategoryTileProps) {
 
 	return (
 		<Link
-			className="group relative block aspect-3/4 overflow-hidden border border-transparent bg-image-bg shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[transform,border-color,box-shadow] duration-300 ease-out hover:scale-[1.015] hover:border-emach-red hover:shadow-[0_14px_40px_rgba(0,0,0,0.18)] motion-reduce:transition-none motion-reduce:hover:scale-100"
+			className="group relative block aspect-3/4 overflow-hidden border border-transparent bg-image-bg shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[transform,border-color,box-shadow] duration-300 ease-out hover:scale-[1.015] hover:border-emach-red hover:shadow-[0_10px_28px_rgba(0,0,0,0.1)] motion-reduce:transition-none motion-reduce:hover:scale-100"
 			href={`/catalog?cat=${category.slug}`}
 		>
 			{category.imageUrl ? (
 				<Image
 					alt=""
 					aria-hidden="true"
-					className="object-cover transition-[filter,transform] duration-400 ease-out [filter:grayscale(40%)] group-hover:scale-[1.04] motion-reduce:transition-none group-hover:[filter:grayscale(0%)]"
+					className="object-cover transition-transform duration-400 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
 					fill
 					sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
 					src={category.imageUrl}
@@ -36,14 +36,14 @@ export function CategoryTile({ category, index }: CategoryTileProps) {
 			) : (
 				<div
 					aria-hidden="true"
-					className="absolute inset-0 bg-image-bg transition-[filter] duration-400 ease-out [filter:grayscale(40%)] motion-reduce:transition-none group-hover:[filter:grayscale(0%)]"
+					className="absolute inset-0 bg-image-bg"
 				/>
 			)}
 
 			{/* Gradient bottom→top sobre a imagem pra legibilidade do texto */}
 			<div
 				aria-hidden="true"
-				className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent"
+				className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/42 to-transparent"
 			/>
 
 			{/* Outline gigante "01" — sai parcialmente do card */}
