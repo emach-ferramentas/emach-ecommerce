@@ -68,7 +68,9 @@ describe("fetchSuperFreteQuote", () => {
 			label: "peso acima do limite dos Correios",
 			body: {
 				errors: {
-					"correios.weight": ["(correios.weight) não pode ser maior que 30 kg."],
+					"correios.weight": [
+						"(correios.weight) não pode ser maior que 30 kg.",
+					],
 				},
 				message: "Ocorreu um ou mais erros.",
 			},

@@ -12,7 +12,6 @@ export class SuperFreteError extends Error {
 	}
 }
 
-
 export interface SuperFreteQuoteBody {
 	from: { postal_code: string };
 	options: {
