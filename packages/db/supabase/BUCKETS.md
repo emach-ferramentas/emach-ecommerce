@@ -37,13 +37,6 @@ Salvar a URL resultante em `tool_image.url` (uma linha por imagem, `sort_order` 
 
 ### Arquitetura de acesso
 
-Upload e delete acontecem **server-side** via server actions em `apps/web/src/app/dashboard/tools/_components/image-actions.ts` usando `supabaseAdmin` (`apps/web/src/lib/supabase-server.ts`) com `SUPABASE_SERVICE_ROLE_KEY`. Bucket RLS permanece fechado para `anon` — apenas leitura pública via URL direta.
+O **upload/delete** das imagens é feito pelo **`emach-dashboard`** (repo irmão), via server actions que usam `supabaseAdmin` + `SUPABASE_SERVICE_ROLE_KEY`. Este repo (`emach-ecommerce`/storefront) **só lê**: consome `tool_image.url` (URL pública absoluta) direto em `<Image>`. Bucket RLS fechado para escrita; leitura pública via URL direta.
 
-Validações de tipo e tamanho (5 MB, JPG/PNG/WEBP) acontecem tanto no client (`tool-image-gallery.tsx`) quanto no server (`image-actions.ts`) — defesa em camadas.
-
-### Cleanup de storage
-
-- `createTool`: sem cleanup (só escreve).
-- `updateTool`: imagens removidas no form são deletadas do bucket após o DB commit (`Promise.allSettled`, best-effort).
-- `deleteTool`: busca URLs antes do `DELETE tool` e limpa cada arquivo após o delete (cascade já removeu registros).
-- `removeAt` (gallery × button): chama `deleteToolImage` imediatamente mas o registro só some do DB se o form for salvo. Se usuário fechar sem salvar, arquivo **removido** do bucket mas URL ainda no state — divergência aceitável (user já sinalizou intenção de remover).
+> `SUPABASE_SERVICE_ROLE_KEY` existe no `.env`/`packages/env` deste repo mas hoje **não é usado** no `apps/web` (não há `supabaseAdmin` aqui) — fica disponível caso o storefront passe a escrever no storage. A lógica de cleanup de storage (create/update/delete de imagens) vive no `emach-dashboard`, não aqui.

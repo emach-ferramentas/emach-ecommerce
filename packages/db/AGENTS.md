@@ -20,20 +20,20 @@ Drizzle 0.45 + node-postgres + Supabase Postgres. Schemas em `src/schema/*.ts`, 
 2. Money produto: `numeric(10, 2)`. Money totais de pedido: `numeric(12, 2)`. Nunca `real`/`double`.
 3. FKs sempre com `onDelete` explícito (`cascade` / `restrict` / `set null`).
 4. Enums via `pgEnum`, derivar tipo: `(typeof enumName.enumValues)[number]`.
-5. Auditoria: tabelas de movimento incluem `actorType` + `actorId` + `apiKeyId` + CHECK `actor_coherence`.
-6. Triggers PL/pgSQL ficam em `src/migrations/_triggers.sql` (Drizzle-kit não gera). Aplicar com `bun db:apply-triggers` após qualquer push/migrate.
+5. Auditoria: tabelas de movimento incluem `actorType` (`['user','system']`) + `actorId` + CHECK `actor_coherence`. (Não há `apiKeyId`/`api_key` — os apps compartilham a DB direto.)
+6. Triggers PL/pgSQL ficam em `src/sql/triggers.sql` (Drizzle-kit não gera). Aplicar com `bun db:apply-triggers` após qualquer push.
 7. `stock_level`, `stock_movement`, `order_item` referenciam `tool_variant.id` — **não** `tool.id`. Mudanças nessas FKs exigem coordenação com app ecomerce.
 
 ## Comandos
 
 ```bash
 bun db:push                 # dev: sync schema → DB
-bun db:generate             # gera migration versionada (staging/prod)
-bun db:migrate              # aplica migrations pendentes
+# db:generate / db:migrate — LEGACY, NÃO USAR (workflow push-only; migrations/ removida)
 bun db:studio               # UI inspetora
-bun db:apply-triggers       # idempotente
+bun db:apply-triggers       # idempotente, após push
 bun db:seed-categories      # bootstrap 5 raízes
 bun db:seed-attributes      # bootstrap attribute_definitions iniciais
+bun db:check-drift          # drift schema Drizzle × DB
 bun db:anonymize-client <id># LGPD
 ```
 

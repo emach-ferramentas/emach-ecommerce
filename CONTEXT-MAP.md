@@ -19,8 +19,8 @@ O domínio EMACH é servido por dois apps que compartilham uma única base Postg
 
 - **Catalog → Ordering**: um **Order Item** referencia um **Tool** e uma **Variant** por id e snapshota nome, SKU, voltagem, dados fiscais (NCM/CEST) e dimensões no momento da compra. O preço de venda é derivado do preço-base da **Variant**.
 - **Catalog ↔ Inventory**: um **Stock Level** é mantido por par (**Variant**, **Branch**). Inventory rastreia estoque da unidade-de-venda do Catalog.
-- **Catalog ↔ Promotions**: uma **Promotion** liga-se a um ou mais **Tools** (`promotion_tool`) e aplica um desconto percentual no nível do **Tool**.
-- **Ordering → Inventory**: a criação de um **Order** debita o **Stock Level** e grava um **Stock Movement** (`saida_venda`, ator `system`) na mesma transação. O cancelamento/estorno/devolução de um **Order** — conduzido pelo dashboard — credita o estoque de volta com um **Stock Movement** inverso. `stock_movement` é o ledger compartilhado entre os dois contextos. Ver ADR-0001.
+- **Catalog ↔ Promotions**: uma **Promotion** liga-se a um ou mais **Tools** (`promotion_tool`) e aplica um desconto (`discount_type` `percent`|`fixed`) no nível do **Tool**.
+- **Ordering → Inventory**: a criação de um **Order** apenas **valida** disponibilidade agregada (`SUM(stock_level.quantity)` em todas as filiais) — **não debita** estoque nem grava **Stock Movement**. O débito (`saida_venda`, ator `system`) é adiado para a transição `pending_payment → paid` (ainda não cabeada — pagamento é stub), quando o storefront escreverá no ledger compartilhado `stock_movement`; o crédito de volta (cancelamento/estorno/devolução) é conduzido pelo dashboard. Ver ADR-0003 (supersede ADR-0001) e ADR-0007 do dashboard.
 - **Customer Accounts → Ordering**: um **Order** pertence a exatamente um **Client**; o checkout snapshota um **Address** do cliente em `order.shipping_address`.
 - **Customer Accounts ↔ Data Governance**: Data Governance audita, exporta e anonimiza os dados de um **Client**; o checkout registra o **Consent** do cliente.
 - **Ordering ↔ Reviews**: uma **Review** referencia obrigatoriamente um **Order** — só se avalia um produto efetivamente comprado.
@@ -33,5 +33,5 @@ O domínio EMACH é servido por dois apps que compartilham uma única base Postg
 
 - **Cart** não é um contexto — é estado efêmero client-side (`localStorage`) no storefront. Um **Order** só passa a existir quando o checkout o cria, já em `pending_payment`.
 - **Payment** não é um contexto próprio hoje — o estado de pagamento vive em `order.status` (`pending_payment`/`paid`/`payment_failed`) mais `payment_method`/`payment_provider_ref`. Tornar-se-á um contexto se entrar uma integração real com provedor de pagamento.
-- **Shipping** não é um contexto — frete é calculado no checkout e seus dados ficam embutidos no **Order** (`shipping_*`).
+- **Shipping** não é um contexto — frete é **cotado no checkout via SuperFrete** (`apps/web/src/lib/superfrete/`, origem = CEP da `DEFAULT_BRANCH_ID` via `getOriginBranchCep()`) e seus dados ficam embutidos no **Order** (`shipping_*`). A cotação é fail-open (falha da API não bloqueia a venda). A configuração de origem/seguro de frete (`store_settings` singleton + query `getShippingSettings`) **já chegou sincronizada** do dashboard (#119); a troca `getOriginBranchCep → getShippingSettings` no storefront é trabalho pendente.
 - Não há integração via **API key** entre os apps: eles compartilham a DB diretamente. A tabela `api_key` não existe na DB real.

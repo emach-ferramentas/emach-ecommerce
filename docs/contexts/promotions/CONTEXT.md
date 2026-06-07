@@ -9,27 +9,30 @@ Uma campanha de desconto que incide sobre um ou mais **Tools**. É o termo guard
 _Avoid_: usar "promotion" para significar a espécie automática — ver ambiguidades
 
 **Automatic Promotion**:
-Uma **Promotion** cujo desconto percentual é aplicado automaticamente aos **Tools** no seu escopo, sem o cliente digitar nada. É a única espécie que o checkout aplica hoje.
+Uma **Promotion** cujo desconto é aplicado automaticamente aos **Tools** no seu escopo, sem o cliente digitar nada. O desconto vem embutido no preço da **Variant**.
 
 **Promocode**:
-Uma **Promotion** cujo desconto exige que o cliente informe um **Code**. Termo vivo e pretendido — a implementação no storefront ainda é um stub (ver ambiguidades).
-_Avoid_: Coupon, Cupom, Voucher
+Uma **Promotion** cujo desconto exige que o cliente informe um **Code** no checkout. **Implementado** (#56): `validateCoupon()` consulta a tabela `promotion`, valida escopo, expiração, `min_order_amount` e limite de uso; ao confirmar, o checkout grava `order.coupon_id` e incrementa `redemption_count` (com `FOR UPDATE`, idempotente).
+_Avoid_: Coupon, Cupom, Voucher (no código/UI aparece "cupom"; no domínio é **Promocode**)
 
 **Code**:
 A string que identifica um **Promocode** e que o cliente digita para resgatá-lo.
 
-**Discount Percentage**:
-O percentual de desconto de uma **Promotion** (`discount_pct`).
+**Discount Type / Value**:
+O desconto de uma **Promotion** é descrito por `discount_type` (`percent` ou `fixed`) + `discount_value`. (O antigo `discount_pct` foi removido no redesenho de promoções — #54.)
 
 **Scope**:
-O conjunto de **Tools** sobre o qual uma **Promotion** incide.
+O conjunto de **Tools** sobre o qual uma **Promotion** incide (`promotion_tool`). Um **Promocode** com `applies_to_all = true` incide sobre todo o catálogo, sem escopo restrito.
+
+**Limites de uso**:
+`max_redemptions` (teto de resgates) + `redemption_count` (resgates feitos) e `min_order_amount` (valor mínimo do pedido) — validados no resgate de um **Promocode**.
 
 ## Relationships
 
-- Uma **Promotion** incide sobre um ou mais **Tools** (seu **Scope**)
+- Uma **Promotion** incide sobre um ou mais **Tools** (seu **Scope**), ou sobre todo o catálogo se `applies_to_all`
 - Uma **Promotion** é uma **Automatic Promotion** ou um **Promocode**
 - Um **Promocode** tem um **Code**; uma **Automatic Promotion** não tem
-- No checkout, só **Automatic Promotions** são aplicadas; o desconto entra embutido no `unit_price` do **Order Item**
+- No checkout: o desconto da **Automatic Promotion** entra embutido no `unit_price` do **Order Item**; o do **Promocode** é gravado em `order.discount_amount`, com o pedido referenciando `order.coupon_id`
 
 ## Example dialogue
 
@@ -41,5 +44,4 @@ O conjunto de **Tools** sobre o qual uma **Promotion** incide.
 ## Flagged ambiguities
 
 - "Promotion" é sobrecarregado: é o nome da entidade e também o valor de tipo da espécie automática (`type='promotion'`). Resolvido: a entidade é **Promotion**; as espécies são **Automatic Promotion** e **Promocode** — não usar "promotion" cru para a espécie.
-- **Promocode** é termo vivo, mas a implementação no storefront é um stub: a caixa "Cupom de desconto" do cart aplica 10% fixo hardcoded para qualquer string e o checkout ignora cupom — nenhum dos dois consulta a tabela `promotion`. Gap a implementar.
-- O desconto de uma **Automatic Promotion** é embutido no `unit_price` do **Order Item**; `order.discount_amount` fica `"0"` — o **Order** não rastreia o desconto de promoção separadamente.
+- O desconto de uma **Automatic Promotion** é embutido no `unit_price` do **Order Item** e **não** entra em `order.discount_amount`; já o **Promocode** é gravado em `order.discount_amount` (com `order.coupon_id`). Somar os dois contaria o auto-desconto em dobro na margem — a separação é proposital. Ver `lib/auto-promo.ts` (server-only).

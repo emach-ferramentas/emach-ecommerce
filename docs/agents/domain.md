@@ -42,8 +42,8 @@ When your output names a domain concept (in an issue title, a refactor proposal,
 
 If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/grill-with-docs`).
 
-## Flag ADR conflictsS
+## Flag ADR conflicts
 
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
-> _Contradicts ADR-0001 (débito de estoque na criação do pedido) — but worth reopening because…_
+> _Contradicts ADR-0003 (estoque multi-filial) — but worth reopening because…_

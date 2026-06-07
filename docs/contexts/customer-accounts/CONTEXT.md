@@ -19,14 +19,18 @@ _Avoid_: CPF/CNPJ como termos separados — o conceito unificado é **Document**
 A situação de um **Client**: `active`, `inactive` ou `blocked`. Distinto do status de um **User** do staff.
 
 **Address**:
-Um endereço de entrega pertencente a um **Client**. Um deles é o padrão. No checkout, um **Address** é snapshotado dentro do **Order** — o pedido não acompanha edições posteriores.
+Um endereço de entrega pertencente a um **Client**. Um deles é o padrão. O cliente gerencia seus endereços no portal via server actions (`addAddress`/`updateAddress`/`deleteAddress`/`setDefaultAddress` em `dashboard/dados-pessoais/_actions/addresses.ts`). No checkout, um **Address** é snapshotado dentro do **Order** — o pedido não acompanha edições posteriores.
 _Avoid_: Endereço, Location
+
+**Customer Portal**:
+A área logada do **Client** no storefront (`/dashboard`): perfil + endereços (`dados-pessoais`), histórico de **Orders** (`pedidos` — lista, detalhe, rastreio, cancelar, recomprar, avaliar) e **Refund Requests** (`reembolso`). É o storefront — **não** confundir com o dashboard do staff (repo irmão `emach-dashboard`).
 
 ## Relationships
 
 - Um **Client** tem zero ou mais **Addresses**; no máximo um é o padrão
 - Um **Client** tem um **Client Type** derivado do seu **Document**
-- Um **Client** faz zero ou mais **Orders**
+- Um **Client** faz zero ou mais **Orders** e os acompanha pelo **Customer Portal**
+- Um **Client** pode abrir **Refund Requests** sobre seus **Orders** (ver contexto Ordering)
 - Os dados de um **Client** são auditados, exportáveis e anonimizáveis pelo contexto Data Governance
 
 ## Example dialogue

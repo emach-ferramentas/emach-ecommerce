@@ -22,7 +22,19 @@ O estágio de um **Order** no seu ciclo de vida. Valores: `pending_payment` → 
 A trilha de transições de **Order Status** — de/para, ator e motivo de cada mudança.
 
 **Order Note**:
-Uma anotação interna do staff sobre um **Order**. Não é visível ao cliente.
+Uma anotação interna do staff sobre um **Order**. Não é visível ao cliente. Guarda `status_at_creation` (status do pedido no momento da nota) e pode ser fixada (`pinned`).
+
+**Shipping**:
+O frete do **Order**, **cotado no checkout via SuperFrete** (origem = CEP da filial `DEFAULT_BRANCH_ID` via `getOriginBranchCep`). Snapshota `shipping_amount`, `shipping_method` (transportadora escolhida) e, após o envio, `shipping_tracking_code`. A cotação é _fail-open_ — falha da API não bloqueia a compra. (A config de origem/seguro `store_settings`/`getShippingSettings` já chegou sincronizada do dashboard; o swap no storefront é pendente.)
+
+**Coupon / Discount**:
+Um **Order** pode ter um **Coupon** aplicado (`coupon_id` → uma **Promotion** do tipo promocode), cujo valor de desconto é gravado em `discount_amount`. ⚠️ Desconto **automático** de promoção (auto-promo) já vem embutido no preço da **Variant** e **não** entra em `discount_amount` — senão contaria em dobro na margem.
+
+**Refund Request**:
+A solicitação de **devolução/reembolso** de um **Order**, criada pelo **Client** no portal e conduzida pelo staff. Tem motivo (`refund_reason`: `defeito`/`item_errado`/`avaria_transporte`/`arrependimento`/`outro`) e status próprio (`refund_status`: `requested` → `under_review` → `approved` → `refunded`, ou `rejected`). É uma entidade separada (`refund_request`) — distinta do **Order Status** — com no máximo uma ativa por pedido.
+
+**Order Event**:
+Evento operacional do ciclo de vida (`order_event`, tipos `tracking_set`/`branch_assigned`) — trilha de auditoria complementar ao **Status History**. **Order Attachment** guarda anexos do pedido; campos fiscais (`nfe_number`/`nfe_url`/`nfe_xml_url`/`nfe_status`) e `payment_receipt_url` são preenchidos pelo dashboard.
 
 **Checkout**:
 O processo do storefront que transforma um **Cart** num **Order**.
@@ -35,8 +47,10 @@ A seleção efêmera de **Variants** do storefront antes do checkout — vive em
 - Um **Order** pertence a exatamente um **Client** e é atendido por uma **Branch**
 - Um **Order** tem um ou mais **Order Items**
 - Um **Order Item** referencia um **Tool** e uma **Variant** do Catalog
-- Um **Order** acumula entradas de **Status History** e **Order Notes**
-- Criar um **Order** debita estoque do Inventory na mesma transação (ver ADR-0001)
+- Um **Order** snapshota **Shipping** (amount/method/tracking) e pode referenciar um **Coupon** (`coupon_id`)
+- Um **Order** pode ter uma **Refund Request** (criada pelo cliente, conduzida pelo staff)
+- Um **Order** acumula **Status History**, **Order Notes**, **Order Events** e **Order Attachments**
+- Criar um **Order** apenas **valida** estoque agregado do Inventory (`SUM` em todas as filiais); o **débito** é adiado para a transição `pending_payment → paid` (ainda não cabeada — pagamento é stub). Ver ADR-0003 (supersede o ADR-0001 de débito-na-criação) e ADR-0007 do dashboard.
 
 ## Example dialogue
 
@@ -47,5 +61,5 @@ A seleção efêmera de **Variants** do storefront antes do checkout — vive em
 
 ## Flagged ambiguities
 
-- `returned` e `refunded` são estágios sequenciais do mesmo fluxo (devolução → estorno), mas o enum `order_status` os modela como valores planos mutuamente exclusivos — um **Order** não consegue registrar que passou por ambos. Limitação conhecida do modelo.
+- `returned` e `refunded` são estágios sequenciais do mesmo fluxo (devolução → estorno), mas o enum `order_status` os modela como valores planos mutuamente exclusivos — um **Order** não consegue registrar que passou por ambos. O detalhe do fluxo de devolução vive em **Refund Request** (com seu próprio `refund_status`); o `order_status` reflete só o resultado final.
 - "Payment" não tem linguagem própria: o estado de pagamento vive dentro de **Order Status** (`pending_payment`/`paid`/`payment_failed`). Não há contexto de Pagamento — ver `CONTEXT-MAP.md`.

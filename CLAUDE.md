@@ -12,12 +12,12 @@ Duas instâncias **completamente isoladas** Better Auth no mesmo banco. Este app
 3. **Nunca** setar `advanced.cookies.<name>.attributes.domain = ".emach.com.br"`. Subdomínios distintos isolam por host.
 4. CPF/CNPJ: validação no app (zod refine + dígito verificador em `apps/web/src/lib/validators/cpf-cnpj.ts`). Sempre normalizar (só dígitos) antes de persistir em `client.document`.
 
-## Ownership e schema sync (ADR-0009)
+## Ownership e schema sync (ADR-0009, no `emach-dashboard`)
 
 Schema TS aqui é **cópia versionada** do dashboard, sincronizada via **CI PR automático**.
 
 - **Owned-by-dashboard (autoritativo, mudanças começam lá):** `tool`, `toolVariant`, `category`, `supplier`, `branch`, `stockLevel`, `userBranch`, `promotion`, `attribute*`, schema `auth`.
-- **Owned-by-ecommerce (autoritativo aqui):** tabelas `client*` (5).
+- **Owned-by-ecommerce (autoritativo aqui):** tabelas `client*` (7 — `client`, `clientSession`, `clientAccount`, `clientVerification`, `clientAddress` + LGPD `clientAuditLog`, `clientExportLog`).
 - **Escrita compartilhada:** `order`, `orderItem`, `stockMovement`, `review`, `consentLog`, `toolAttributeValue`.
 - **Sync:** workflow `sync-db-schema.yml` no dashboard abre PR aqui quando `packages/db/src/{schema,queries,sql/triggers.sql}` muda na `main` do dashboard. **Não editar `schema/*.ts` em isolamento aqui.**
 - **`db:generate` / `db:migrate` são legacy** — scripts ainda no `package.json` mas não usar. A pasta `migrations/` foi removida.
@@ -53,8 +53,11 @@ Schema TS aqui é **cópia versionada** do dashboard, sincronizada via **CI PR a
 - **`shadcn add` não passa pelo hook lint** — rodar `bun check` após adicionar componentes.
 - **`proxy.ts` (Next 16) substitui `middleware.ts`** — não criar `middleware.ts`.
 - **`typedRoutes: true`** — `<Link href>` valida em tsc.
-- **Resend em sandbox** (`EMAIL_FROM=onboarding@resend.dev`): só entrega pro owner da conta. Ao comprar domínio: verificar SPF/DKIM/DMARC no Resend + trocar `EMAIL_FROM`.
-- **Origem do frete = `env.DEFAULT_BRANCH_ID`** → `lib/origin-branch.ts > getOriginBranchCep()` faz lookup de `branch.cep`. (Não existe `default-branch.ts`/`getDefaultBranchId()`.) Tornar admin-configurável no dashboard: emach-dashboard#117.
+- **Resend em produção:** `EMAIL_FROM` usa domínio verificado (`nao-responder@emachferramentas.com.br`). SPF/DKIM/DMARC verificados no Resend; monitorar bounce/deliverability.
+- **Origem do frete = `env.DEFAULT_BRANCH_ID`** → `lib/origin-branch.ts > getOriginBranchCep()` faz lookup de `branch.cep` (usado em `superfrete/quote.ts`). (Não existe `default-branch.ts`/`getDefaultBranchId()`.) DEFAULT_BRANCH_ID hoje serve **só** à origem do frete — estoque é validado em **agregado** (`SUM` em todas as filiais), não fixado nela (ADR-0003). A tabela `storeSettings` (singleton) e a query `getShippingSettings` (origem + política de seguro `none`|`cart_value` + cap) **já chegaram sincronizadas** (dashboard #119); o swap `getOriginBranchCep → getShippingSettings` no storefront é trabalho pendente deste repo. Contrato também prevê `tool.overweightShippingAmount` (frete fixo p/ item >30kg; null = "a combinar").
+- **Estoque: storefront só valida, não debita (ADR-0003).** `placeOrder` (`checkout/_lib/place-order.ts`) roda `checkAggregateStock` (SUM de todas as filiais) e cria o pedido em `pending_payment` — **sem** escrever `stockMovement`. O débito (`saida_venda`, `actorType='system'`) virá na transição `pending_payment → paid`, junto da integração de pagamento (hoje stub). Doc que disser "débito na criação" é ADR-0001 legado (já superseded).
+- **Auth multi-porta em dev:** `baseURL`/`trustedOrigins` do auth ecommerce são dinâmicos em dev (`allowedHosts: ['localhost:*']` + client same-origin) — roda em qualquer porta sem editar `.env`. Em prod, fixos no domínio. **Login Google** ainda exige cada porta local nas *Authorized redirect URIs* do OAuth (Google não tem wildcard de porta). Ver `packages/auth/src/ecommerce.ts`, `apps/web/src/lib/auth-client.ts`.
+- **`order.discountAmount` = só cupom/promocode.** Desconto automático de promoção (auto-promo) já está embutido no preço da variante — **não** soma em `discountAmount` (senão conta dobrado na margem). Ver `lib/auto-promo.ts` (server-only) e comentários em `schema/orders.ts`.
 - **IDs:** `crypto.randomUUID()` no caller — sem nanoid.
 - **Pós-merge de PR sync ou `bun db:push` em dev local:** rodar `bun db:apply-triggers` (triggers em `sql/triggers.sql`, owned-by-dashboard).
 - **Dev server pega `.env` stale:** editar `apps/web/.env` mid-sessão (ex.: `SUPERFRETE_BASE_URL` sandbox↔prod) e reiniciar `next dev` **não** reflete — Next dá precedência a `process.env` (que o shell/mise carregou no boot) sobre o arquivo. Relançar shell novo, ou `set -a && . apps/web/.env && set +a && next dev`. Conferir: `tr '\0' '\n' < /proc/$PID/environ | grep VAR`.
@@ -66,9 +69,10 @@ Schema TS aqui é **cópia versionada** do dashboard, sincronizada via **CI PR a
 ## Lacunas conhecidas
 
 - Rate limit em endpoints auth (sem proteção brute-force em `signin`/`signup`/`reset`).
-- Resend em sandbox (ver gotchas).
 - evlog sem drain externo (Axiom/Datadog/Sentry) — output só em console.
-- Sem CI/CD nem Docker config.
+- Sem Docker config. CI mínimo: `.github/workflows/ci.yml` roda só `check-types` em PR/push na `main` (sem testes nem deploy).
+- Pagamento real ausente — `/dashboard/pedidos/[id]/pagar` é stub (Asaas Pix/Boleto/Cartão); `order.status` carrega o estado de pagamento. Sem pagamento, o débito de estoque (`pending_payment → paid`) também não roda.
+- **Frete grátis hardcoded:** `FREE_SHIPPING_THRESHOLD = 29_900` (R$299) em `lib/constants.ts` (`FreeShippingProgress`, usado no CartSheet). Decisão de produto: frete grátis deve ser **só via cupom/promoção** — remover esse threshold é bug pendente (apontado no contrato `admin-ecommerce.md` do dashboard).
 
 ## Design — Ferrari-inspired (resumo)
 

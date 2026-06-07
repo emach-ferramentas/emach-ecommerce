@@ -1,6 +1,6 @@
 # Data Governance
 
-O tratamento lícito dos dados pessoais do cliente sob a LGPD: consentimento, auditoria de mudanças, exportação e anonimização. Escrito por ambos os apps.
+O tratamento lícito dos dados pessoais do cliente sob a LGPD: consentimento, auditoria de mudanças, exportação e anonimização. Escrito por ambos os apps, com papéis distintos: o **storefront** grava **Consent** (no checkout/banner) e dispara a **Anonymization** (via CLI `db:anonymize-client`); **Audit Trail** e **Data Export** são operados pelo **dashboard** (staff).
 
 ## Language
 
@@ -12,7 +12,7 @@ O registro de que um **Client** concedeu ou revogou consentimento para uma final
 _Avoid_: Permission, Opt-in
 
 **Consent Kind**:
-A finalidade de um **Consent**: `tos` (termos de uso), `privacy` (política de privacidade), `marketing_email` ou `cookies`.
+A finalidade de um **Consent**: `tos` (termos de uso), `privacy` (política de privacidade), `marketing_email` ou `cookies`. No **checkout** são gravados `tos`, `privacy` e `marketing_email`; `cookies` é capturado no banner de consentimento, não no checkout.
 
 **Audit Trail**:
 O registro imutável de cada mudança nos dados de um **Client** — o estado antes e depois, o ator, a **Audit Action** e o motivo.

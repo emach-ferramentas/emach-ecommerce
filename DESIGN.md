@@ -365,18 +365,18 @@ Only use these for their named intent — do not inline equivalents:
 | `.emach-bg-placeholder` / `.emach-bg-placeholder-shadow` | Radial + shadow for product icon placeholder |
 
 ### Radius philosophy (final)
-Default: **2px** on all interactive elements (buttons, inputs, cards, chips, badges). Nearly imperceptible — reinforces the "precision engineering" aesthetic. Avatars also use **2px** (square) so the user chrome matches the rest of the system — `Avatar` Root/Image/Fallback in `packages/ui/src/components/avatar.tsx`. Only exception: radio/circle indicators use 50%.
+Default: **2px** on all interactive elements (buttons, inputs, cards, chips, badges). Nearly imperceptible — reinforces the "precision engineering" aesthetic. Avatars also use **2px** (square) so the user chrome matches the rest of the system — `Avatar` Root/Image/Fallback in `packages/ui/src/components/avatar.tsx`. The `<Checkbox>` uses `border-radius: 0` (razor-square). Only exception: circular indicators (carousel dots, slider handles) use 50%.
 
 ### Form controls
 All form controls use `.emach-*` CSS classes defined in globals.css. Do NOT use shadcn Input/Select for EMACH-branded pages.
 - `.emach-input` — hairline border, red `inset 0 -2px` focus underline, 2px radius
 - `.emach-input--dark` — dark surface variant for footer/modals
 - `.emach-select` — custom chevron SVG, same focus treatment
-- `.emach-check` — black filled checked state
-- `.emach-radio` — red dot inner checked state
 - `.emach-chip` / `.emach-chip--active` — voltage/filter pills
 - `.emach-qty` / `.emach-qty__btn--plus` — quantity stepper; **plus button is always red** (`var(--accent)`)
 - `.emach-field`, `.emach-field__label`, `.emach-field__error` — label wrapper
+
+**Checkbox** — componente React `<Checkbox>` (`packages/ui/src/components/checkbox.tsx`), **não** classe CSS. Estilo monocromático: marcado preto (`near-black`), cantos retos (`border-radius: 0`), check branco, foco com ring vermelho fino. Usado em filtros (voltagem, "apenas em promoção"), login e checkout. As classes legadas `.emach-check`/`.emach-radio` foram removidas (#60); o filtro de **categoria** virou navegação hierárquica (lista com barra vermelha no item ativo + `aria-current`), sem radio.
 
 ### Ticker marquee
 Red banner at top of page (above header) in layout.tsx. Classes `.emach-ticker` / `.emach-marquee` with `@keyframes marquee` 48s loop. Component: `src/components/ticker.tsx`.
@@ -402,7 +402,7 @@ New DRY helpers. Prefer composing these over raw markup when the pattern applies
 - **`<PageContainer>`** — `mx-auto max-w-[1440px] px-10`. Accepts `as="section|main"` and `bleed` (drops `max-w`). Replaces every `mx-auto max-w-[1440px]` in the codebase.
 - **`<SectionHeader>`** — `SectionLabel + <h2> + optional "Ver todas" link`. Drives every home-page section header. `titleSize="md|lg"` swaps 28px ↔ 44px.
 - **`<QuantityStepper>`** — Canonical `emach-qty` stepper (buttons − / val / +). `compact` scales to 85% for cart rows. Plus button always red via `.emach-qty__btn--plus`.
-- **`<FreeShippingProgress>`** — Shared bar used in `CartSheet` and `CartContent`. Pulls `FREE_SHIPPING_THRESHOLD` from `lib/constants.ts`. Dynamic width is passed through `--pct` CSS custom property + Tailwind `w-(--pct)` (no style-object for colors/layout).
+- **`<FreeShippingProgress>`** — Bar used in `CartSheet`. Pulls `FREE_SHIPPING_THRESHOLD` from `lib/constants.ts`. Dynamic width is passed through `--pct` CSS custom property + Tailwind `w-(--pct)` (no style-object for colors/layout). _Nota: o frete real do checkout é cotado via SuperFrete (`lib/superfrete/`); este threshold é só o indicador visual de progresso no carrinho._
 - **`<CartItemRow>`** — Single source of truth for cart rows. `variant="compact"` for the drawer, `variant="full"` for the cart page.
 
 ### Brand components refactored to cva

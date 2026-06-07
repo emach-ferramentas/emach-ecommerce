@@ -1,6 +1,6 @@
 # packages/db — Convenções
 
-Drizzle 0.45 + node-postgres + Supabase Postgres. Schema TS aqui é **cópia versionada** do `emach-dashboard` — sync via CI PR automático (ADR-0009). Regras gerais na raiz.
+Drizzle 0.45 + node-postgres + Supabase Postgres. Schema TS aqui é **cópia versionada** do `emach-dashboard` — sync via CI PR automático (ADR-0009, no `emach-dashboard`). Regras gerais na raiz.
 
 ## Schema sync (ADR-0009)
 
@@ -31,9 +31,11 @@ Idempotência de débito de venda em `stockMovement` **não** é trigger — é 
 
 ## Ownership de tabelas
 
-- **Owned-by-dashboard** (autoritativo, mudanças via PR no dashboard): `tool`, `toolVariant`, `category`, `supplier`, `branch`, `stockLevel`, `userBranch`, `promotion`, `attribute*`, schema `auth`.
-- **Owned-by-ecommerce**: tabelas `client*` (5).
-- **Escrita compartilhada**: `order`, `orderItem`, `stockMovement`, `review`, `consentLog`, `toolAttributeValue`.
+- **Owned-by-dashboard** (autoritativo, mudanças via PR no dashboard): `tool`, `toolVariant`, `toolCategory`, `toolImage`, `toolAttributeAssignment`, `category`, `supplier`, `supplierAuditLog`, `branch`, `stockLevel`, `userBranch`, `userActivityLog`, `promotion`, `promotionTool`, `attribute*`, `storeSettings`, schema `auth`.
+- **Owned-by-ecommerce**: tabelas `client*` (7) — `client`, `clientSession`, `clientAccount`, `clientVerification`, `clientAddress` + LGPD `clientAuditLog`, `clientExportLog`.
+- **Escrita compartilhada** (ciclo de vida do pedido): `order`, `orderItem`, `orderStatusHistory`, `orderNote`, `orderAttachment`, `orderEvent`, `refundRequest`, `stockMovement`, `review`, `consentLog`, `toolAttributeValue`.
+
+`refundRequest`: o **storefront cria** (cliente solicita devolução); o **dashboard conduz** (revisa/aprova/estorna). `orderEvent`/`orderNote`/`orderAttachment` são majoritariamente escritos pelo dashboard no ciclo de vida.
 
 Em `stockMovement` deste repo: **`actorType='system'`** (nunca `'user'` — `user` é staff).
 
@@ -71,6 +73,7 @@ bun db:seed-categories        # bootstrap 5 categorias raiz idempotente
 bun db:seed-attributes        # attribute_definitions iniciais por categoria raiz
 bun db:anonymize-client <id>  # LGPD direito ao esquecimento
 bun db:check-drift            # verifica drift schema Drizzle × DB
+bun db:studio                 # Drizzle Studio (inspeção visual)
 ```
 
 ## Testes

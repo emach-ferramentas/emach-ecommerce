@@ -60,12 +60,12 @@ bun run fix               # auto-fix
 ### Banco de dados
 ```bash
 bun run db:push           # dev: sync schema (sem migration)
-bun run db:generate       # gera migration versionada (staging/prod)
-bun run db:migrate        # aplica migrations
+# db:generate / db:migrate — LEGACY, NÃO USAR. Workflow é push-only; pasta migrations/ removida (ver CLAUDE.md / ADR-0006 no dashboard).
 bun run db:studio         # Drizzle Studio
-bun --cwd packages/db db:apply-triggers       # idempotente, sempre após push/migrate
+bun --cwd packages/db db:apply-triggers       # idempotente, sempre após push
 bun --cwd packages/db db:seed-categories      # 5 raízes
 bun --cwd packages/db db:seed-attributes      # specs iniciais
+bun --cwd packages/db db:check-drift          # verifica drift schema Drizzle × DB
 bun --cwd packages/db db:anonymize-client <id># LGPD direito ao esquecimento
 ```
 

@@ -5,11 +5,14 @@ As avaliações de produto escritas por clientes e moderadas pelo staff. Criado 
 ## Language
 
 **Review**:
-A avaliação de um **Tool** escrita por um **Client** — uma nota mais um texto. Toda **Review** está obrigatoriamente ligada a um **Order**: só se avalia um produto efetivamente comprado.
+A avaliação de um **Tool** escrita por um **Client** — uma nota, um **título** e um texto. Toda **Review** está obrigatoriamente ligada a um **Order**: só se avalia um produto efetivamente comprado. É submetida pelo cliente no **Customer Portal** (`/dashboard/pedidos/[id]`, sheet por item) — **não** na página pública do produto.
 _Avoid_: Rating (essa é só a nota), Comment, Feedback
 
 **Rating**:
 A nota numérica de uma **Review**. É um componente da **Review**, não a **Review** inteira.
+
+**Review Window**:
+O cliente só pode avaliar um **Tool** até **90 dias** após o `paid_at` do **Order** (`REVIEW_WINDOW_DAYS` em `packages/db/src/queries/reviews.ts`). Passado o prazo, a avaliação fica bloqueada.
 
 **Review Status**:
 A situação de moderação de uma **Review**: `pending` (aguardando moderação), `approved` (publicada), `rejected` (recusada) ou `spam` (lixo/bot). Só **Reviews** `approved` são visíveis publicamente no storefront.
