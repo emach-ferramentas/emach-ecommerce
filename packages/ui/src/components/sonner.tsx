@@ -28,11 +28,6 @@ const Toaster = ({ ...props }: ToasterProps) => (
 			} as React.CSSProperties
 		}
 		theme="light"
-		toastOptions={{
-			classNames: {
-				toast: "cn-toast",
-			},
-		}}
 		{...props}
 	/>
 );

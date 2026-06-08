@@ -352,35 +352,19 @@
 }
 
 /* ---------- Toast (sonner) EMACH style ---------- */
-@keyframes toast-in {
-	from {
-		transform: translateY(12px);
-		opacity: 0;
-	}
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
-}
-
 .emach-toast {
-	position: relative;
 	padding-left: 18px !important;
 	color: #fff !important;
 	background: var(--near-black) !important;
 	border: none !important;
 	border-radius: 2px !important;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25) !important;
-	animation: toast-in 220ms ease;
-}
-.emach-toast::before {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	width: 4px;
-	content: "";
-	background: var(--emach-red);
+	/* Barra vermelha via inset shadow, NÃO via ::before — o sonner reserva
+	   ::before/::after do toast para a mecânica de swipe/gap/saída. Usar
+	   pseudo-elemento aqui faz a barra "voar" para fora ao arrastar.
+	   Entrada/saída/empilhamento ficam por conta da animação nativa do sonner. */
+	box-shadow:
+		inset 4px 0 0 var(--emach-red),
+		0 12px 32px rgba(0, 0, 0, 0.25) !important;
 }
 .emach-toast__title {
 	font-family: var(--font-sans);
