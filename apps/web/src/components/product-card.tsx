@@ -73,7 +73,7 @@ export function ProductCard({ tool }: ProductCardProps) {
 					</div>
 				</div>
 
-				<div className="flex flex-1 flex-col gap-1 bg-gray-10 px-2 py-3">
+				<div className="flex flex-1 flex-col gap-1 bg-gray-10 px-3 py-3.5">
 					<SectionLabel>{categoryName}</SectionLabel>
 					<p className="mt-1 font-medium text-[14px] text-near-black leading-tight">
 						{tool.name}
@@ -94,7 +94,7 @@ export function ProductCard({ tool }: ProductCardProps) {
 							)}
 						</div>
 						{tool.hasOtherVariants && (
-							<div className="mt-1 font-display text-[10px] text-gray-60 uppercase tracking-[0.14em]">
+							<div className="mt-1 font-display text-[10px] text-gray-50 uppercase tracking-[0.14em]">
 								Mais opções de voltagem
 							</div>
 						)}

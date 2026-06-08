@@ -13,9 +13,16 @@ import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
 import { SectionLabel } from "@/components/section-label";
 import { fmtNumericBRL } from "@/lib/format";
-
-type SortKey = "relevance" | "price-asc" | "price-desc" | "name-asc" | "newest";
-type VoltageKey = "127V" | "220V" | "Bivolt" | "380V";
+import {
+	buildHref,
+	deriveActiveFilters,
+	type FilterState,
+	type FilterUpdate,
+	type SortKey,
+	type VoltageKey,
+} from "../_lib/catalog-filters";
+import { ActiveFilters } from "./active-filters";
+import { CategoryTree } from "./category-tree";
 
 const VOLTAGE_OPTIONS: VoltageKey[] = ["127V", "220V", "Bivolt", "380V"];
 
@@ -34,82 +41,6 @@ interface CatalogContentProps {
 	tools: ToolListItem[];
 	total: number;
 	voltages: VoltageKey[];
-}
-
-interface FilterUpdate {
-	cat?: string | null;
-	page?: number | null;
-	pmax?: number | null;
-	pmin?: number | null;
-	promo?: boolean | null;
-	q?: string | null;
-	sort?: SortKey | null;
-	voltage?: VoltageKey[] | null;
-}
-
-interface FilterCurrent {
-	currentCategorySlug: string | null;
-	onlyPromo: boolean;
-	page: number;
-	priceMax: number | null;
-	priceMin: number | null;
-	query: string;
-	sort: SortKey;
-	voltages: VoltageKey[];
-}
-
-function buildHref(current: FilterCurrent, updates: FilterUpdate): string {
-	const params = new URLSearchParams();
-	const cat = "cat" in updates ? updates.cat : current.currentCategorySlug;
-	const q = "q" in updates ? updates.q : current.query;
-	const sort = "sort" in updates ? updates.sort : current.sort;
-	const voltage = "voltage" in updates ? updates.voltage : current.voltages;
-	const pmin = "pmin" in updates ? updates.pmin : current.priceMin;
-	const pmax = "pmax" in updates ? updates.pmax : current.priceMax;
-	const promo = "promo" in updates ? updates.promo : current.onlyPromo;
-	const page = "page" in updates ? updates.page : current.page;
-
-	if (cat) {
-		params.set("cat", cat);
-	}
-	if (q) {
-		params.set("q", q);
-	}
-	if (sort && sort !== "relevance") {
-		params.set("sort", sort);
-	}
-	if (voltage && voltage.length > 0) {
-		params.set("voltage", voltage.join(","));
-	}
-	if (pmin != null) {
-		params.set("pmin", String(pmin));
-	}
-	if (pmax != null) {
-		params.set("pmax", String(pmax));
-	}
-	if (promo) {
-		params.set("promo", "1");
-	}
-	if (page && page > 1) {
-		params.set("page", String(page));
-	}
-
-	const qs = params.toString();
-	return qs ? `?${qs}` : "";
-}
-
-function flattenTree(nodes: CategoryNode[]): CategoryNode[] {
-	const out: CategoryNode[] = [];
-	function walk(list: CategoryNode[]) {
-		for (const node of list) {
-			out.push(node);
-			if (node.children.length > 0) {
-				walk(node.children);
-			}
-		}
-	}
-	walk(nodes);
-	return out;
 }
 
 export function CatalogContent({
@@ -139,22 +70,30 @@ export function CatalogContent({
 		priceMax == null ? "" : String(priceMax)
 	);
 
-	const current: FilterCurrent = {
+	const current: FilterState = {
 		currentCategorySlug,
+		currentCategoryName,
 		query,
 		sort,
 		voltages,
 		priceMin,
 		priceMax,
 		onlyPromo,
-		page,
 	};
+
+	const activeFilters = deriveActiveFilters(current);
 
 	function navigate(updates: FilterUpdate) {
 		const href =
 			`${pathname}${buildHref(current, { ...updates, page: null })}` as Route;
 		startTransition(() => {
 			router.replace(href, { scroll: false });
+		});
+	}
+
+	function clearAll() {
+		startTransition(() => {
+			router.replace(pathname as Route, { scroll: false });
 		});
 	}
 
@@ -182,7 +121,6 @@ export function CatalogContent({
 		});
 	}
 
-	const flatCategories = flattenTree(categoryTree);
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 	const showFrom = total === 0 ? 0 : (page - 1) * pageSize + 1;
 	const showTo = Math.min(page * pageSize, total);
@@ -227,41 +165,13 @@ export function CatalogContent({
 						FILTROS
 					</div>
 
-					<nav aria-label="Categorias" className="mb-6 flex flex-col">
-						<div className="mb-2.5 font-semibold text-[13px]">Categoria</div>
-						<button
-							aria-current={currentCategorySlug === null ? "page" : undefined}
-							className={cn(
-								"border-l-2 py-1.5 pl-3 text-left text-[14px] transition-colors hover:text-near-black",
-								currentCategorySlug === null
-									? "border-l-emach-red font-bold text-near-black"
-									: "border-l-transparent text-gray-60"
-							)}
-							onClick={() => navigate({ cat: null })}
-							type="button"
-						>
-							Todas
-						</button>
-						{flatCategories.map((c) => (
-							<button
-								aria-current={
-									currentCategorySlug === c.slug ? "page" : undefined
-								}
-								className={cn(
-									"border-l-2 py-1.5 text-left text-[14px] transition-colors hover:text-near-black",
-									currentCategorySlug === c.slug
-										? "border-l-emach-red font-bold text-near-black"
-										: "border-l-transparent text-gray-60"
-								)}
-								key={c.id}
-								onClick={() => navigate({ cat: c.slug })}
-								style={{ paddingLeft: `${12 + c.depth * 14}px` }}
-								type="button"
-							>
-								{c.depth > 0 ? `› ${c.name}` : c.name}
-							</button>
-						))}
-					</nav>
+					<div className="mb-6">
+						<CategoryTree
+							activeSlug={currentCategorySlug}
+							onSelect={(slug) => navigate({ cat: slug })}
+							tree={categoryTree}
+						/>
+					</div>
 
 					<div className="mb-6">
 						<div className="mb-2.5 font-semibold text-[13px]">
@@ -337,7 +247,12 @@ export function CatalogContent({
 				</aside>
 
 				<div>
-					<div className="mb-6 flex items-center justify-between border-border border-b py-3">
+					<ActiveFilters
+						filters={activeFilters}
+						onClearAll={clearAll}
+						onRemove={(update) => navigate(update)}
+					/>
+					<div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-border border-b pb-3">
 						<div className="text-[13px] text-gray-60">
 							<strong className="text-near-black">{total}</strong> produto
 							{total === 1 ? "" : "s"}
