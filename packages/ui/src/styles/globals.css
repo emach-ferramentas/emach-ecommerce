@@ -508,6 +508,28 @@
 	);
 }
 
+/* ---------- Scrollbar dark ----------
+   Scrollbar fino para superfícies escuras (ex.: lista de filiais no mapa).
+   Substitui o scrollbar nativo do SO (largo, claro). Cantos retos =
+   precisão (DESIGN.md). Firefox via scrollbar-*, WebKit via pseudo-elementos. */
+.emach-scrollbar-dark {
+	scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+	scrollbar-width: thin;
+}
+.emach-scrollbar-dark::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+.emach-scrollbar-dark::-webkit-scrollbar-track {
+	background: transparent;
+}
+.emach-scrollbar-dark::-webkit-scrollbar-thumb {
+	background-color: rgba(255, 255, 255, 0.18);
+}
+.emach-scrollbar-dark::-webkit-scrollbar-thumb:hover {
+	background-color: rgba(255, 255, 255, 0.32);
+}
+
 /* ---------- Cart badge bounce ---------- */
 @keyframes emach-cart-bounce {
 	0% {

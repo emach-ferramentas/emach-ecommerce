@@ -135,10 +135,10 @@ export function BranchMap({
 
 			{/* LISTA */}
 			<div className="flex flex-1 flex-col p-6">
-				<p className="mb-2 font-display text-[11px] text-white/40 uppercase tracking-[0.16em]">
-					{pins.length} {pins.length === 1 ? "loja física" : "lojas físicas"}
+				<p className="mb-2 font-display font-medium text-[12px] text-white/60 uppercase tracking-[0.16em]">
+					{pins.length} {pins.length === 1 ? "filial" : "filiais"}
 				</p>
-				<div className="max-h-[360px] flex-1 overflow-y-auto pr-1 [scroll-behavior:smooth] motion-reduce:[scroll-behavior:auto]">
+				<div className="emach-scrollbar-dark max-h-[440px] flex-1 overflow-y-auto pr-1 [scroll-behavior:smooth] motion-reduce:[scroll-behavior:auto]">
 					{pins.map((p) => (
 						<a
 							className={cn(
@@ -164,7 +164,6 @@ export function BranchMap({
 							<div className="mt-1 text-[12px] text-white/55">{p.address}</div>
 							<div className="mt-1.5 flex gap-3.5 text-[11.5px] text-white/40">
 								{p.phone && <span className="text-white/70">{p.phone}</span>}
-								{p.hours && <span>{p.hours}</span>}
 								<span className="text-white">Como chegar →</span>
 							</div>
 						</a>

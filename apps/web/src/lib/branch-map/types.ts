@@ -5,7 +5,6 @@ export type BranchPin = {
 	uf: string;
 	address: string;
 	phone: string | null;
-	hours: string | null;
 	x: number;
 	y: number;
 	mapsUrl: string;

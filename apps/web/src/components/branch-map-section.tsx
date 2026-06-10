@@ -13,7 +13,6 @@ import type { BranchPin, StateShape } from "@/lib/branch-map/types";
 import {
 	branchMapsUrl,
 	formatBranchAddress,
-	formatBusinessHours,
 	formatPhone,
 	getActiveBranches,
 } from "@/lib/branches";
@@ -41,7 +40,6 @@ export async function BranchMapSection() {
 			uf: (b.state ?? "").toUpperCase(),
 			address: formatBranchAddress(b),
 			phone: formatPhone(b.phone),
-			hours: formatBusinessHours(b.businessHours),
 			x: xy[0],
 			y: xy[1],
 			mapsUrl: branchMapsUrl(b),
@@ -67,16 +65,16 @@ export async function BranchMapSection() {
 				<div className="flex flex-col justify-center gap-4 px-10 py-16 md:px-16">
 					<SectionLabel tone="accent">Onde estamos</SectionLabel>
 					<h2 className="font-display font-semibold text-[42px] leading-[1.0] tracking-[-0.01em]">
-						Perto de quem
+						Encontre a filial
 						<br />
-						coloca a mão
+						mais perto
 						<br />
-						na massa.
+						de você.
 					</h2>
 					<p className="max-w-[42ch] text-[15px] text-white/70 leading-relaxed">
-						{pins.length === 1 ? "Loja física" : `${pins.length} lojas físicas`}{" "}
-						no Sul e Sudeste. Você passa, vê a ferramenta na bancada, tira
-						dúvida com quem usa e leva com nota fiscal.
+						Atendimento especializado e pronta entrega em{" "}
+						{pins.length === 1 ? "nossa filial" : `${pins.length} filiais`} no
+						Sul e Sudeste.
 					</p>
 					<div className="mt-1">
 						<Link href="/sobre">
