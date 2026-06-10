@@ -24,7 +24,7 @@ export function CheckoutFooter() {
 				</Link>
 				<p className="text-[12px] text-gray-55">CNPJ 04.128.615/0001-59</p>
 				<p className="text-[12px] text-gray-55">
-					<span className="text-emach-red-on-dark">©</span> 2026 EMACH
+					<span className="text-emach-red">©</span> 2026 EMACH
 				</p>
 			</div>
 		</footer>

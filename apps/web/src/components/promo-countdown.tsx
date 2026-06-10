@@ -50,7 +50,7 @@ export function PromoCountdown({ endsAt }: PromoCountdownProps) {
 				{UNITS.map((u, i) => (
 					<div className="flex items-start gap-3" key={u.key}>
 						<div className="flex flex-col items-center">
-							<span className="font-display font-medium text-[32px] text-emach-red-on-dark leading-none">
+							<span className="font-display font-medium text-[32px] text-emach-red leading-none">
 								{pad(parts[u.key])}
 							</span>
 							<span className="mt-1 font-display text-[10px] text-white/45 uppercase tracking-[0.14em]">

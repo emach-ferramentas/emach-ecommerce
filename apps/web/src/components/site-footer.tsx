@@ -13,7 +13,7 @@ import type { ComponentProps } from "react";
 import { PageContainer } from "@/components/page-container";
 
 const linkClassName =
-	"rounded-[2px] font-medium text-[13.5px] text-gray-20 no-underline transition-colors duration-150 ease-out hover:text-emach-red-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3";
+	"rounded-[2px] font-medium text-[13.5px] text-gray-20 no-underline transition-colors duration-150 ease-out hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3";
 
 const headingClassName =
 	"mb-3.5 font-display font-semibold text-[12.5px] text-white uppercase tracking-[0.14em]";
@@ -124,7 +124,7 @@ export async function SiteFooter() {
 								{socialLinks.map(({ network, url }) => (
 									<a
 										aria-label={socialNetworkMeta[network].label}
-										className="rounded-[2px] text-gray-20 transition-colors hover:text-emach-red-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
+										className="rounded-[2px] text-gray-20 transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
 										href={url}
 										key={network}
 										rel="noopener noreferrer"
@@ -141,7 +141,7 @@ export async function SiteFooter() {
 							</p>
 							<p>CNPJ 04.128.615/0001-59</p>
 							<p>
-								<span className="text-emach-red-on-dark">©</span> 2026 EMACH. Todos os
+								<span className="text-emach-red">©</span> 2026 EMACH. Todos os
 								direitos reservados.
 							</p>
 						</div>
@@ -179,7 +179,7 @@ export async function SiteFooter() {
 							{branches.map((branch) => (
 								<li key={branch.id}>
 									<Link
-										className="flex flex-col rounded-[2px] no-underline transition-colors hover:text-emach-red-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
+										className="flex flex-col rounded-[2px] no-underline transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
 										href={"/sobre#filiais" as Route}
 									>
 										<span className="font-medium text-[13.5px] text-gray-20">
@@ -195,7 +195,7 @@ export async function SiteFooter() {
 							))}
 							<li className="mt-1">
 								<Link
-									className="inline-flex items-center gap-1.5 rounded-[2px] font-display font-semibold text-[11px] text-emach-red-on-dark uppercase tracking-[0.1em] no-underline transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
+									className="inline-flex items-center gap-1.5 rounded-[2px] font-display font-semibold text-[11px] text-emach-red uppercase tracking-[0.1em] no-underline transition-colors hover:text-emach-red-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
 									href={"/sobre#filiais" as Route}
 								>
 									Ver todas →
