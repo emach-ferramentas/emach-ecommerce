@@ -72,6 +72,25 @@ export const isValidCpfCnpj = (raw: string): boolean => {
 	return false;
 };
 
+export const isValidPhone = (raw: string): boolean => {
+	const d = onlyDigits(raw);
+	if (d.length !== 10 && d.length !== 11) {
+		return false;
+	}
+	if (allSame(d)) {
+		return false;
+	}
+	const ddd = Number(d.slice(0, 2));
+	if (ddd < 11 || ddd > 99) {
+		return false;
+	}
+	// Celular (11 dígitos): 3º dígito é sempre 9 (regra ANATEL).
+	if (d.length === 11 && d[2] !== "9") {
+		return false;
+	}
+	return true;
+};
+
 export const maskCpfCnpj = (raw: string): string => {
 	const d = onlyDigits(raw).slice(0, 14);
 	if (d.length <= 11) {

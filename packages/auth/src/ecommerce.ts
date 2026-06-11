@@ -9,7 +9,7 @@ import { sendEmail } from "@emach/email/send";
 import { ResetPasswordEmail } from "@emach/email/templates/reset-password";
 import { VerifyEmailEmail } from "@emach/email/templates/verify-email";
 import { env } from "@emach/env/server";
-import { isValidCpfCnpj, onlyDigits } from "@emach/validators";
+import { isValidCpfCnpj, isValidPhone, onlyDigits } from "@emach/validators";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
@@ -59,6 +59,44 @@ function normalizeDocumentForWrite(raw: unknown): string | null | undefined {
 		});
 	}
 	return document;
+}
+
+// Mesmo tri-estado do document, para o `phone` (#100). `phone` NÃO é unique no
+// schema (text("phone")), então o motivo do '' → null aqui é a invariante "só
+// dígitos" da coluna, não colisão de unique. Validação client-side (Zod) é só UX.
+function normalizePhoneForWrite(raw: unknown): string | null | undefined {
+	if (typeof raw !== "string") {
+		return;
+	}
+	const trimmed = raw.trim();
+	if (trimmed === "") {
+		return null;
+	}
+	const phone = onlyDigits(trimmed);
+	if (!isValidPhone(phone)) {
+		throw new APIError("BAD_REQUEST", {
+			message: "Telefone inválido.",
+		});
+	}
+	return phone;
+}
+
+// Aplica a normalização de todos os additionalFields graváveis num único lugar,
+// consumido por create.before e update.before. `undefined` = campo ausente no
+// payload → não mexe; `null`/string = grava.
+function normalizeUserForWrite<T>(data: T): T {
+	const document = normalizeDocumentForWrite(
+		(data as { document?: unknown }).document
+	);
+	const phone = normalizePhoneForWrite((data as { phone?: unknown }).phone);
+	let out = data;
+	if (document !== undefined) {
+		out = { ...out, document };
+	}
+	if (phone !== undefined) {
+		out = { ...out, phone };
+	}
+	return out;
 }
 
 export const authEcommerce = betterAuth({
@@ -117,27 +155,10 @@ export const authEcommerce = betterAuth({
 	databaseHooks: {
 		user: {
 			create: {
-				before: async (user) => {
-					// `document` é additionalField — o Better Auth ainda não infere
-					// seu tipo, daí o acesso por cast estrutural (não é `any`).
-					const document = normalizeDocumentForWrite(
-						(user as { document?: unknown }).document
-					);
-					// `undefined` = campo ausente (não mexe); `null`/string = grava.
-					return {
-						data: document === undefined ? user : { ...user, document },
-					};
-				},
+				before: async (user) => ({ data: normalizeUserForWrite(user) }),
 			},
 			update: {
-				before: async (userData) => {
-					const document = normalizeDocumentForWrite(
-						(userData as { document?: unknown }).document
-					);
-					return {
-						data: document === undefined ? userData : { ...userData, document },
-					};
-				},
+				before: async (userData) => ({ data: normalizeUserForWrite(userData) }),
 			},
 		},
 	},
