@@ -254,21 +254,19 @@ function buildToolListWhere(input: GetToolsInput) {
 	if (input.voltage && input.voltage.length > 0) {
 		filters.push(sql`EXISTS (
 			SELECT 1 FROM tool_variant tvf
-			WHERE tvf.tool_id = t.id
-			  AND tvf.visible_on_site = true
-			  AND tvf.voltage = ANY(${arrayLiteral(input.voltage, "voltage[]")})
+			WHERE tvf.tool_id = t.id AND tvf.voltage = ANY(${arrayLiteral(input.voltage, "voltage[]")})
 		)`);
 	}
 
 	if (typeof input.priceMin === "number") {
 		filters.push(
-			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id AND visible_on_site = true) >= ${input.priceMin}`
+			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id) >= ${input.priceMin}`
 		);
 	}
 
 	if (typeof input.priceMax === "number") {
 		filters.push(
-			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id AND visible_on_site = true) <= ${input.priceMax}`
+			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id) <= ${input.priceMax}`
 		);
 	}
 
@@ -350,13 +348,7 @@ export async function getTools(
 			pc.slug AS cat_slug,
 			pc.name AS cat_name
 		FROM tool t
-		INNER JOIN LATERAL (
-			SELECT id, sku, voltage, price_amount, is_default, sort_order
-			FROM tool_variant
-			WHERE tool_id = t.id AND visible_on_site = true
-			ORDER BY is_default DESC, sort_order ASC
-			LIMIT 1
-		) dv ON true
+		INNER JOIN tool_variant dv ON dv.tool_id = t.id AND dv.is_default = true
 		LEFT JOIN LATERAL (
 			SELECT p.id,
 				CASE
@@ -392,13 +384,7 @@ export async function getTools(
 	const countSql = sql`
 		SELECT COUNT(DISTINCT t.id)::int AS total
 		FROM tool t
-		INNER JOIN LATERAL (
-			SELECT id, price_amount
-			FROM tool_variant
-			WHERE tool_id = t.id AND visible_on_site = true
-			ORDER BY is_default DESC, sort_order ASC
-			LIMIT 1
-		) dv ON true
+		INNER JOIN tool_variant dv ON dv.tool_id = t.id AND dv.is_default = true
 		LEFT JOIN LATERAL (
 			SELECT p.id,
 				CASE
@@ -483,12 +469,10 @@ export async function getToolBySlug(
 			       price_amount AS "priceAmount",
 			       is_default AS "isDefault",
 			       sort_order AS "sortOrder",
-			       visible_on_site AS "visibleOnSite",
 			       created_at AS "createdAt",
 			       updated_at AS "updatedAt"
 			FROM tool_variant
 			WHERE tool_id = ${toolId}
-			  AND visible_on_site = true
 			ORDER BY is_default DESC, sort_order ASC
 		`),
 		db.execute<ToolImage>(sql`
@@ -573,9 +557,7 @@ export async function getToolBySlug(
 			CROSS JOIN LATERAL (
 				SELECT price_amount
 				FROM tool_variant
-				WHERE tool_id = ${toolId}
-				  AND visible_on_site = true
-				ORDER BY is_default DESC, sort_order ASC
+				WHERE tool_id = ${toolId} AND is_default = true
 				LIMIT 1
 			) dv
 			WHERE p.type = 'promotion'
@@ -601,7 +583,6 @@ export async function getToolBySlug(
 			FROM tool_variant tv
 			LEFT JOIN stock_level sl ON sl.variant_id = tv.id
 			WHERE tv.tool_id = ${toolId}
-			  AND tv.visible_on_site = true
 			GROUP BY tv.id
 		`),
 	]);
@@ -711,11 +692,8 @@ export async function getCategoryTree(db: AnyDb): Promise<CategoryNode[]> {
 			  ON t.id = tc.tool_id
 			 AND t.visible_on_site = true
 			 AND ${STOREFRONT_STATUS_SQL}
+			JOIN tool_variant dv ON dv.tool_id = t.id AND dv.is_default = true
 			WHERE root.is_active = true
-			  AND EXISTS (
-			    SELECT 1 FROM tool_variant tv
-			    WHERE tv.tool_id = t.id AND tv.visible_on_site = true
-			  )
 			GROUP BY root.id
 		`),
 	]);
@@ -865,13 +843,13 @@ export async function getActivePromotions(
 					ELSE ROUND(dv.price_amount * (1 - ${promo.discountValue}::numeric / 100), 2)::text
 				END AS discounted_amount,
 				${promo.id}::text AS active_promotion_id,
-				(SELECT COUNT(*) > 1 FROM tool_variant tv2 WHERE tv2.tool_id = t.id AND tv2.visible_on_site = true) AS has_other_variants,
+				(SELECT COUNT(*) > 1 FROM tool_variant tv2 WHERE tv2.tool_id = t.id) AS has_other_variants,
 				(SELECT url FROM tool_image WHERE tool_id = t.id ORDER BY sort_order ASC LIMIT 1) AS primary_image_url,
 				COALESCE((
 					SELECT SUM(sl.quantity) > 0
 					FROM stock_level sl
 					JOIN tool_variant tv ON tv.id = sl.variant_id
-					WHERE tv.tool_id = t.id AND tv.visible_on_site = true
+					WHERE tv.tool_id = t.id
 				), false) AS in_stock,
 				(SELECT AVG(r.rating)::numeric(3,2)::text FROM review r WHERE r.tool_id = t.id AND r.status = ${APPROVED}) AS avg_rating,
 				(SELECT COUNT(*)::int FROM review r WHERE r.tool_id = t.id AND r.status = ${APPROVED}) AS review_count,
@@ -879,13 +857,7 @@ export async function getActivePromotions(
 				pc.slug AS cat_slug,
 				pc.name AS cat_name
 			FROM tool t
-			INNER JOIN LATERAL (
-				SELECT id, sku, voltage, price_amount, is_default, sort_order
-				FROM tool_variant
-				WHERE tool_id = t.id AND visible_on_site = true
-				ORDER BY is_default DESC, sort_order ASC
-				LIMIT 1
-			) dv ON true
+			INNER JOIN tool_variant dv ON dv.tool_id = t.id AND dv.is_default = true
 			LEFT JOIN tool_category tc ON tc.tool_id = t.id AND tc.is_primary = true
 			LEFT JOIN category pc ON pc.id = tc.category_id
 			WHERE ${toolScope}
@@ -965,13 +937,13 @@ export async function getFeaturedPromotion(
 				ELSE ROUND(dv.price_amount * (1 - ${promo.discountValue}::numeric / 100), 2)::text
 			END AS discounted_amount,
 			${promo.id}::text AS active_promotion_id,
-			(SELECT COUNT(*) > 1 FROM tool_variant tv2 WHERE tv2.tool_id = t.id AND tv2.visible_on_site = true) AS has_other_variants,
+			(SELECT COUNT(*) > 1 FROM tool_variant tv2 WHERE tv2.tool_id = t.id) AS has_other_variants,
 			(SELECT url FROM tool_image WHERE tool_id = t.id ORDER BY sort_order ASC LIMIT 1) AS primary_image_url,
 			COALESCE((
 				SELECT SUM(sl.quantity) > 0
 				FROM stock_level sl
 				JOIN tool_variant tv ON tv.id = sl.variant_id
-				WHERE tv.tool_id = t.id AND tv.visible_on_site = true
+				WHERE tv.tool_id = t.id
 			), false) AS in_stock,
 			(SELECT AVG(r.rating)::numeric(3,2)::text FROM review r WHERE r.tool_id = t.id AND r.status = ${APPROVED}) AS avg_rating,
 			(SELECT COUNT(*)::int FROM review r WHERE r.tool_id = t.id AND r.status = ${APPROVED}) AS review_count,
@@ -979,13 +951,7 @@ export async function getFeaturedPromotion(
 			pc.slug AS cat_slug,
 			pc.name AS cat_name
 		FROM tool t
-		INNER JOIN LATERAL (
-			SELECT id, sku, voltage, price_amount, is_default, sort_order
-			FROM tool_variant
-			WHERE tool_id = t.id AND visible_on_site = true
-			ORDER BY is_default DESC, sort_order ASC
-			LIMIT 1
-		) dv ON true
+		INNER JOIN tool_variant dv ON dv.tool_id = t.id AND dv.is_default = true
 		LEFT JOIN tool_category tc ON tc.tool_id = t.id AND tc.is_primary = true
 		LEFT JOIN category pc ON pc.id = tc.category_id
 		WHERE ${toolScope}
@@ -1048,13 +1014,7 @@ export async function searchTools(
 			dv.price_amount::text AS variant_price,
 			(SELECT url FROM tool_image WHERE tool_id = t.id ORDER BY sort_order ASC LIMIT 1) AS primary_image_url
 		FROM tool t
-		INNER JOIN LATERAL (
-			SELECT id, sku, voltage, price_amount
-			FROM tool_variant
-			WHERE tool_id = t.id AND visible_on_site = true
-			ORDER BY is_default DESC, sort_order ASC
-			LIMIT 1
-		) dv ON true
+		INNER JOIN tool_variant dv ON dv.tool_id = t.id AND dv.is_default = true
 		WHERE ${STOREFRONT_STATUS_SQL}
 		  AND t.visible_on_site = true
 		  AND (t.name ILIKE ${term} OR t.model ILIKE ${term})
@@ -1187,10 +1147,6 @@ export async function getAllToolSlugs(db: AnyDb): Promise<string[]> {
 		WHERE ${STOREFRONT_STATUS_SQL}
 		  AND t.visible_on_site = true
 		  AND slug IS NOT NULL
-		  AND EXISTS (
-		    SELECT 1 FROM tool_variant tv
-		    WHERE tv.tool_id = t.id AND tv.visible_on_site = true
-		  )
 	`);
 	return result.rows
 		.map((r) => r.slug)
