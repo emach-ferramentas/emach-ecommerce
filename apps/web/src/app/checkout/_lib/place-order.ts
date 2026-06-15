@@ -203,7 +203,6 @@ interface PreparedLine {
 		sku: string;
 		voltage: "127V" | "220V" | "Bivolt" | "380V" | null;
 		priceAmount: string;
-		costAmount: string | null;
 		visibleOnSite: boolean;
 	};
 }
@@ -223,7 +222,6 @@ async function prepareLines(
 				sku: toolVariant.sku,
 				voltage: toolVariant.voltage,
 				priceAmount: toolVariant.priceAmount,
-				costAmount: toolVariant.costAmount,
 				visibleOnSite: toolVariant.visibleOnSite,
 			})
 			.from(toolVariant)
@@ -580,7 +578,6 @@ export async function placeOrder(
 			quantity: line.cartItem.quantity,
 			lineTotal,
 			discountAmount: "0",
-			cost: line.variant.costAmount ?? null,
 			ncm: line.tool.ncm,
 			cest: line.tool.cest,
 			manufacturerName: line.tool.manufacturerName,

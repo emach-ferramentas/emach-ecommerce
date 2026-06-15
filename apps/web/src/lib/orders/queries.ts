@@ -27,9 +27,8 @@ export interface OrderListItem {
 }
 
 /**
- * Colunas de `orderItem` expostas ao cliente. Exclui `cost` (custo de
- * aquisição) e campos fiscais/dimensionais não exibidos — convenção
- * "sem select * / esconder costAmount" do packages/db/CLAUDE.md.
+ * Colunas de `orderItem` expostas ao cliente. Exclui campos
+ * fiscais/dimensionais não exibidos — convenção "sem select *".
  */
 const ORDER_ITEM_COLUMNS = {
 	id: orderItem.id,
