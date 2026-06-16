@@ -44,6 +44,8 @@ export type HeroBanner = Pick<
 	| "ctaHref"
 	| "ctaVariant"
 	| "layout"
+	| "productScale"
+	| "ctaScale"
 >;
 
 const AUTOPLAY_INTERVAL = 9000;
@@ -65,6 +67,8 @@ const FALLBACK_BANNERS: HeroBanner[] = [
 		ctaHref: "/catalog",
 		ctaVariant: "red",
 		layout: "split",
+		productScale: 100,
+		ctaScale: 100,
 	},
 	{
 		id: "fallback-02",
@@ -79,13 +83,15 @@ const FALLBACK_BANNERS: HeroBanner[] = [
 		ctaHref: "/catalog",
 		ctaVariant: "red",
 		layout: "split",
+		productScale: 100,
+		ctaScale: 100,
 	},
 ];
 
-type CtaStyle = {
-	variant: VariantProps<typeof emachButtonVariants>["variant"];
+interface CtaStyle {
 	className?: string;
-};
+	variant: VariantProps<typeof emachButtonVariants>["variant"];
+}
 
 // Mapeia a variante do banco para a EmachButton. `white` reaproveita primary
 // sobrescrevendo as cores; `ghost` = outline-light (ações sobre dark do DESIGN.md).
@@ -99,40 +105,97 @@ const CTA_VARIANT_MAP: Record<HeroBanner["ctaVariant"], CtaStyle> = {
 	ghost: { variant: "outline-light" },
 };
 
-type LayoutConfig = {
+interface LayoutConfig {
 	/** Posição/alinhamento do bloco de conteúdo no desktop (lg). */
 	content: string;
+	/**
+	 * "inline" = CTA renderizado dentro do bloco de conteúdo; caso contrário, a
+	 * classe `lg:` que posiciona o CTA separado no canto (mobile é sempre a base
+	 * full-width). Estendido em #130: `mirror_split` põe o CTA à esquerda.
+	 */
+	cta: "inline" | string;
 	/** Posição/tamanho do produto no desktop (lg); null = layout sem produto. */
 	product: string | null;
-	/** CTA dentro do bloco (true) ou separado no canto inferior direito (split). */
-	ctaInline: boolean;
-};
+	/** Lado do texto no desktop — orienta a direção do gradiente de legibilidade. */
+	textSide: "left" | "right" | "center";
+}
 
+// Posições do CTA separado no desktop (a base mobile full-width é comum a todos).
+const CTA_CORNER_RIGHT = "lg:right-[4%] lg:bottom-[12%] lg:left-auto lg:w-auto";
+const CTA_CORNER_LEFT = "lg:left-[4%] lg:right-auto lg:bottom-[12%] lg:w-auto";
+const CTA_CENTER =
+	"lg:left-1/2 lg:right-auto lg:bottom-[10%] lg:-translate-x-1/2 lg:w-auto";
+
+// Mapa de posições por preset. Os 4 primeiros são os originais; os 4 últimos
+// espelham `banner-layout-pos.ts` do dashboard (issue #130 / Hero Builder v2).
 const LAYOUT_CONFIG: Record<HeroBanner["layout"], LayoutConfig> = {
 	split: {
 		content:
 			"lg:left-[4%] lg:right-auto lg:bottom-[18%] lg:max-w-[44%] lg:items-start lg:text-left",
 		product: "lg:left-[66%] lg:top-1/2 lg:h-[64%] lg:w-[40%]",
-		ctaInline: false,
+		cta: CTA_CORNER_RIGHT,
+		textSide: "left",
 	},
 	stack_left: {
 		content:
 			"lg:left-[4%] lg:right-auto lg:bottom-[15%] lg:max-w-[48%] lg:items-start lg:text-left",
 		product: "lg:left-[69%] lg:top-1/2 lg:h-[64%] lg:w-[42%]",
-		ctaInline: true,
+		cta: "inline",
+		textSide: "left",
 	},
 	center_bottom: {
 		content:
 			"lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:bottom-[13%] lg:max-w-[70%] lg:items-center lg:text-center",
 		product: "lg:left-1/2 lg:top-[34%] lg:h-[52%] lg:w-[40%]",
-		ctaInline: true,
+		cta: "inline",
+		textSide: "center",
 	},
 	center_mid: {
 		content:
 			"lg:left-1/2 lg:right-auto lg:top-1/2 lg:bottom-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:max-w-[72%] lg:items-center lg:text-center",
 		product: null,
-		ctaInline: true,
+		cta: "inline",
+		textSide: "center",
 	},
+	// produto topo-centro · texto esquerda-meio · CTA direita-baixo
+	center_cta_right: {
+		content:
+			"lg:left-[4%] lg:right-auto lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2 lg:max-w-[44%] lg:items-start lg:text-left",
+		product: "lg:left-1/2 lg:top-[34%] lg:h-[52%] lg:w-[42%]",
+		cta: CTA_CORNER_RIGHT,
+		textSide: "left",
+	},
+	// espelho do split: produto esquerda-meio · texto direita-meio · CTA esquerda-baixo
+	mirror_split: {
+		content:
+			"lg:right-[4%] lg:left-auto lg:bottom-[18%] lg:max-w-[44%] lg:items-end lg:text-right",
+		product: "lg:left-[34%] lg:top-1/2 lg:h-[64%] lg:w-[40%]",
+		cta: CTA_CORNER_LEFT,
+		textSide: "right",
+	},
+	// produto dominante centro · texto topo-centro · CTA centro-baixo
+	hero_center: {
+		content:
+			"lg:left-1/2 lg:right-auto lg:top-[8%] lg:bottom-auto lg:-translate-x-1/2 lg:max-w-[70%] lg:items-center lg:text-center",
+		product: "lg:left-1/2 lg:top-1/2 lg:h-[68%] lg:w-[46%]",
+		cta: CTA_CENTER,
+		textSide: "center",
+	},
+	// produto esquerda-meio · texto + CTA agrupados à direita
+	text_right: {
+		content:
+			"lg:right-[4%] lg:left-auto lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2 lg:max-w-[44%] lg:items-end lg:text-right",
+		product: "lg:left-[34%] lg:top-1/2 lg:h-[64%] lg:w-[40%]",
+		cta: "inline",
+		textSide: "right",
+	},
+};
+
+// Direção do gradiente de legibilidade conforme o lado do texto no desktop.
+const GRADIENT_BY_SIDE: Record<LayoutConfig["textSide"], string> = {
+	left: "lg:bg-gradient-to-r",
+	right: "lg:bg-gradient-to-l",
+	center: "lg:bg-gradient-to-t",
 };
 
 function HeroCta({
@@ -151,6 +214,9 @@ function HeroCta({
 		<Link
 			className={cn("inline-flex", className)}
 			href={banner.ctaHref as Route}
+			// Escala do CTA (#130): propriedade CSS `scale` (longhand), independente
+			// do transform. Default 100 = scale(1), no-op.
+			style={{ scale: String(banner.ctaScale / 100) }}
 		>
 			<EmachButton
 				className={style.className}
@@ -162,6 +228,187 @@ function HeroCta({
 				{banner.ctaLabel}
 			</EmachButton>
 		</Link>
+	);
+}
+
+// Fundo: imagem (desktop + mobile com fallback) ou void-black quando ausente.
+function HeroBackground({
+	banner,
+	isFirst,
+}: {
+	banner: HeroBanner;
+	isFirst: boolean;
+}) {
+	const desktopBg = banner.backgroundImageUrl;
+	if (!desktopBg) {
+		return <div className="absolute inset-0 bg-black" />;
+	}
+	const hasSeparateMobileBg =
+		banner.backgroundImageMobileUrl != null &&
+		banner.backgroundImageMobileUrl !== desktopBg;
+	const fetchPriority = isFirst ? "high" : "auto";
+	return (
+		<>
+			<Image
+				alt={banner.altText ?? ""}
+				className={cn("object-cover", hasSeparateMobileBg && "hidden lg:block")}
+				fetchPriority={fetchPriority}
+				fill
+				priority={isFirst}
+				quality={75}
+				sizes="100vw"
+				src={desktopBg}
+			/>
+			{hasSeparateMobileBg && (
+				<Image
+					alt={banner.altText ?? ""}
+					className="object-cover lg:hidden"
+					fetchPriority={fetchPriority}
+					fill
+					priority={isFirst}
+					quality={75}
+					sizes="100vw"
+					src={banner.backgroundImageMobileUrl ?? desktopBg}
+				/>
+			)}
+		</>
+	);
+}
+
+// Glow vermelho — assinatura cinematográfica.
+function HeroGlow({ reduceMotion }: { reduceMotion: boolean }) {
+	return (
+		<motion.div
+			animate={reduceMotion ? undefined : { opacity: [0.6, 1, 0.6] }}
+			aria-hidden="true"
+			className="pointer-events-none absolute top-1/2 left-1/2 z-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+			style={{
+				width: "clamp(400px, 70vw, 900px)",
+				height: "clamp(400px, 70vw, 900px)",
+				background:
+					"radial-gradient(circle, rgba(230,0,18,0.22) 0%, rgba(230,0,18,0.07) 40%, transparent 70%)",
+				filter: "blur(40px)",
+			}}
+			transition={
+				reduceMotion
+					? undefined
+					: {
+							duration: 4,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+						}
+			}
+		/>
+	);
+}
+
+interface HeroProductProps {
+	banner: HeroBanner;
+	cfg: LayoutConfig;
+	isActive: boolean;
+	isFirst: boolean;
+	parallaxX: MotionValue<number>;
+	parallaxY: MotionValue<number>;
+	reduceMotion: boolean;
+}
+
+// Produto central (opcional; ausente no layout center_mid).
+function HeroProduct({
+	banner,
+	cfg,
+	isActive,
+	isFirst,
+	parallaxX,
+	parallaxY,
+	reduceMotion,
+}: HeroProductProps) {
+	if (cfg.product === null || banner.productImageUrl == null) {
+		return null;
+	}
+	const mobileProduct = banner.productImageMobileUrl ?? banner.productImageUrl;
+	// Escala do produto (#130): composta no `scale` do framer (mesmo transform do
+	// parallax x/y e do realce de slide ativo). Default 100 = baseline (×1).
+	const productScaleFactor = banner.productScale / 100;
+	const floatAnimate = reduceMotion ? undefined : { y: [0, -15, 0] };
+	const floatTransition = reduceMotion
+		? undefined
+		: ({
+				duration: 5,
+				repeat: Number.POSITIVE_INFINITY,
+				ease: "easeInOut",
+			} as const);
+	const animate = reduceMotion
+		? { opacity: 1, scale: productScaleFactor }
+		: {
+				opacity: isActive ? 1 : 0.35,
+				scale: (isActive ? 1 : 0.94) * productScaleFactor,
+			};
+	return (
+		<motion.div
+			animate={animate}
+			className={cn(
+				"absolute top-[30%] left-1/2 z-15 h-[40%] w-[82%] -translate-x-1/2 -translate-y-1/2",
+				cfg.product
+			)}
+			style={{ x: parallaxX, y: parallaxY }}
+			transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+		>
+			<motion.div
+				animate={floatAnimate}
+				className="relative h-full w-full drop-shadow-[0_30px_24px_rgba(0,0,0,0.55)]"
+				transition={floatTransition}
+			>
+				<Image
+					alt=""
+					className="object-contain"
+					fetchPriority={isFirst ? "high" : "auto"}
+					fill
+					priority={isFirst}
+					quality={85}
+					sizes="(max-width: 1024px) 82vw, 42vw"
+					src={mobileProduct}
+				/>
+			</motion.div>
+		</motion.div>
+	);
+}
+
+// Bloco de conteúdo: título + régua + subtítulo (+ CTA inline).
+function HeroContentBlock({
+	banner,
+	cfg,
+	isH1,
+}: {
+	banner: HeroBanner;
+	cfg: LayoutConfig;
+	isH1: boolean;
+}) {
+	const HeadingTag = isH1 ? "h1" : "h2";
+	return (
+		<div
+			className={cn(
+				"absolute z-20 flex flex-col items-start text-left",
+				"right-[5%] bottom-[22%] left-[5%]",
+				cfg.content
+			)}
+		>
+			{banner.title && (
+				<>
+					<HeadingTag className="text-balance font-display font-medium text-[clamp(44px,6vw,84px)] text-white uppercase leading-[0.9] tracking-[-0.01em] drop-shadow-[0_3px_18px_rgba(0,0,0,0.7)]">
+						{banner.title}
+					</HeadingTag>
+					<span aria-hidden="true" className="my-4 h-[3px] w-16 bg-emach-red" />
+				</>
+			)}
+			{banner.subtitle && (
+				<p className="max-w-[44ch] font-sans text-[15px] text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] lg:text-[17px]">
+					{banner.subtitle}
+				</p>
+			)}
+			{cfg.cta === "inline" && (
+				<HeroCta banner={banner} className="mt-6 w-full lg:w-auto" />
+			)}
+		</div>
 	);
 }
 
@@ -185,161 +432,46 @@ function HeroSlideContent({
 	reduceMotion,
 }: HeroSlideContentProps) {
 	const cfg = LAYOUT_CONFIG[banner.layout];
-	const desktopBg = banner.backgroundImageUrl;
-	const hasSeparateMobileBg =
-		banner.backgroundImageMobileUrl != null &&
-		banner.backgroundImageMobileUrl !== desktopBg;
-
-	const showProduct = cfg.product !== null && banner.productImageUrl != null;
-	const desktopProduct = banner.productImageUrl;
-	const mobileProduct = banner.productImageMobileUrl ?? desktopProduct;
-
-	const HeadingTag = isH1 ? "h1" : "h2";
-
-	const floatAnimate = reduceMotion ? undefined : { y: [0, -15, 0] };
-	const floatTransition = reduceMotion
-		? undefined
-		: ({
-				duration: 5,
-				repeat: Number.POSITIVE_INFINITY,
-				ease: "easeInOut",
-			} as const);
-
+	const hasText = Boolean(banner.title || banner.subtitle);
 	return (
 		<div className="absolute inset-0">
-			{/* Fundo: imagem (desktop + mobile com fallback) ou void-black quando ausente */}
-			{desktopBg ? (
-				<>
-					<Image
-						alt={banner.altText ?? ""}
-						className={cn(
-							"object-cover",
-							hasSeparateMobileBg && "hidden lg:block"
-						)}
-						fetchPriority={isFirst ? "high" : "auto"}
-						fill
-						priority={isFirst}
-						quality={75}
-						sizes="100vw"
-						src={desktopBg}
-					/>
-					{hasSeparateMobileBg && (
-						<Image
-							alt={banner.altText ?? ""}
-							className="object-cover lg:hidden"
-							fetchPriority={isFirst ? "high" : "auto"}
-							fill
-							priority={isFirst}
-							quality={75}
-							sizes="100vw"
-							src={banner.backgroundImageMobileUrl ?? desktopBg}
-						/>
-					)}
-				</>
-			) : (
-				<div className="absolute inset-0 bg-black" />
-			)}
+			<HeroBackground banner={banner} isFirst={isFirst} />
 
-			{/* Glow vermelho — assinatura cinematográfica */}
-			<motion.div
-				animate={reduceMotion ? undefined : { opacity: [0.6, 1, 0.6] }}
-				aria-hidden="true"
-				className="pointer-events-none absolute top-1/2 left-1/2 z-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
-				style={{
-					width: "clamp(400px, 70vw, 900px)",
-					height: "clamp(400px, 70vw, 900px)",
-					background:
-						"radial-gradient(circle, rgba(230,0,18,0.22) 0%, rgba(230,0,18,0.07) 40%, transparent 70%)",
-					filter: "blur(40px)",
-				}}
-				transition={
-					reduceMotion
-						? undefined
-						: {
-								duration: 4,
-								repeat: Number.POSITIVE_INFINITY,
-								ease: "easeInOut",
-							}
-				}
-			/>
+			<HeroGlow reduceMotion={reduceMotion} />
 
 			{/* Gradiente de legibilidade — só quando há texto overlay a proteger.
 			    Sem título/subtítulo (fallback, "imagem pura"), a arte fica intacta. */}
-			{(banner.title || banner.subtitle) && (
+			{hasText && (
 				<div
 					aria-hidden="true"
-					className="absolute inset-0 z-10 bg-gradient-to-t from-black/85 via-black/30 to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/20 lg:to-transparent"
+					className={cn(
+						"absolute inset-0 z-10 bg-gradient-to-t from-black/85 via-black/30 to-transparent lg:from-black/80 lg:via-black/20 lg:to-transparent",
+						GRADIENT_BY_SIDE[cfg.textSide]
+					)}
 				/>
 			)}
 
-			{/* Produto central (opcional; ausente no layout center_mid) */}
-			{showProduct && (
-				<motion.div
-					animate={
-						reduceMotion
-							? { opacity: 1 }
-							: { opacity: isActive ? 1 : 0.35, scale: isActive ? 1 : 0.94 }
-					}
-					className={cn(
-						"absolute top-[30%] left-1/2 z-15 h-[40%] w-[82%] -translate-x-1/2 -translate-y-1/2",
-						cfg.product
-					)}
-					style={{ x: parallaxX, y: parallaxY }}
-					transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-				>
-					<motion.div
-						animate={floatAnimate}
-						className="relative h-full w-full drop-shadow-[0_30px_24px_rgba(0,0,0,0.55)]"
-						transition={floatTransition}
-					>
-						<Image
-							alt=""
-							className="object-contain"
-							fetchPriority={isFirst ? "high" : "auto"}
-							fill
-							priority={isFirst}
-							quality={85}
-							sizes="(max-width: 1024px) 82vw, 42vw"
-							src={mobileProduct as string}
-						/>
-					</motion.div>
-				</motion.div>
-			)}
+			<HeroProduct
+				banner={banner}
+				cfg={cfg}
+				isActive={isActive}
+				isFirst={isFirst}
+				parallaxX={parallaxX}
+				parallaxY={parallaxY}
+				reduceMotion={reduceMotion}
+			/>
 
-			{/* Bloco de conteúdo: título + régua + subtítulo (+ CTA inline) */}
-			<div
-				className={cn(
-					"absolute z-20 flex flex-col items-start text-left",
-					"right-[5%] bottom-[22%] left-[5%]",
-					cfg.content
-				)}
-			>
-				{banner.title && (
-					<>
-						<HeadingTag className="text-balance font-display font-medium text-[clamp(44px,6vw,84px)] text-white uppercase leading-[0.9] tracking-[-0.01em] drop-shadow-[0_3px_18px_rgba(0,0,0,0.7)]">
-							{banner.title}
-						</HeadingTag>
-						<span
-							aria-hidden="true"
-							className="my-4 h-[3px] w-16 bg-emach-red"
-						/>
-					</>
-				)}
-				{banner.subtitle && (
-					<p className="max-w-[44ch] font-sans text-[15px] text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] lg:text-[17px]">
-						{banner.subtitle}
-					</p>
-				)}
-				{cfg.ctaInline && (
-					<HeroCta banner={banner} className="mt-6 w-full lg:w-auto" />
-				)}
-			</div>
+			<HeroContentBlock banner={banner} cfg={cfg} isH1={isH1} />
 
-			{/* CTA separado no canto (apenas layout split, desktop); mobile vira full-width na base */}
-			{!cfg.ctaInline && (
+			{/* CTA separado no canto (split, mirror_split, center_cta_right, hero_center);
+				 a posição lg: vem de cfg.cta. Mobile vira full-width na base. */}
+			{cfg.cta !== "inline" && (
 				<HeroCta
 					banner={banner}
-					className="absolute right-[5%] bottom-[6%] left-[5%] z-20 lg:right-[4%] lg:bottom-[12%] lg:left-auto lg:w-auto"
+					className={cn(
+						"absolute right-[5%] bottom-[6%] left-[5%] z-20",
+						cfg.cta
+					)}
 				/>
 			)}
 		</div>
