@@ -1,5 +1,5 @@
 import { db } from "@emach/db";
-import { getToolBySlug } from "@emach/db/queries/catalog";
+import { getToolBySlug } from "@emach/db/queries/tools";
 import { cacheLife } from "next/cache";
 
 // Shell do produto cacheado (ISR ~10min, alinhado à home). `generateMetadata` e

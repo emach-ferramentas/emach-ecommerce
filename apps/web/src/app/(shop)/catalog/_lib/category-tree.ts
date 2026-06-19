@@ -1,4 +1,4 @@
-import type { CategoryNode } from "@emach/db/queries/catalog";
+import type { CategoryNode } from "@emach/db/queries/categories";
 
 /**
  * IDs de todos os nós no caminho da raiz até a categoria ativa (inclusive ela).

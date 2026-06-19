@@ -1,4 +1,4 @@
-import type { PromotionWithTools } from "@emach/db/queries/catalog";
+import type { PromotionWithTools } from "@emach/db/queries/promotions";
 import type { Voltage } from "@emach/db/schema/tools";
 import Link from "next/link";
 import { emachButtonVariants } from "@/components/emach-button";

@@ -1,4 +1,4 @@
-import type { ToolDetail } from "@emach/db/queries/catalog";
+import type { ToolDetail } from "@emach/db/queries/tools";
 import { env } from "@emach/env/web";
 import { numericToCents } from "@/lib/format";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";

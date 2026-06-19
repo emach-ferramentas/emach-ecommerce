@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@emach/db";
-import { searchTools, type ToolSearchResult } from "@emach/db/queries/catalog";
+import { searchTools, type ToolSearchResult } from "@emach/db/queries/tools";
 import { headers } from "next/headers";
 
 import { getClientIp } from "@/lib/client-ip";

@@ -1,5 +1,5 @@
 import { db } from "@emach/db";
-import { getCategoryTree } from "@emach/db/queries/catalog";
+import { getCategoryTree } from "@emach/db/queries/categories";
 import { cacheLife } from "next/cache";
 
 // Árvore de categorias não depende de searchParams nem de runtime APIs — é a

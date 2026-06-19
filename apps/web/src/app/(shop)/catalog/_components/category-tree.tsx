@@ -1,6 +1,6 @@
 "use client";
 
-import type { CategoryNode } from "@emach/db/queries/catalog";
+import type { CategoryNode } from "@emach/db/queries/categories";
 import { cn } from "@emach/ui/lib/utils";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";

@@ -1,8 +1,6 @@
 import { db } from "@emach/db";
-import {
-	getAllCategorySlugs,
-	getAllToolSlugs,
-} from "@emach/db/queries/catalog";
+import { getAllCategorySlugs } from "@emach/db/queries/categories";
+import { getAllToolSlugs } from "@emach/db/queries/tools";
 import { env } from "@emach/env/web";
 import type { MetadataRoute } from "next";
 import { cacheLife } from "next/cache";

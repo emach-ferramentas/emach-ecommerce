@@ -1,6 +1,6 @@
 "use client";
 
-import type { ToolListItem } from "@emach/db/queries/catalog";
+import type { ToolListItem } from "@emach/db/queries/tools";
 import type { Voltage } from "@emach/db/schema/tools";
 import {
 	Carousel,

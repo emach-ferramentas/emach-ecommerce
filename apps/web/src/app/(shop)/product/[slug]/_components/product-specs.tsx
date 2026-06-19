@@ -1,4 +1,4 @@
-import type { ToolDetail } from "@emach/db/queries/catalog";
+import type { ToolDetail } from "@emach/db/queries/tools";
 import { SectionLabel } from "@/components/section-label";
 import { fmtSpecNumber, fmtSpecRange } from "@/lib/format";
 

@@ -1,4 +1,4 @@
-import type { ToolDetail } from "@emach/db/queries/catalog";
+import type { ToolDetail } from "@emach/db/queries/tools";
 import type { Review } from "@emach/db/schema/reviews";
 import { SectionLabel } from "@/components/section-label";
 import { ReviewList } from "./review-list";

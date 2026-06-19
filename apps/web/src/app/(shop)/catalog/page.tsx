@@ -1,5 +1,6 @@
 import { db } from "@emach/db";
-import { getCategoryBySlug, getTools } from "@emach/db/queries/catalog";
+import { getCategoryBySlug } from "@emach/db/queries/categories";
+import { getTools } from "@emach/db/queries/tools";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";

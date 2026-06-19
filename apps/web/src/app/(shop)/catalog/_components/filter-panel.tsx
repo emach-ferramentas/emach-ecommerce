@@ -1,6 +1,6 @@
 "use client";
 
-import type { CategoryNode } from "@emach/db/queries/catalog";
+import type { CategoryNode } from "@emach/db/queries/categories";
 import { Checkbox } from "@emach/ui/components/checkbox";
 import type { VoltageKey } from "../_lib/catalog-filters";
 import { CategoryTree } from "./category-tree";

@@ -1,5 +1,5 @@
 import { db } from "@emach/db";
-import { getAllToolSlugs } from "@emach/db/queries/catalog";
+import { getAllToolSlugs } from "@emach/db/queries/tools";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";

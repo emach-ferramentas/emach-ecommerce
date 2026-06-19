@@ -1,8 +1,6 @@
 import { db } from "@emach/db";
-import {
-	getFeaturedPromotion,
-	getRecentTools,
-} from "@emach/db/queries/catalog";
+import { getFeaturedPromotion } from "@emach/db/queries/promotions";
+import { getRecentTools } from "@emach/db/queries/tools";
 import { banner } from "@emach/db/schema/banner";
 import { category } from "@emach/db/schema/categories";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ToolDetail } from "@emach/db/queries/catalog";
+import type { ToolDetail } from "@emach/db/queries/tools";
 import { cn } from "@emach/ui/lib/utils";
 import {
 	Check,

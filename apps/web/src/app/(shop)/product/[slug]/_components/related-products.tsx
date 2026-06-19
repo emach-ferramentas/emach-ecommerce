@@ -1,9 +1,6 @@
 import { db } from "@emach/db";
-import {
-	getCategoryBySlug,
-	getTools,
-	type ToolListItem,
-} from "@emach/db/queries/catalog";
+import { getCategoryBySlug } from "@emach/db/queries/categories";
+import { getTools, type ToolListItem } from "@emach/db/queries/tools";
 import { ProductCard } from "@/components/product-card";
 
 interface RelatedProductsProps {

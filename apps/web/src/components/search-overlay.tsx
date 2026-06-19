@@ -1,6 +1,6 @@
 "use client";
 
-import type { ToolSearchResult } from "@emach/db/queries/catalog";
+import type { ToolSearchResult } from "@emach/db/queries/tools";
 import { cn } from "@emach/ui/lib/utils";
 import { Search } from "lucide-react";
 import Link from "next/link";

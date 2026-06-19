@@ -1,4 +1,4 @@
-import type { CategoryNode } from "@emach/db/queries/catalog";
+import type { CategoryNode } from "@emach/db/queries/categories";
 import { describe, expect, it } from "vitest";
 import { collectPathToActive } from "./category-tree";
 

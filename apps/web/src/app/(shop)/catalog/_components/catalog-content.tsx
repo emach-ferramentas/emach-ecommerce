@@ -1,6 +1,7 @@
 "use client";
 
-import type { CategoryNode, ToolListItem } from "@emach/db/queries/catalog";
+import type { CategoryNode } from "@emach/db/queries/categories";
+import type { ToolListItem } from "@emach/db/queries/tools";
 import type { Voltage } from "@emach/db/schema/tools";
 import { cn } from "@emach/ui/lib/utils";
 import { Grid3x3, List, SlidersHorizontal } from "lucide-react";

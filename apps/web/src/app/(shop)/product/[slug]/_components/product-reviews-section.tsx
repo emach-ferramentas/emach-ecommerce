@@ -1,5 +1,5 @@
 import { db } from "@emach/db";
-import { getReviews, type ReviewStats } from "@emach/db/queries/catalog";
+import { getReviews, type ReviewStats } from "@emach/db/queries/reviews";
 
 import { ProductReviews } from "./product-reviews";
 import type { ReviewSortKey } from "./review-sort";
