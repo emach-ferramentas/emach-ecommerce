@@ -223,11 +223,14 @@ function HeroCta({
 	return (
 		// ctaHref vem como string do banco; typedRoutes não valida em runtime.
 		<Link
-			className={cn("inline-flex", className)}
+			// Escala do CTA (#130) é ajuste fino de DESKTOP — gated no lg+ via CSS var.
+			// No mobile fica `scale:1`, senão `left/right-5%` (90%) × 1.x transbordava.
+			className={cn(
+				"inline-flex [scale:1] lg:[scale:var(--cta-scale)]",
+				className
+			)}
 			href={banner.ctaHref as Route}
-			// Escala do CTA (#130): propriedade CSS `scale` (longhand), independente
-			// do transform. Default 100 = scale(1), no-op.
-			style={{ scale: String(banner.ctaScale / 100) }}
+			style={{ "--cta-scale": banner.ctaScale / 100 } as React.CSSProperties}
 		>
 			<EmachButton
 				className={style.className}
@@ -300,11 +303,21 @@ function HeroBackground({
 	);
 }
 
-// Glow vermelho — assinatura cinematográfica.
+// Glow vermelho — assinatura cinematográfica. O pulse (repaint de blur(40px) por
+// frame) é caro no mobile — anima só no desktop; no mobile fica estático.
 function HeroGlow({ reduceMotion }: { reduceMotion: boolean }) {
+	const [isDesktop, setIsDesktop] = useState(false);
+	useEffect(() => {
+		const mq = window.matchMedia("(min-width: 1024px)");
+		const update = () => setIsDesktop(mq.matches);
+		update();
+		mq.addEventListener("change", update);
+		return () => mq.removeEventListener("change", update);
+	}, []);
+	const animated = !reduceMotion && isDesktop;
 	return (
 		<m.div
-			animate={reduceMotion ? undefined : { opacity: [0.6, 1, 0.6] }}
+			animate={animated ? { opacity: [0.6, 1, 0.6] } : undefined}
 			aria-hidden="true"
 			className="pointer-events-none absolute top-1/2 left-1/2 z-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
 			style={{
@@ -315,13 +328,13 @@ function HeroGlow({ reduceMotion }: { reduceMotion: boolean }) {
 				filter: "blur(40px)",
 			}}
 			transition={
-				reduceMotion
-					? undefined
-					: {
+				animated
+					? {
 							duration: 4,
 							repeat: Number.POSITIVE_INFINITY,
 							ease: "easeInOut",
 						}
+					: undefined
 			}
 		/>
 	);
@@ -351,8 +364,10 @@ function HeroProduct({
 		return null;
 	}
 	const mobileProduct = banner.productImageMobileUrl ?? banner.productImageUrl;
-	// Escala do produto (#130): composta no `scale` do framer (mesmo transform do
-	// parallax x/y e do realce de slide ativo). Default 100 = baseline (×1).
+	// Escala do produto (#130) é ajuste fino de DESKTOP. Vira CSS var no wrapper e a
+	// classe `lg:[scale:var(--prod-scale)]` no m.div interno consome (cascata) —
+	// compõe com o transform do framer (parallax + realce 1/0.94). No mobile fica
+	// `scale:1`: a base `w-82%` já cabe; ×1.6 renderizava 525px num viewport de 400.
 	const productScaleFactor = banner.productScale / 100;
 	const floatAnimate = reduceMotion ? undefined : { y: [0, -15, 0] };
 	const floatTransition = reduceMotion
@@ -363,38 +378,45 @@ function HeroProduct({
 				ease: "easeInOut",
 			} as const);
 	const animate = reduceMotion
-		? { opacity: 1, scale: productScaleFactor }
+		? { opacity: 1, scale: 1 }
 		: {
 				opacity: isActive ? 1 : 0.35,
-				scale: (isActive ? 1 : 0.94) * productScaleFactor,
+				scale: isActive ? 1 : 0.94,
 			};
 	return (
-		<m.div
-			animate={animate}
+		// Wrapper centraliza (translate) e carrega a var; o scale fica no m.div
+		// interno pra não brigar o translate de centragem com o scale no mesmo nó.
+		<div
 			className={cn(
-				"absolute top-[30%] left-1/2 z-15 h-[40%] w-[82%] -translate-x-1/2 -translate-y-1/2",
+				"absolute top-[46%] left-1/2 z-15 h-[52%] w-[92%] -translate-x-1/2 -translate-y-1/2",
 				cfg.product
 			)}
-			style={{ x: parallaxX, y: parallaxY }}
-			transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+			style={{ "--prod-scale": productScaleFactor } as React.CSSProperties}
 		>
 			<m.div
-				animate={floatAnimate}
-				className="relative h-full w-full drop-shadow-[0_30px_24px_rgba(0,0,0,0.55)]"
-				transition={floatTransition}
+				animate={animate}
+				className="relative h-full w-full [scale:1] lg:[scale:var(--prod-scale)]"
+				style={{ x: parallaxX, y: parallaxY }}
+				transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
 			>
-				<Image
-					alt=""
-					className="object-contain"
-					fetchPriority={isFirst ? "high" : "auto"}
-					fill
-					priority={isFirst}
-					quality={85}
-					sizes="(max-width: 1024px) 82vw, 42vw"
-					src={mobileProduct}
-				/>
+				<m.div
+					animate={floatAnimate}
+					className="relative h-full w-full drop-shadow-[0_30px_24px_rgba(0,0,0,0.55)]"
+					transition={floatTransition}
+				>
+					<Image
+						alt=""
+						className="object-contain"
+						fetchPriority={isFirst ? "high" : "auto"}
+						fill
+						priority={isFirst}
+						quality={85}
+						sizes="(max-width: 1024px) 92vw, 42vw"
+						src={mobileProduct}
+					/>
+				</m.div>
 			</m.div>
-		</m.div>
+		</div>
 	);
 }
 
@@ -511,6 +533,16 @@ function HeroSlideContent({
 				/>
 			)}
 
+			{/* Banner "imagem pura" (sem texto) COM imagem mobile: a arte é recortada e
+			    os dots/CTA precisam de contraste — scrim inferior só-mobile. Quando não
+			    há bg mobile (`none`), o backdrop já é preto → scrim seria preto-no-preto. */}
+			{!hasText && resolveMobileBg(banner) != null && (
+				<div
+					aria-hidden="true"
+					className="absolute inset-x-0 bottom-0 z-10 h-1/3 bg-gradient-to-t from-black/75 to-transparent lg:hidden"
+				/>
+			)}
+
 			<HeroProduct
 				banner={banner}
 				cfg={cfg}
@@ -529,7 +561,7 @@ function HeroSlideContent({
 				<HeroCta
 					banner={banner}
 					className={cn(
-						"absolute right-[5%] bottom-[6%] left-[5%] z-20",
+						"absolute right-[5%] bottom-[9%] left-[5%] z-20",
 						cfg.cta
 					)}
 				/>
@@ -598,7 +630,7 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 			{/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: parallax decorativo mouse-only na hero; teclado/toque não dependem disto */}
 			<section
 				aria-label="Banner principal"
-				className="relative h-[88svh] w-full overflow-hidden bg-black lg:h-svh"
+				className="relative h-[70svh] min-h-[30rem] w-full overflow-hidden bg-black lg:h-svh lg:min-h-0"
 				onMouseLeave={handleMouseLeave}
 				onMouseMove={handleMouseMove}
 			>
@@ -611,10 +643,10 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 					opts={{ loop: true, align: "start" }}
 					setApi={setApi}
 				>
-					<CarouselContent className="ml-0 h-[88svh] lg:h-svh">
+					<CarouselContent className="ml-0 h-[70svh] min-h-[30rem] lg:h-svh lg:min-h-0">
 						{slides.map((banner, index) => (
 							<CarouselItem
-								className="relative h-[88svh] pl-0 lg:h-svh"
+								className="relative h-[70svh] min-h-[30rem] pl-0 lg:h-svh lg:min-h-0"
 								key={banner.id}
 							>
 								<HeroSlideContent
@@ -632,7 +664,7 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 				</Carousel>
 
 				{slides.length > 1 && (
-					<div className="absolute bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 lg:bottom-10">
+					<div className="absolute bottom-28 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 lg:bottom-10">
 						{slides.map((banner, index) => (
 							<button
 								aria-current={index === selectedIndex ? "true" : undefined}

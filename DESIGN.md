@@ -418,6 +418,12 @@ Seção **dark cinematográfica** (`bg-cinema-3` #0A0A0A) com **borda vermelha e
 
 **Cor (aplica a regra de vermelho-no-escuro acima):** kicker "Onde estamos" (`SectionLabel tone="accent"`), pins, bordas/régua e selos em `--emach-red` puro — são protagonistas. Só a **UF** ao lado do nome da filial usa `--emach-red-on-dark` (detalhe pequeno legível no escuro). O kicker "Ofertas" (`PromoHighlight`) segue a mesma lógica: vermelho puro.
 
+### Hero carousel (mobile ≠ desktop)
+`src/components/hero-carousel.tsx`. Banner full-bleed (embla) + parallax mouse-only (desktop), glow vermelho de fundo e produto flutuante. **Duas regras não-óbvias de responsividade:**
+
+- **`productScale`/`ctaScale` (ajuste fino do Hero Builder, #130) são DESKTOP-ONLY.** Aplicados como propriedade CSS `scale` gated no `lg:` (CSS var `--prod-scale`/`--cta-scale`); no mobile ficam `scale:1`. A base mobile já é full-bleed (produto `w-92%`, CTA `left/right-5%`) — reaplicar sem o gate `lg:` estoura o viewport (×1.6 → ~525px num viewport de 400). **Nunca** voltar a aplicá-los via `style={{ scale }}` incondicional.
+- **No mobile o bg desktop é derrubado.** As artes de banner são composições widescreen com título/specs/subtítulo **queimados na imagem** — `object-cover` no retrato corta tudo. Banner mobile usa `backgroundMobileMode='none'` (backdrop preto + glow + produto, estilizado aqui) ou `'custom'` (imagem mobile dedicada); **nunca `'inherit'`** (= arte desktop cortada). O glow só pulsa no desktop (repaint de `blur(40px)`/frame trava o mobile). Banner sem produto + `none` = mobile vazio (só glow+CTA) → todo banner mobile precisa de produto ou imagem mobile.
+
 ### ProductImage
 Lucide icon placeholder per category slug: `eletricas→Drill`, `manuais→Wrench`, `medicao→Ruler`, `seguranca→Shield`, `acessorios→Disc3`. Radial gradient background. Zoom `group-hover:scale-[1.04]` (zoom-**in**) quando `zoom` ativo. Component: `src/components/product-image.tsx`.
 
