@@ -83,7 +83,7 @@ Schema TS aqui é **cópia versionada** do dashboard, sincronizada via **CI PR a
 
 ## Deploy e CI (ADR-0004)
 
-- **Repo canônico ≠ repo de deploy.** Trabalha-se em `othavioquiliao/emach-ecommerce` (onde o CI roda); a Vercel está conectada a `emach-ferramentas/emach-ecommerce` (org, Actions OFF). `mirror.yml` espelha a `main` pro repo da org a cada push → **deploy = `git push origin main`**, sem push manual. Detalhe e gotchas (mirror exige `persist-credentials: false`; secret via `gh secret set --body`, nunca pipe) em ADR-0004.
+- **Repo canônico ≠ repo de deploy.** Trabalha-se em `othavi0/emach-ecommerce` (onde o CI roda); a Vercel está conectada a `emach-ferramentas/emach-ecommerce` (org, Actions OFF). `mirror.yml` espelha a `main` pro repo da org a cada push → **deploy = `git push origin main`**, sem push manual. Detalhe e gotchas (mirror exige `persist-credentials: false`; secret via `gh secret set --body`, nunca pipe) em ADR-0004.
 - **CI (`ci.yml`) tem 3 gates:** `check-types` + `test:ci` (`bun run --filter=web test:ci`, unit-only) + `check-env`. **`bun check:env`** (`scripts/check-vercel-env.ts`) cruza as env vars obrigatórias (derivadas do Zod em `packages/env/src/schemas.ts`) com a Vercel — **env obrigatória nova precisa ser cadastrada na Vercel** (`vercel env add`) senão o CI falha e o build quebraria no deploy.
 - **`test:ci` é unit-only.** Teste que usa `withRollback`/`db.transaction`/dados do DB é **integração** → adicionar à lista `INTEGRATION` em `apps/web/vitest.config.ts` (senão quebra no CI, que não tem `.env`/DB). `apps/web/vitest.setup.ts` injeta env dummy nas obrigatórias ausentes p/ a validação do `@emach/env` não abortar a suíte.
 
@@ -113,7 +113,7 @@ _.file = "apps/web/.env"
 
 ### Issue tracker
 
-Issues e PRDs vivem como GitHub issues (`gh` CLI), repo `othavioquiliao/emach-ecommerce`. PRs externos **não** são superfície de triagem. Ver `docs/agents/issue-tracker.md`.
+Issues e PRDs vivem como GitHub issues (`gh` CLI), repo `othavi0/emach-ecommerce`. PRs externos **não** são superfície de triagem. Ver `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

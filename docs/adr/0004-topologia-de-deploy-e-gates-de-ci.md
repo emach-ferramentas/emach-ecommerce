@@ -1,6 +1,6 @@
 # Deploy via repo espelhado (org) e gates de CI: drift-check de env + test:ci unit-only
 
-O código é trabalhado no repo **canônico** `othavioquiliao/emach-ecommerce` (onde o GitHub Actions roda). A Vercel está conectada a `emach-ferramentas/emach-ecommerce` (repo da org, com **Actions desabilitado** — só deploya). Um workflow de mirror (`.github/workflows/mirror.yml`) no canônico espelha a `main` pro repo da org a cada push, e é esse push que dispara o deploy. O CI tem dois gates próprios além de `check-types`: **`check-env`** (drift de env vars vs Vercel) e **`test:ci`** (unit-only).
+O código é trabalhado no repo **canônico** `othavi0/emach-ecommerce` (onde o GitHub Actions roda). A Vercel está conectada a `emach-ferramentas/emach-ecommerce` (repo da org, com **Actions desabilitado** — só deploya). Um workflow de mirror (`.github/workflows/mirror.yml`) no canônico espelha a `main` pro repo da org a cada push, e é esse push que dispara o deploy. O CI tem dois gates próprios além de `check-types`: **`check-env`** (drift de env vars vs Vercel) e **`test:ci`** (unit-only).
 
 ## Considered Options
 

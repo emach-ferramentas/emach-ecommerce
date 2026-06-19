@@ -1,6 +1,6 @@
 # emach-ecommerce
 
-E-commerce de ferramentas elétricas e manuais (furadeiras, serras, chaves, alicates, EPIs) para o mercado brasileiro. Repo storefront — admin staff vive no repo irmão [`emach-dashboard`](https://github.com/othavioquiliao/emach-dashboard) que compartilha a mesma DB Supabase.
+E-commerce de ferramentas elétricas e manuais (furadeiras, serras, chaves, alicates, EPIs) para o mercado brasileiro. Repo storefront — admin staff vive no repo irmão [`emach-dashboard`](https://github.com/othavi0/emach-dashboard) que compartilha a mesma DB Supabase.
 
 ## Stack
 
