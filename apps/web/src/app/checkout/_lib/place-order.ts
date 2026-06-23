@@ -331,13 +331,14 @@ export async function resolveDestinationCep(
  * Anti-fraude: re-cota o frete no servidor e exige que o `shippingCents`
  * enviado pelo cliente bata com alguma opção (tolerância de 1 centavo).
  *
- * Indisponibilidade da API de frete **não** bloqueia a venda (fail-open), mas
- * retorna `shippingUnverified: true` — o pedido é marcado para revisão do staff
- * no dashboard antes de faturar (#97 / dashboard#143). Só um valor adulterado
- * (mismatch) ou frete a combinar lança `OrderError`.
+ * Falha de infra na cotação (ex.: DB indisponível ao ler tabelas/transportadoras)
+ * **não** bloqueia a venda (fail-open), mas retorna `shippingUnverified: true` —
+ * o pedido é marcado para revisão do staff no dashboard antes de faturar
+ * (#97 / dashboard#143). Só um valor adulterado (mismatch) ou frete a combinar
+ * lança `OrderError`.
  *
- * Deve rodar **fora** da transação do pedido — a chamada externa não pode
- * segurar a transação aberta durante a latência da rede.
+ * Deve rodar **fora** da transação do pedido — a cotação faz suas próprias
+ * queries e não pode segurar a transação aberta durante essa latência.
  */
 export async function assertShippingQuoted(params: {
 	shippingCents: number;
@@ -353,11 +354,12 @@ export async function assertShippingQuoted(params: {
 			declaredValueCents: params.declaredValueCents,
 		});
 	} catch (err) {
-		// Fail-open consciente: indisponibilidade da API de frete NÃO bloqueia a
-		// venda (não punir o cliente por instabilidade externa). Em vez de aceitar
-		// o frete às cegas, sinalizamos `shippingUnverified` — o pedido grava a flag
-		// e o staff revisa no dashboard antes de faturar (limpa via
-		// markShippingReviewed). Fecha o vetor "derruba a API → frete grátis".
+		// Fail-open consciente: falha de infra na cotação (ex.: DB indisponível ao
+		// ler as tabelas de frete) NÃO bloqueia a venda — não punir o cliente por
+		// instabilidade de infraestrutura. Em vez de aceitar o frete às cegas,
+		// sinalizamos `shippingUnverified` — o pedido grava a flag e o staff revisa
+		// no dashboard antes de faturar (limpa via markShippingReviewed). Fecha o
+		// vetor "derruba a cotação → frete grátis".
 		log.error({
 			action: "shipping_revalidation_skipped",
 			destinationCep: params.destinationCep,

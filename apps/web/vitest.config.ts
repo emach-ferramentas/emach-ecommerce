@@ -13,8 +13,6 @@ const INTEGRATION = [
 	"**/checkout/_actions/create-order.test.ts",
 	"**/checkout/_actions/revalidate-cart.test.ts",
 	"**/lib/coupons/validate-coupon.test.ts",
-	"**/lib/origin-branch.test.ts",
-	"**/lib/superfrete/quote.test.ts",
 	"**/catalog/_lib/category-tree.test.ts",
 ];
 
