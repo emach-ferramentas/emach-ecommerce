@@ -17,7 +17,7 @@ const LEAVE_MS = 220;
  * quantidade (`addToCart` faz merge por `variantId`).
  */
 export function useRemoveWithUndo() {
-	const { items, remove, add } = useCart();
+	const { items, remove, restore } = useCart();
 	const [removing, setRemoving] = useState<string | null>(null);
 	const pending = useRef<Set<string>>(new Set());
 
@@ -36,8 +36,10 @@ export function useRemoveWithUndo() {
 				const { quantity, ...snapshot } = item;
 				toast("Item removido do carrinho", {
 					action: {
+						// `restore` (não `add`): desfazer remoção não é demanda nova — não
+						// deve emitir cart_event (#175).
 						label: "Desfazer",
-						onClick: () => add(snapshot, quantity),
+						onClick: () => restore(snapshot, quantity),
 					},
 				});
 			}

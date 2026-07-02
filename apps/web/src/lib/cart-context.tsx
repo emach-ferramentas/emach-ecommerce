@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
+import { trackCartEventAction } from "@/lib/actions/track-cart-event";
 import {
 	addToCart,
 	type CartItem,
@@ -12,6 +13,7 @@ import {
 	saveCart,
 	updateQty,
 } from "@/lib/cart-store";
+import { getVisitorId } from "@/lib/visitor-id";
 
 interface CartState {
 	/** `false` até o carrinho ser carregado do localStorage (1º render no client). */
@@ -25,6 +27,8 @@ interface CartActions {
 	clear: () => void;
 	reconcile: (priceByVariantId: Map<string, string>) => void;
 	remove: (variantId: string) => void;
+	/** Re-adiciona sem emitir cart_event — só pro undo de remoção (#175). */
+	restore: (item: CartItemSnapshot, qty: number) => void;
 	setQty: (variantId: string, qty: number) => void;
 }
 
@@ -38,6 +42,7 @@ const CartActionsContext = createContext<CartActions>({
 	add: () => undefined,
 	setQty: () => undefined,
 	remove: () => undefined,
+	restore: () => undefined,
 	clear: () => undefined,
 	reconcile: () => undefined,
 });
@@ -56,7 +61,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 	// p/ que consumidores que só despacham (QuickAddButton em cada card do grid,
 	// botões da PDP, recomprar) NÃO re-renderizem quando `items`/`totalCount` muda.
 	const actions: CartActions = {
-		add: (item, qty = 1) => setItems((prev) => addToCart(prev, item, qty)),
+		add: (item, qty = 1) => {
+			setItems((prev) => addToCart(prev, item, qty));
+			// Métrica de demanda (#175): 1 evento por clique de "adicionar", com a
+			// quantidade DESTE clique (item já no carrinho conta o delta). Ajuste de
+			// quantidade dentro do carrinho (setQty) e undo (restore) NÃO emitem.
+			// Fire-and-forget: a action nunca lança; o catch cobre falha de rede.
+			trackCartEventAction({
+				toolId: item.toolId,
+				variantId: item.variantId,
+				sessionId: getVisitorId(),
+				quantity: qty,
+			}).catch(() => undefined);
+		},
+		restore: (item, qty) => setItems((prev) => addToCart(prev, item, qty)),
 		setQty: (variantId, qty) =>
 			setItems((prev) => updateQty(prev, variantId, qty)),
 		remove: (variantId) => setItems((prev) => removeFromCart(prev, variantId)),

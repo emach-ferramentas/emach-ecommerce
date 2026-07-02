@@ -18,6 +18,7 @@ import {
 	userRelations,
 	verification,
 } from "./schema/auth";
+import { cartEvent, cartEventRelations } from "./schema/cart-events";
 import {
 	category,
 	categoryRelations,
@@ -95,6 +96,8 @@ const schema = {
 	carrierRelations,
 	carrierZone,
 	carrierZoneRelations,
+	cartEvent,
+	cartEventRelations,
 	category,
 	categoryRelations,
 	client,
