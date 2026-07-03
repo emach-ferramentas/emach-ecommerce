@@ -11,6 +11,14 @@ describe("buildPlateLayout", () => {
 		});
 	});
 
+	it("N=0 com mídia: âncora vazia ({ cells: [] }) — nunca consumida, a seção desvia em n === 0", () => {
+		expect(buildPlateLayout(0, true, 4)).toEqual({
+			anchor: { cells: [] },
+			fullRows: [],
+			leftoverRow: [],
+		});
+	});
+
 	it("N=2 sem mídia: sobra vira linha de metades", () => {
 		expect(buildPlateLayout(2, false, 4)).toEqual({
 			anchor: null,

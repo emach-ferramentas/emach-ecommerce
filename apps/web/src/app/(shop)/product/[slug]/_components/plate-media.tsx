@@ -29,10 +29,13 @@ export function PlateMedia({ image, name, video }: PlateMediaProps) {
 		const posterUrl = video.poster ?? image?.url ?? null;
 		return (
 			<Dialog>
-				<DialogTrigger className="group relative flex h-full w-full cursor-pointer items-center justify-center bg-image-bg focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2">
+				<DialogTrigger
+					aria-label={`Assistir vídeo de ${name}`}
+					className="group relative flex h-full w-full cursor-pointer items-center justify-center bg-image-bg focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2"
+				>
 					{posterUrl ? (
 						<Image
-							alt={`${name} — vídeo`}
+							alt=""
 							className="object-contain p-4"
 							fill
 							sizes={MEDIA_SIZES}

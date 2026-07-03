@@ -35,6 +35,13 @@ function fmtAttr(item: Attr): string {
 			return fmtSpecRange(value.valueNumeric, value.valueNumericMax, unit);
 		case "number":
 			return fmtSpecNumber(value.valueNumeric, unit);
+		case "select": {
+			// Opções de select podem ter unidade ("Diâmetro do disco: 185" + mm).
+			if (!value.valueText) {
+				return "—";
+			}
+			return unit ? `${value.valueText} ${unit}` : value.valueText;
+		}
 		default:
 			return value.valueText ?? "—";
 	}
@@ -42,9 +49,9 @@ function fmtAttr(item: Attr): string {
 
 function SpecLabel({ children }: { children: ReactNode }) {
 	return (
-		<span className="font-display font-semibold text-[10.5px] text-gray-60 uppercase tracking-[0.12em]">
+		<dt className="font-display font-semibold text-[10.5px] text-gray-60 uppercase tracking-[0.12em]">
 			{children}
-		</span>
+		</dt>
 	);
 }
 
@@ -89,22 +96,22 @@ function SpecCell({
 }) {
 	if (wide) {
 		return (
-			<div
+			<dl
 				className={cn(
 					"flex items-baseline justify-between gap-4 px-4 py-3.5 sm:px-5",
 					className
 				)}
 			>
 				<SpecLabel>{attr.definition.label}</SpecLabel>
-				{specValueNode(attr)}
-			</div>
+				<dd>{specValueNode(attr)}</dd>
+			</dl>
 		);
 	}
 	return (
-		<div className={cn("px-4 py-3.5 sm:px-5 sm:py-4", className)}>
+		<dl className={cn("px-4 py-3.5 sm:px-5 sm:py-4", className)}>
 			<SpecLabel>{attr.definition.label}</SpecLabel>
-			<div className="mt-2">{specValueNode(attr)}</div>
-		</div>
+			<dd className="mt-2">{specValueNode(attr)}</dd>
+		</dl>
 	);
 }
 
