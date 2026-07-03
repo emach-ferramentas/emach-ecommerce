@@ -59,5 +59,7 @@ export const shippingLimiter = createLimiter(20);
 export const searchLimiter = createLimiter(30);
 /** cart_event é INSERT público sem auth — limitar por IP protege o banco compartilhado. */
 export const cartEventLimiter = createLimiter(30);
+/** Lookup de CEP repassa pra API Frenet — limitar por IP protege a cota do token. */
+export const cepLimiter = createLimiter(30);
 
 export const RATE_LIMIT_MESSAGE = "Muitas tentativas, aguarde um instante";

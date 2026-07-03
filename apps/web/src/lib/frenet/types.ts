@@ -33,3 +33,13 @@ export interface FrenetQuoteResponse {
 	ShippingSevicesArray?: FrenetShippingService[];
 	Timeout?: number;
 }
+
+// GET /CEP/Address/{cep} — lookup de endereço p/ autofill (#191).
+export interface FrenetAddressResponse {
+	CEP?: string;
+	City?: string;
+	District?: string;
+	Message?: string;
+	Street?: string;
+	UF?: string;
+}

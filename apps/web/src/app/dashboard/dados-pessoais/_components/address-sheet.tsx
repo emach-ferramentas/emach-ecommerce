@@ -24,6 +24,7 @@ import {
 	deleteAddressAction,
 	updateAddressAction,
 } from "@/app/dashboard/dados-pessoais/_actions/addresses";
+import { useCepAutofill } from "@/lib/use-cep-autofill";
 import {
 	type AddressInput,
 	addressInputSchema,
@@ -109,6 +110,19 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 		},
 	});
 
+	// Autofill por CEP (#191): preenche só o que veio não-vazio (CEP rural
+	// pode não ter rua/bairro) — campos continuam editáveis.
+	const cepAutofill = useCepAutofill((address) => {
+		if (address.street) {
+			form.setFieldValue("street", address.street);
+		}
+		if (address.neighborhood) {
+			form.setFieldValue("neighborhood", address.neighborhood);
+		}
+		form.setFieldValue("city", address.city);
+		form.setFieldValue("state", address.state);
+	});
+
 	const handleDelete = async () => {
 		if (!isEdit) {
 			return;
@@ -179,22 +193,35 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 						<div className="grid grid-cols-[140px_1fr] gap-4">
 							<form.Field name="zipCode">
 								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="zipCode"
-										label="CEP"
-									>
-										<Input
-											className="mt-2 h-11 rounded-none"
-											id="zipCode"
-											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(maskCep(e.target.value))
-											}
-											placeholder="00000-000"
-											value={field.state.value}
-										/>
-									</FieldShell>
+									<div>
+										<FieldShell
+											errors={field.state.meta.errors}
+											htmlFor="zipCode"
+											label="CEP"
+										>
+											<Input
+												aria-busy={cepAutofill.loading}
+												className="mt-2 h-11 rounded-none"
+												id="zipCode"
+												onBlur={field.handleBlur}
+												onChange={(e) => {
+													const next = maskCep(e.target.value);
+													field.handleChange(next);
+													cepAutofill.maybeLookup(next);
+												}}
+												placeholder="00000-000"
+												value={field.state.value}
+											/>
+										</FieldShell>
+										{cepAutofill.loading ? (
+											<p
+												aria-live="polite"
+												className="mt-1 text-muted-foreground text-xs"
+											>
+												Buscando endereço…
+											</p>
+										) : null}
+									</div>
 								)}
 							</form.Field>
 							<form.Field name="street">

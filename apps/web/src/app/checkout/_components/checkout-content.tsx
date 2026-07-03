@@ -31,6 +31,7 @@ import { authClient } from "@/lib/auth-client";
 import { useCart } from "@/lib/cart-context";
 import { fmtBRL, numericToCents } from "@/lib/format";
 import type { ShippingOption } from "@/lib/shipping/types";
+import { useCepAutofill } from "@/lib/use-cep-autofill";
 import { addressFieldsSchema } from "@/lib/validators/address";
 
 const NEW_ADDRESS_ID = "__new__";
@@ -247,6 +248,19 @@ export function CheckoutContent({
 			toast.success(`Pedido ${result.orderNumber} confirmado`);
 			router.push(`/pedidos/${result.orderNumber}` as Route);
 		},
+	});
+
+	// Autofill por CEP (#191): preenche só o que a Frenet devolveu não-vazio
+	// (CEP rural pode vir sem rua/bairro) — campos continuam editáveis.
+	const cepAutofill = useCepAutofill((address) => {
+		if (address.street) {
+			form.setFieldValue("newAddress.street", address.street);
+		}
+		if (address.neighborhood) {
+			form.setFieldValue("newAddress.neighborhood", address.neighborhood);
+		}
+		form.setFieldValue("newAddress.city", address.city);
+		form.setFieldValue("newAddress.state", address.state);
 	});
 
 	const watchedAddressId = useStore(form.store, (s) => s.values.addressId);
@@ -468,25 +482,39 @@ export function CheckoutContent({
 										<div className="grid grid-cols-1 gap-4 sm:grid-cols-[140px_1fr]">
 											<form.Field name="newAddress.zipCode">
 												{(field) => (
-													<FieldShell
-														errors={field.state.meta.errors}
-														htmlFor="zipCode"
-														label="CEP"
-													>
-														<input
-															autoComplete="postal-code"
-															className="emach-input"
-															id="zipCode"
-															onBlur={field.handleBlur}
-															onChange={(e) =>
-																field.handleChange(
-																	onlyDigits(e.target.value).slice(0, 8)
-																)
-															}
-															placeholder="00000000"
-															value={field.state.value}
-														/>
-													</FieldShell>
+													<div>
+														<FieldShell
+															errors={field.state.meta.errors}
+															htmlFor="zipCode"
+															label="CEP"
+														>
+															<input
+																aria-busy={cepAutofill.loading}
+																autoComplete="postal-code"
+																className="emach-input"
+																id="zipCode"
+																onBlur={field.handleBlur}
+																onChange={(e) => {
+																	const next = onlyDigits(e.target.value).slice(
+																		0,
+																		8
+																	);
+																	field.handleChange(next);
+																	cepAutofill.maybeLookup(next);
+																}}
+																placeholder="00000000"
+																value={field.state.value}
+															/>
+														</FieldShell>
+														{cepAutofill.loading ? (
+															<p
+																aria-live="polite"
+																className="mt-1 text-gray-60 text-xs"
+															>
+																Buscando endereço…
+															</p>
+														) : null}
+													</div>
 												)}
 											</form.Field>
 											<TextField
