@@ -11,6 +11,7 @@
       "!**/.agents",
       "!**/.claude",
       "!**/.codex",
+      "!**/.superpowers",
       "!**/.next",
       "!**/dist",
       "!**/.turbo",

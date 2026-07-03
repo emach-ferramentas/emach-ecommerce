@@ -73,3 +73,48 @@ export function ProductJsonLd({ detail }: { detail: ToolDetail }) {
 		/>
 	);
 }
+
+export function BreadcrumbJsonLd({
+	category,
+	productName,
+	slug,
+}: {
+	category: { slug: string; name: string } | null;
+	productName: string;
+	slug: string;
+}) {
+	const items = [
+		{ name: "Início", item: BASE_URL },
+		{ name: "Catálogo", item: `${BASE_URL}/catalog` },
+		...(category
+			? [
+					{
+						name: category.name,
+						item: `${BASE_URL}/catalog?cat=${category.slug}`,
+					},
+				]
+			: []),
+		{ name: productName, item: `${BASE_URL}/product/${slug}` },
+	];
+
+	const data = {
+		"@context": "https://schema.org",
+		"@type": "BreadcrumbList",
+		itemListElement: items.map((entry, index) => ({
+			"@type": "ListItem",
+			position: index + 1,
+			name: entry.name,
+			item: entry.item,
+		})),
+	};
+
+	return (
+		<script
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD exige <script> inline; "<" escapado bloqueia injeção via dados do catálogo
+			dangerouslySetInnerHTML={{
+				__html: JSON.stringify(data).replace(/</g, "\\u003c"),
+			}}
+			type="application/ld+json"
+		/>
+	);
+}

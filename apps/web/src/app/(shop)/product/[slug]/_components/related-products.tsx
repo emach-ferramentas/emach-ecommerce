@@ -2,6 +2,7 @@ import { db } from "@emach/db";
 import { getCategoryBySlug } from "@emach/db/queries/categories";
 import { getTools, type ToolListItem } from "@emach/db/queries/tools";
 import { ProductCard } from "@/components/product-card";
+import { SectionHeader } from "@/components/section-header";
 
 interface RelatedProductsProps {
 	categoryPath: string | null;
@@ -29,10 +30,12 @@ export async function RelatedProducts({
 		}
 	}
 
+	let rootCategory: { slug: string; name: string } | null = null;
 	const rootSlug = categoryPath?.split("/").filter(Boolean)[0];
 	if (rootSlug) {
 		const root = await getCategoryBySlug(db, rootSlug);
 		if (root) {
+			rootCategory = { slug: root.slug, name: root.name };
 			const { tools } = await getTools(db, {
 				categoryId: root.id,
 				excludeToolId: toolId,
@@ -62,9 +65,18 @@ export async function RelatedProducts({
 		<section aria-label="Produtos relacionados" className="pt-16 pb-20">
 			{/* Mesma coluna alinhada ao topo (galeria w-1/2 + buy box w-[480px]). */}
 			<div className="mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)]">
-				<h2 className="mb-6 font-display font-medium text-[28px]">
-					Você também pode gostar
-				</h2>
+				<SectionHeader
+					label="Continue explorando"
+					link={{
+						href: rootCategory
+							? `/catalog?cat=${rootCategory.slug}`
+							: "/catalog",
+						label: "Ver categoria",
+						variant: "arrow",
+					}}
+					title="Você também pode gostar"
+					titleSize="md"
+				/>
 				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
 					{picked.map((tool) => (
 						<ProductCard key={tool.id} tool={tool} />

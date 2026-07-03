@@ -211,7 +211,7 @@ export function ProductInfo({
 				)}
 			</div>
 
-			<div className="border-border border-y py-5">
+			<div className="border border-border bg-white p-5">
 				<div className="flex items-center gap-3">
 					{discountPct > 0 && (
 						<span className="bg-emach-red px-2 py-1 font-bold font-display text-[14px] text-white tracking-[0.04em]">
@@ -235,109 +235,91 @@ export function ProductInfo({
 				<div className="mt-1 text-[13px] text-gray-60">
 					Em até <strong>12× de {fmtBRL(installmentCents)}</strong> sem juros
 				</div>
-			</div>
 
-			{orderedVariants.length > 1 && (
-				<fieldset className="m-0 min-w-0 border-0 p-0">
-					<legend className="mb-2.5 font-semibold text-base">Voltagem</legend>
-					<div className="flex flex-wrap gap-2">
-						{orderedVariants.map((v) => {
-							const variantStock = stockByVariant[v.id] ?? false;
-							const isActive = v.id === selectedVariantId;
-							const vPrice =
-								applyDiscount(v.priceAmount, activePromotion) ?? v.priceAmount;
-							return (
-								<button
-									aria-pressed={isActive}
-									className={cn(
-										"flex min-w-[120px] flex-col gap-1 border-2 px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2",
-										!variantStock &&
-											"cursor-not-allowed border-gray-20 border-dashed opacity-45",
-										variantStock &&
-											isActive &&
-											"border-emach-red bg-near-black text-white",
-										variantStock &&
-											!isActive &&
-											"border-gray-20 bg-background text-foreground hover:border-foreground"
-									)}
-									disabled={!variantStock}
-									key={v.id}
-									onClick={() => variantStock && setSelectedVariantId(v.id)}
-									type="button"
-								>
-									<span className="flex items-center justify-between gap-2">
-										<span className="font-display font-semibold text-[12px] uppercase tracking-[0.12em] opacity-75">
-											{v.voltage ?? "Padrão"}
-										</span>
-										{!variantStock && (
-											<span className="opacity-100">
-												<span className="border border-emach-red/60 px-1.5 font-display text-[9px] text-emach-red-hover uppercase tracking-[0.08em]">
-													Esgotado
+				{orderedVariants.length > 1 && (
+					<fieldset className="m-0 mt-5 min-w-0 border-0 p-0">
+						<legend className="mb-2.5 font-semibold text-base">Voltagem</legend>
+						<div className="flex flex-wrap gap-2">
+							{orderedVariants.map((v) => {
+								const variantStock = stockByVariant[v.id] ?? false;
+								const isActive = v.id === selectedVariantId;
+								const vPrice =
+									applyDiscount(v.priceAmount, activePromotion) ??
+									v.priceAmount;
+								return (
+									<button
+										aria-pressed={isActive}
+										className={cn(
+											"flex min-w-[120px] flex-col gap-1 border-2 px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2",
+											!variantStock &&
+												"cursor-not-allowed border-gray-20 border-dashed opacity-45",
+											variantStock &&
+												isActive &&
+												"border-emach-red bg-near-black text-white",
+											variantStock &&
+												!isActive &&
+												"border-gray-20 bg-background text-foreground hover:border-foreground"
+										)}
+										disabled={!variantStock}
+										key={v.id}
+										onClick={() => variantStock && setSelectedVariantId(v.id)}
+										type="button"
+									>
+										<span className="flex items-center justify-between gap-2">
+											<span className="font-display font-semibold text-[12px] uppercase tracking-[0.12em] opacity-75">
+												{v.voltage ?? "Padrão"}
+											</span>
+											{!variantStock && (
+												<span className="opacity-100">
+													<span className="border border-emach-red/60 px-1.5 font-display text-[9px] text-emach-red-hover uppercase tracking-[0.08em]">
+														Esgotado
+													</span>
 												</span>
+											)}
+										</span>
+										{variantPricesDiffer && (
+											<span
+												className={cn(
+													"font-bold text-[15px] tabular-nums",
+													!variantStock && "line-through"
+												)}
+											>
+												{fmtNumericBRL(vPrice)}
 											</span>
 										)}
-									</span>
-									{variantPricesDiffer && (
-										<span
-											className={cn(
-												"font-bold text-[15px] tabular-nums",
-												!variantStock && "line-through"
-											)}
-										>
-											{fmtNumericBRL(vPrice)}
-										</span>
-									)}
-								</button>
-							);
-						})}
-					</div>
-				</fieldset>
-			)}
+									</button>
+								);
+							})}
+						</div>
+					</fieldset>
+				)}
 
-			<div className="space-y-3" ref={buyActionsRef}>
-				<div className="flex items-stretch gap-3">
-					<QuantityPicker onChange={setQty} value={qty} />
+				<div className="mt-5 space-y-3" ref={buyActionsRef}>
+					<div className="flex items-stretch gap-3">
+						<QuantityPicker onChange={setQty} value={qty} />
+						<EmachButton
+							disabled={!inStock}
+							full
+							icon={<ShoppingBag size={16} />}
+							onClick={handleAddToCart}
+							size="md"
+							variant="dark"
+						>
+							{inStock ? "Adicionar ao carrinho" : "Esgotado"}
+						</EmachButton>
+					</div>
 					<EmachButton
 						disabled={!inStock}
 						full
-						icon={<ShoppingBag size={16} />}
-						onClick={handleAddToCart}
+						icon={<Zap size={16} />}
+						onClick={handleBuyNow}
 						size="md"
-						variant="dark"
+						variant="primary"
 					>
-						{inStock ? "Adicionar ao carrinho" : "Esgotado"}
+						Comprar agora
 					</EmachButton>
 				</div>
-				<EmachButton
-					disabled={!inStock}
-					full
-					icon={<Zap size={16} />}
-					onClick={handleBuyNow}
-					size="md"
-					variant="primary"
-				>
-					Comprar agora
-				</EmachButton>
 			</div>
-
-			<button
-				aria-label="Compartilhar produto"
-				className="emach-ghost-btn inline-flex items-center gap-2 font-semibold text-[13px] text-gray-60"
-				onClick={handleShare}
-				type="button"
-			>
-				{shared ? (
-					<>
-						<Check className="text-success" size={14} />
-						Link copiado
-					</>
-				) : (
-					<>
-						<Share2 size={14} />
-						Compartilhar
-					</>
-				)}
-			</button>
 
 			<FreightCalculator
 				quantity={qty}
@@ -368,6 +350,25 @@ export function ProductInfo({
 					</div>
 				</div>
 			</div>
+
+			<button
+				aria-label="Compartilhar produto"
+				className="emach-ghost-btn inline-flex items-center gap-2 font-semibold text-[13px] text-gray-60"
+				onClick={handleShare}
+				type="button"
+			>
+				{shared ? (
+					<>
+						<Check className="text-success" size={14} />
+						Link copiado
+					</>
+				) : (
+					<>
+						<Share2 size={14} />
+						Compartilhar
+					</>
+				)}
+			</button>
 
 			<StickyBuyBar
 				categorySlug={primaryCategorySlug ?? undefined}

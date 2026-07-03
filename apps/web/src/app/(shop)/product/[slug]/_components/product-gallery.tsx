@@ -1,12 +1,5 @@
 "use client";
 
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
-} from "@emach/ui/components/carousel";
 import { cn } from "@emach/ui/lib/utils";
 import { Play } from "lucide-react";
 import { useState } from "react";
@@ -23,16 +16,14 @@ interface ProductGalleryProps {
 	video?: { url: string; poster: string | null } | null;
 }
 
-const MAX_STATIC_THUMBS = 5;
-
 // Serve a imagem principal otimizada (AVIF/WebP, redimensionada) pelo otimizador
 // do Next — o original em alta-res fica só no zoom. Corta o LCP do PDP, que era a
 // <img> crua do Supabase em tamanho cheio.
 const NEXT_IMG_WIDTHS = [640, 828, 1080, 1200] as const;
-// A galeria é full-width no mobile e ~42vw no desktop (lg:w-1/2 → imagem ~5/6);
+// A galeria é full-width no mobile e metade da tela no desktop (lg:w-1/2);
 // o browser escolhe a largura do srcSet por este `sizes` (mobile pega 640w em vez
 // de 1080w, baixando ainda mais o LCP no celular).
-const GALLERY_SIZES = "(min-width: 1024px) 42vw, 100vw";
+const GALLERY_SIZES = "(min-width: 1024px) 50vw, 100vw";
 
 function optimizedSrc(url: string, w = 1080) {
 	return `/_next/image?url=${encodeURIComponent(url)}&w=${w}&q=75`;
@@ -68,8 +59,8 @@ function ThumbButton({
 		<button
 			aria-label={label}
 			className={cn(
-				"relative aspect-square w-full cursor-pointer overflow-hidden border-2 bg-image-bg focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2",
-				isActive ? "border-emach-red" : "border-transparent"
+				"relative size-11 shrink-0 cursor-pointer overflow-hidden border-2 bg-white focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2",
+				isActive ? "border-emach-red" : "border-border"
 			)}
 			onClick={onClick}
 			type="button"
@@ -101,7 +92,6 @@ export function ProductGallery({
 	const slots = buildSlots(images, video);
 	const [activeThumb, setActiveThumb] = useState(0);
 	const activeSlot = slots[activeThumb] ?? slots[0];
-	const needsCarousel = slots.length > MAX_STATIC_THUMBS;
 
 	const renderThumb = (slot: GallerySlot, i: number) => (
 		<ThumbButton
@@ -147,48 +137,14 @@ export function ProductGallery({
 	};
 
 	return (
-		<div className="flex w-full flex-col justify-center lg:w-1/2 lg:flex-row lg:gap-3">
-			{slots.length > 1 && (
-				<aside className="order-2 mt-3 md:order-1 md:mt-0 md:w-24">
-					{/* Mobile: grid horizontal — wraps naturalmente se >4 slots */}
-					<div className="grid grid-cols-4 gap-2 lg:hidden">
+		<div className="w-full lg:w-1/2">
+			<div className="relative aspect-square w-full overflow-hidden bg-image-bg">
+				{renderMainSlot()}
+				{slots.length > 1 && (
+					<div className="absolute bottom-3 left-3 z-[2] flex max-w-[calc(100%-4.5rem)] gap-2 overflow-x-auto">
 						{slots.map((slot, i) => renderThumb(slot, i))}
 					</div>
-
-					{/* Desktop: coluna vertical — estática ou carrossel */}
-					<div className="hidden lg:block">
-						{needsCarousel ? (
-							<Carousel
-								className="relative w-full py-10"
-								opts={{ align: "start", slidesToScroll: 1 }}
-								orientation="vertical"
-							>
-								<CarouselContent className="-mt-2 h-[412px]">
-									{slots.map((slot, i) => (
-										<CarouselItem
-											className="basis-1/5 pt-2"
-											key={slotKey(slot)}
-										>
-											{renderThumb(slot, i)}
-										</CarouselItem>
-									))}
-								</CarouselContent>
-								<CarouselPrevious className="top-0 size-8" />
-								<CarouselNext className="bottom-0 size-8" />
-							</Carousel>
-						) : (
-							<div className="flex flex-col gap-2">
-								{slots.map((slot, i) => renderThumb(slot, i))}
-							</div>
-						)}
-					</div>
-				</aside>
-			)}
-
-			<div className="order-1 lg:order-2 lg:flex-1">
-				<div className="relative aspect-square w-full overflow-hidden bg-image-bg lg:w-5/6">
-					{renderMainSlot()}
-				</div>
+				)}
 			</div>
 		</div>
 	);
