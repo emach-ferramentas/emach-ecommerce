@@ -10,6 +10,9 @@ vi.mock("@emach/db", () => ({
 	},
 }));
 vi.mock("@emach/db/queries/shipping", () => ({ getActiveBoxes: vi.fn() }));
+vi.mock("@emach/db/queries/store-settings", () => ({
+	getShippingSettings: vi.fn(),
+}));
 vi.mock("@/lib/frenet/client", () => ({ fetchFrenetQuote: vi.fn() }));
 vi.mock("@/lib/frenet/cache", () => ({
 	buildQuoteCacheKey: vi.fn(() => "cache-key"),
@@ -18,8 +21,13 @@ vi.mock("@/lib/frenet/cache", () => ({
 }));
 
 import { getActiveBoxes } from "@emach/db/queries/shipping";
+import { getShippingSettings } from "@emach/db/queries/store-settings";
 import { env } from "@emach/env/server";
-import { getCachedQuote, setCachedQuote } from "@/lib/frenet/cache";
+import {
+	buildQuoteCacheKey,
+	getCachedQuote,
+	setCachedQuote,
+} from "@/lib/frenet/cache";
 import { fetchFrenetQuote } from "@/lib/frenet/client";
 import { quoteShipping } from "./quote";
 
@@ -59,12 +67,23 @@ const FRENET_OK = {
 	],
 };
 
+// Default: sem originCep configurado (fallback env) e política cart_value
+// com cap alto o bastante pra não interferir nos testes existentes.
+const SETTINGS = {
+	originBranchId: null,
+	originCep: null,
+	insurancePolicy: "cart_value" as const,
+	insuranceCapAmount: 3000,
+};
+
 beforeEach(() => {
 	vi.mocked(getActiveBoxes).mockResolvedValue([BOX]);
+	vi.mocked(getShippingSettings).mockResolvedValue(SETTINGS);
 	selectWhere.mockResolvedValue([TOOL_ROW]);
 	vi.mocked(getCachedQuote).mockResolvedValue(null);
 	vi.mocked(setCachedQuote).mockResolvedValue(undefined);
 	vi.mocked(fetchFrenetQuote).mockReset();
+	vi.mocked(buildQuoteCacheKey).mockClear();
 });
 
 describe("quoteShipping (adapter Frenet)", () => {
@@ -133,5 +152,77 @@ describe("quoteShipping (adapter Frenet)", () => {
 
 		expect(result).toEqual(cached);
 		expect(fetchFrenetQuote).not.toHaveBeenCalled();
+	});
+
+	it("usa originCep das settings como SellerCEP (normalizado) quando configurado", async () => {
+		vi.mocked(getShippingSettings).mockResolvedValue({
+			...SETTINGS,
+			originBranchId: "b1",
+			originCep: "01310-100",
+		});
+		vi.mocked(fetchFrenetQuote).mockResolvedValue(FRENET_OK);
+
+		await quoteShipping({
+			destinationCep: "14270000",
+			items: [{ toolId: "t1", quantity: 1 }],
+			declaredValueCents: 10_000,
+		});
+
+		const body = vi.mocked(fetchFrenetQuote).mock.calls[0]?.[0];
+		expect(body?.SellerCEP).toBe("01310100");
+		// A chave de cache reflete a origem resolvida — mudou setting, muda chave.
+		expect(vi.mocked(buildQuoteCacheKey).mock.calls[0]?.[0]).toMatchObject({
+			sellerCep: "01310100",
+		});
+	});
+
+	it("originCep null → fallback pra env.FRENET_SELLER_CEP", async () => {
+		vi.mocked(fetchFrenetQuote).mockResolvedValue(FRENET_OK);
+
+		await quoteShipping({
+			destinationCep: "14270000",
+			items: [{ toolId: "t1", quantity: 1 }],
+			declaredValueCents: 10_000,
+		});
+
+		const body = vi.mocked(fetchFrenetQuote).mock.calls[0]?.[0];
+		expect(body?.SellerCEP).toBe(env.FRENET_SELLER_CEP);
+	});
+
+	it("insurancePolicy 'none' → ShipmentInvoiceValue 0 (sem ad valorem)", async () => {
+		vi.mocked(getShippingSettings).mockResolvedValue({
+			...SETTINGS,
+			insurancePolicy: "none",
+		});
+		vi.mocked(fetchFrenetQuote).mockResolvedValue(FRENET_OK);
+
+		await quoteShipping({
+			destinationCep: "14270000",
+			items: [{ toolId: "t1", quantity: 1 }],
+			declaredValueCents: 32_068,
+		});
+
+		const body = vi.mocked(fetchFrenetQuote).mock.calls[0]?.[0];
+		expect(body?.ShipmentInvoiceValue).toBe(0);
+		expect(vi.mocked(buildQuoteCacheKey).mock.calls[0]?.[0]).toMatchObject({
+			declaredValueCents: 0,
+		});
+	});
+
+	it("insurancePolicy 'cart_value' limita o valor declarado ao cap (em reais)", async () => {
+		vi.mocked(getShippingSettings).mockResolvedValue({
+			...SETTINGS,
+			insuranceCapAmount: 3000, // R$ 3.000,00
+		});
+		vi.mocked(fetchFrenetQuote).mockResolvedValue(FRENET_OK);
+
+		await quoteShipping({
+			destinationCep: "14270000",
+			items: [{ toolId: "t1", quantity: 1 }],
+			declaredValueCents: 500_000, // R$ 5.000,00 > cap
+		});
+
+		const body = vi.mocked(fetchFrenetQuote).mock.calls[0]?.[0];
+		expect(body?.ShipmentInvoiceValue).toBe(3000);
 	});
 });
