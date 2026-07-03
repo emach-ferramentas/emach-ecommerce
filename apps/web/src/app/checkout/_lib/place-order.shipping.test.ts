@@ -35,6 +35,8 @@ describe("assertShippingQuoted", () => {
 		).resolves.toEqual({
 			shippingUnverified: false,
 			shippingMethod: "Correios — Sedex",
+			// #186: código do serviço casado, persistido p/ tracking Frenet.
+			shippingServiceCode: "COR-40010",
 		});
 	});
 
@@ -53,6 +55,7 @@ describe("assertShippingQuoted", () => {
 		).resolves.toEqual({
 			shippingUnverified: false,
 			shippingMethod: "Correios — PAC",
+			shippingServiceCode: "COR-41106",
 		});
 	});
 
@@ -79,7 +82,11 @@ describe("assertShippingQuoted", () => {
 				destinationCep: "01310100",
 				items: [{ toolId: "t1", quantity: 1 }],
 			})
-		).resolves.toEqual({ shippingUnverified: true, shippingMethod: null });
+		).resolves.toEqual({
+			shippingUnverified: true,
+			shippingMethod: null,
+			shippingServiceCode: null,
+		});
 	});
 
 	it("rejeita shipping que não bate com nenhuma opção", async () => {

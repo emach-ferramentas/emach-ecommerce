@@ -355,7 +355,13 @@ export async function assertShippingQuoted(params: {
 	items: Array<{ toolId: string; quantity: number }>;
 	declaredValueCents?: number;
 	shippingServiceCode?: string;
-}): Promise<{ shippingUnverified: boolean; shippingMethod: string | null }> {
+}): Promise<{
+	shippingUnverified: boolean;
+	shippingMethod: string | null;
+	// #186: carrierId composto ("COR-40010") da opção CASADA pelo anti-fraude
+	// (não o input cru do cliente) — persistido p/ habilitar tracking Frenet.
+	shippingServiceCode: string | null;
+}> {
 	let quote: Awaited<ReturnType<typeof quoteShipping>>;
 	try {
 		quote = await quoteShipping({
@@ -376,7 +382,11 @@ export async function assertShippingQuoted(params: {
 			shippingCents: params.shippingCents,
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
-		return { shippingUnverified: true, shippingMethod: null };
+		return {
+			shippingUnverified: true,
+			shippingMethod: null,
+			shippingServiceCode: null,
+		};
 	}
 	// Nenhum serviço cotável p/ o CEP/pacote → frete a combinar; sem opção a casar.
 	if (quote.negotiate) {
@@ -392,7 +402,11 @@ export async function assertShippingQuoted(params: {
 	if (!match) {
 		throw new OrderError("Frete inválido, refaça o checkout");
 	}
-	return { shippingUnverified: false, shippingMethod: match.name };
+	return {
+		shippingUnverified: false,
+		shippingMethod: match.name,
+		shippingServiceCode: match.carrierId,
+	};
 }
 
 async function checkAggregateStock(
@@ -431,6 +445,9 @@ export async function placeOrder(
 		// Label do serviço validado pelo assertShippingQuoted (ex.: "Correios —
 		// Sedex"). null quando o frete não pôde ser verificado (fail-open).
 		shippingMethod?: string | null;
+		// #186: carrierId composto validado ("COR-40010") — base do tracking
+		// Frenet (POST /tracking/trackinginfo exige ShippingServiceCode).
+		shippingServiceCode?: string | null;
 	}
 ): Promise<{ orderId: string; orderNumber: string }> {
 	const {
@@ -440,6 +457,7 @@ export async function placeOrder(
 		userAgent,
 		shippingUnverified = false,
 		shippingMethod = null,
+		shippingServiceCode = null,
 	} = params;
 
 	const { lines, autoPromoToolIds } = await prepareLines(tx, input);
@@ -584,6 +602,7 @@ export async function placeOrder(
 		couponId,
 		shippingAmount: input.shippingAmount,
 		shippingMethod,
+		shippingServiceCode,
 		totalAmount,
 		shippingAddress: snapshot,
 		shippingUnverified,
