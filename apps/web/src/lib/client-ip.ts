@@ -22,9 +22,7 @@ export function getClientIp(headers: Headers): string | null {
 			.split(",")
 			.map((part) => part.trim())
 			.filter(Boolean);
-		if (hops.length > 0) {
-			return hops[hops.length - 1];
-		}
+		return hops.at(-1) ?? null;
 	}
 
 	return null;

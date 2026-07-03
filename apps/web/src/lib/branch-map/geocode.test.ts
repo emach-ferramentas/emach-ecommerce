@@ -4,8 +4,10 @@ import { cityToXY } from "./geocode";
 describe("cityToXY", () => {
 	it("acha cidade conhecida e retorna [x,y] no viewBox", () => {
 		const xy = cityToXY("São Paulo", "SP");
-		expect(xy).not.toBeNull();
-		const [x, y] = xy!;
+		if (!xy) {
+			throw new Error("esperava coordenadas para cidade conhecida");
+		}
+		const [x, y] = xy;
 		expect(x).toBeGreaterThan(0);
 		expect(x).toBeLessThan(560);
 		expect(y).toBeGreaterThan(0);

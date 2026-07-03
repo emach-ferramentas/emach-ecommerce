@@ -11,5 +11,5 @@ import { cacheLife } from "next/cache";
 export async function getProductShell(slug: string) {
 	"use cache";
 	cacheLife({ revalidate: 600 });
-	return getToolBySlug(db, slug);
+	return await getToolBySlug(db, slug);
 }

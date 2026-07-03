@@ -277,6 +277,7 @@ export function CheckoutContent({
 		setDestinationCep(onlyDigits(cepRaw).slice(0, 8));
 	}, [watchedAddressId, watchedNewCep, addresses]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: quoteNonce não é lido no corpo — é gatilho manual de re-cotação (botão "tentar novamente").
 	useEffect(() => {
 		if (destinationCep.length !== 8 || items.length === 0) {
 			setShippingStatus("idle");
@@ -309,7 +310,7 @@ export function CheckoutContent({
 			cancelled = true;
 			clearTimeout(handle);
 		};
-	}, [destinationCep, items, quoteNonce]);
+	}, [destinationCep, items, subtotal, quoteNonce]);
 
 	// Reenvia o e-mail de verificação (#93). Replica o fluxo do cadastro; o
 	// callbackURL traz o cliente de volta ao checkout após confirmar. O botão é

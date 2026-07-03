@@ -1,7 +1,11 @@
 "use server";
 
 import { db } from "@emach/db";
-import { order, refundRequest } from "@emach/db/schema/orders";
+import {
+	ACTIVE_REFUND_STATUSES,
+	order,
+	refundRequest,
+} from "@emach/db/schema/orders";
 import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -9,10 +13,7 @@ import { z } from "zod";
 import type { ActionResult } from "@/lib/actions/types";
 import { log } from "@/lib/evlog";
 import { isRefundEligibleStatus } from "@/lib/refunds/queries";
-import { ACTIVE_REFUND_STATUSES } from "@/lib/refunds/status";
 import { requireCurrentClient } from "@/lib/session";
-
-export type { ActionResult };
 
 const schema = z.object({
 	orderId: z.string().min(1),

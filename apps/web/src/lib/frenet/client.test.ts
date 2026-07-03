@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FrenetError, fetchFrenetQuote } from "./client";
 import type { FrenetQuoteRequest } from "./types";
 
+const QUOTE_URL_RE = /\/shipping\/quote$/;
+
 const BODY: FrenetQuoteRequest = {
 	SellerCEP: "01310100",
 	RecipientCEP: "14270000",
@@ -29,7 +31,7 @@ describe("fetchFrenetQuote", () => {
 		await expect(fetchFrenetQuote(BODY)).resolves.toEqual(payload);
 
 		const [url, init] = spy.mock.calls[0] ?? [];
-		expect(String(url)).toMatch(/\/shipping\/quote$/);
+		expect(String(url)).toMatch(QUOTE_URL_RE);
 		expect(init?.method).toBe("POST");
 		const headers = init?.headers as Record<string, string>;
 		expect(headers.token).toBeTruthy();

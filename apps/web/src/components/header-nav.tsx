@@ -29,6 +29,7 @@ export function HeaderNav() {
 	}, []);
 
 	// Reset hash when the pathname changes (cross-route navigation clears the hash).
+	// biome-ignore lint/correctness/useExhaustiveDependencies: pathname não é lido no corpo — é o gatilho do reset em navegação cross-route.
 	useEffect(() => {
 		setUrlHash(window.location.hash);
 	}, [pathname]);

@@ -14,8 +14,6 @@ import {
 	addressInputSchema,
 } from "@/lib/validators/address";
 
-export type { ActionResult, ActionResultWith };
-
 const idSchema = z.object({ id: z.string().min(1) });
 const updateSchema = addressInputSchema.extend({ id: z.string().min(1) });
 

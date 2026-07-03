@@ -1,13 +1,17 @@
-export type BranchPin = {
-	id: string;
-	name: string;
-	city: string;
-	uf: string;
+export interface BranchPin {
 	address: string;
+	city: string;
+	id: string;
+	mapsUrl: string;
+	name: string;
 	phone: string | null;
+	uf: string;
 	x: number;
 	y: number;
-	mapsUrl: string;
-};
+}
 
-export type StateShape = { uf: string; path: string; highlighted: boolean };
+export interface StateShape {
+	highlighted: boolean;
+	path: string;
+	uf: string;
+}

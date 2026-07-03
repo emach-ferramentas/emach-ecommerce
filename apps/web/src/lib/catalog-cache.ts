@@ -8,5 +8,5 @@ import { cacheLife } from "next/cache";
 export async function getCachedCategoryTree() {
 	"use cache";
 	cacheLife({ revalidate: 600 });
-	return getCategoryTree(db);
+	return await getCategoryTree(db);
 }

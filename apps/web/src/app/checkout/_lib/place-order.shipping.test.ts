@@ -5,6 +5,8 @@ vi.mock("@/lib/shipping/quote", () => ({ quoteShipping: vi.fn() }));
 import { quoteShipping } from "@/lib/shipping/quote";
 import { assertShippingQuoted } from "./place-order";
 
+const INVALID_SHIPPING_RE = /frete inválido/i;
+
 const OPTIONS = [
 	{
 		carrierId: "COR-40010",
@@ -71,7 +73,7 @@ describe("assertShippingQuoted", () => {
 				items: [{ toolId: "t1", quantity: 1 }],
 				shippingServiceCode: "COR-40010", // …mas serviço Sedex
 			})
-		).rejects.toThrow(/frete inválido/i);
+		).rejects.toThrow(INVALID_SHIPPING_RE);
 	});
 
 	it("fail-open: API indisponível não bloqueia, marca shippingUnverified (#97)", async () => {

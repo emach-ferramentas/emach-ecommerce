@@ -19,32 +19,28 @@ import { log } from "evlog";
 
 const RATE_LIMIT_PREFIX = "auth:";
 
-/**
- * TTL das chaves no Redis, em segundos. O Better Auth não passa o `window` ao
- * `customStorage`, mas todos os nossos `customRules` usam o mesmo `window`
- * ({@link RATE_LIMIT_WINDOW_SECONDS}), então um TTL fixo cobre todas as regras.
- * A chave é renovada a cada request e expira após esse tempo de inatividade —
- * que é exatamente quando o Better Auth também reseta o contador.
- *
- * Fonte canônica em `@emach/redis` (compartilhada com o rate limit do checkout
- * #94); re-exportada aqui para os consumidores de auth (ecommerce.ts).
- */
-export { RATE_LIMIT_WINDOW_SECONDS };
+// TTL das chaves no Redis: RATE_LIMIT_WINDOW_SECONDS (fonte canônica em
+// `@emach/redis`, compartilhada com o rate limit do checkout #94). O Better
+// Auth não passa o `window` ao `customStorage`, mas todos os nossos
+// `customRules` usam o mesmo `window`, então um TTL fixo cobre todas as
+// regras. A chave é renovada a cada request e expira após esse tempo de
+// inatividade — exatamente quando o Better Auth também reseta o contador.
+// Consumidores (ecommerce.ts) importam a constante direto de `@emach/redis`.
 
 /** Formato interno do contador do Better Auth (`api/rate-limiter`). */
-type RateLimitData = {
-	key: string;
+export interface RateLimitData {
 	count: number;
+	key: string;
 	lastRequest: number;
-};
+}
 
-type RateLimitStorage = {
+export interface RateLimitStorage {
 	get: (key: string) => Promise<RateLimitData | undefined>;
 	// O Better Auth passa um 3º arg `update` (insert vs. update). Ignoramos —
 	// sempre gravamos o `value` completo (que já vem com o `count` resolvido),
 	// então o overwrite é correto. Declarado por fidelidade ao contrato.
 	set: (key: string, value: RateLimitData, update?: boolean) => Promise<void>;
-};
+}
 
 function createInMemoryStorage(): RateLimitStorage {
 	const store = new Map<string, { data: RateLimitData; expiresAt: number }>();

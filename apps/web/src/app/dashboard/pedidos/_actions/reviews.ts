@@ -10,8 +10,6 @@ import type { ActionResult } from "@/lib/actions/types";
 import { log } from "@/lib/evlog";
 import { requireCurrentClient } from "@/lib/session";
 
-export type { ActionResult };
-
 const schema = z.object({
 	orderId: z.string().min(1),
 	toolId: z.string().min(1),

@@ -8,7 +8,7 @@
     "test": "bun test"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/cpf-cnpj.ts"
   },
   "devDependencies": {
     "@emach/config": "workspace:*",

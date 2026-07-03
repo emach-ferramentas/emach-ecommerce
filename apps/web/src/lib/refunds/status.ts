@@ -70,9 +70,8 @@ export function countRefundsByTab(
 }
 
 // Status que contam como "solicitação ativa" — bloqueiam nova solicitação.
-// Fonte única em @emach/db (issue #96); sincronizado por CI.
-export { ACTIVE_REFUND_STATUSES };
-
+// Fonte única em @emach/db (issue #96); sincronizado por CI — consumidores
+// importam ACTIVE_REFUND_STATUSES direto de @emach/db/schema/orders.
 export function isActiveRefund(status: RefundStatus): boolean {
 	return (ACTIVE_REFUND_STATUSES as readonly RefundStatus[]).includes(status);
 }

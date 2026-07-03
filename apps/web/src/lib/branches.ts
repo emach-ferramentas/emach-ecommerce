@@ -3,21 +3,21 @@ import type { BranchBusinessHours } from "@emach/db/schema/inventory";
 import { branch as branchTable } from "@emach/db/schema/inventory";
 import { asc, eq } from "drizzle-orm";
 
-export type BranchRow = {
-	id: string;
-	name: string;
-	phone: string | null;
+export interface BranchRow {
 	businessHours: BranchBusinessHours | null;
 	cep: string | null;
+	city: string | null;
+	id: string;
+	name: string;
+	neighborhood: string | null;
+	phone: string | null;
+	state: string | null;
 	street: string | null;
 	streetNumber: string | null;
-	neighborhood: string | null;
-	city: string | null;
-	state: string | null;
-};
+}
 
 export async function getActiveBranches(): Promise<BranchRow[]> {
-	return db
+	return await db
 		.select({
 			id: branchTable.id,
 			name: branchTable.name,

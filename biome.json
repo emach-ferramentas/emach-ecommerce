@@ -12,6 +12,8 @@
       "!**/.claude",
       "!**/.codex",
       "!**/.superpowers",
+      "!**/.impeccable",
+      "!**/graphify-out",
       "!**/.next",
       "!**/dist",
       "!**/.turbo",

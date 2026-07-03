@@ -9,16 +9,14 @@ import { sendEmail } from "@emach/email/send";
 import { ResetPasswordEmail } from "@emach/email/templates/reset-password";
 import { VerifyEmailEmail } from "@emach/email/templates/verify-email";
 import { env } from "@emach/env/server";
+import { RATE_LIMIT_WINDOW_SECONDS } from "@emach/redis";
 import { isValidCpfCnpj, isValidPhone, onlyDigits } from "@emach/validators";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { createGoogleProviderConfig } from "./google";
-import {
-	createRateLimitStorage,
-	RATE_LIMIT_WINDOW_SECONDS,
-} from "./rate-limit-storage";
+import { createRateLimitStorage } from "./rate-limit-storage";
 
 const db = createDb();
 const schema = { client, clientSession, clientAccount, clientVerification };
