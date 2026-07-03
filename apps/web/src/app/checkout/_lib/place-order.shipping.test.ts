@@ -5,18 +5,26 @@ vi.mock("@/lib/shipping/quote", () => ({ quoteShipping: vi.fn() }));
 import { quoteShipping } from "@/lib/shipping/quote";
 import { assertShippingQuoted } from "./place-order";
 
+const OPTIONS = [
+	{
+		carrierId: "COR-40010",
+		name: "Correios — Sedex",
+		priceCents: 3596,
+		deliveryDays: 1,
+	},
+	{
+		carrierId: "COR-41106",
+		name: "Correios — PAC",
+		priceCents: 1890,
+		deliveryDays: 6,
+	},
+];
+
 describe("assertShippingQuoted", () => {
-	it("aceita shipping que bate com uma opção cotada (verificado)", async () => {
+	it("aceita shipping que bate com uma opção cotada e devolve o método", async () => {
 		vi.mocked(quoteShipping).mockResolvedValue({
 			negotiate: false,
-			options: [
-				{
-					carrierId: "carrier-1",
-					name: "SEDEX",
-					priceCents: 3596,
-					deliveryDays: 1,
-				},
-			],
+			options: OPTIONS,
 		});
 		await expect(
 			assertShippingQuoted({
@@ -24,31 +32,60 @@ describe("assertShippingQuoted", () => {
 				destinationCep: "01310100",
 				items: [{ toolId: "t1", quantity: 1 }],
 			})
-		).resolves.toEqual({ shippingUnverified: false });
+		).resolves.toEqual({
+			shippingUnverified: false,
+			shippingMethod: "Correios — Sedex",
+		});
+	});
+
+	it("valida o PAR serviço+preço quando shippingServiceCode vem", async () => {
+		vi.mocked(quoteShipping).mockResolvedValue({
+			negotiate: false,
+			options: OPTIONS,
+		});
+		await expect(
+			assertShippingQuoted({
+				shippingCents: 1890,
+				destinationCep: "01310100",
+				items: [{ toolId: "t1", quantity: 1 }],
+				shippingServiceCode: "COR-41106",
+			})
+		).resolves.toEqual({
+			shippingUnverified: false,
+			shippingMethod: "Correios — PAC",
+		});
+	});
+
+	it("rejeita preço válido de OUTRO serviço que não o selecionado", async () => {
+		vi.mocked(quoteShipping).mockResolvedValue({
+			negotiate: false,
+			options: OPTIONS,
+		});
+		await expect(
+			assertShippingQuoted({
+				shippingCents: 1890, // preço do PAC…
+				destinationCep: "01310100",
+				items: [{ toolId: "t1", quantity: 1 }],
+				shippingServiceCode: "COR-40010", // …mas serviço Sedex
+			})
+		).rejects.toThrow(/frete inválido/i);
 	});
 
 	it("fail-open: API indisponível não bloqueia, marca shippingUnverified (#97)", async () => {
-		vi.mocked(quoteShipping).mockRejectedValue(new Error("Shipping API 503"));
+		vi.mocked(quoteShipping).mockRejectedValue(new Error("Frenet 503"));
 		await expect(
 			assertShippingQuoted({
 				shippingCents: 9999,
 				destinationCep: "01310100",
 				items: [{ toolId: "t1", quantity: 1 }],
 			})
-		).resolves.toEqual({ shippingUnverified: true });
+		).resolves.toEqual({ shippingUnverified: true, shippingMethod: null });
 	});
 
 	it("rejeita shipping que não bate com nenhuma opção", async () => {
 		vi.mocked(quoteShipping).mockResolvedValue({
 			negotiate: false,
-			options: [
-				{
-					carrierId: "carrier-1",
-					name: "SEDEX",
-					priceCents: 3596,
-					deliveryDays: 1,
-				},
-			],
+			options: OPTIONS,
 		});
 		await expect(
 			assertShippingQuoted({
@@ -59,7 +96,7 @@ describe("assertShippingQuoted", () => {
 		).rejects.toThrow();
 	});
 
-	it("rejeita quando o frete é a combinar (item pesado sem valor)", async () => {
+	it("rejeita quando o frete é a combinar (sem serviço válido)", async () => {
 		vi.mocked(quoteShipping).mockResolvedValue({
 			negotiate: true,
 			options: [],

@@ -19,15 +19,17 @@ if (existsSync(envPath)) {
 	dotenv.config({ path: envPath, quiet: true });
 }
 
-// Valor único que satisfaz z.url() E z.string().min(32)/min(3)/min(1) ao mesmo
-// tempo — cobre toda obrigatória sem precisar de um dummy por tipo.
-const DUMMY = `https://test.invalid/${"x".repeat(48)}`;
+// Valores que satisfazem os validadores das obrigatórias: o genérico (URL longa)
+// cobre z.url()/min(N); o numérico cobre padrões estritos (ex.: FRENET_SELLER_CEP
+// /^\d{8}$/). Para cada chave, usa o primeiro candidato que o validador aceitar.
+const DUMMIES = [`https://test.invalid/${"x".repeat(48)}`, "12345678"];
 
 for (const schema of [serverSchema, clientSchema]) {
 	for (const [key, validator] of Object.entries(schema)) {
 		const required = !validator.safeParse(undefined).success;
 		if (required && process.env[key] == null) {
-			process.env[key] = DUMMY;
+			process.env[key] =
+				DUMMIES.find((d) => validator.safeParse(d).success) ?? DUMMIES[0];
 		}
 	}
 }

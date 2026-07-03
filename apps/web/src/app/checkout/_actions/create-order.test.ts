@@ -86,7 +86,10 @@ describe("createOrderAction — gate de verificação de e-mail (#93)", () => {
 		// Defesa: se um teste futuro fizer resolveDestinationCep retornar um CEP,
 		// assertShippingQuoted precisa resolver para o shape esperado — senão a
 		// desestruturação `shippingCheck.shippingUnverified` lança TypeError.
-		assertShippingQuoted.mockResolvedValue({ shippingUnverified: false });
+		assertShippingQuoted.mockResolvedValue({
+			shippingUnverified: false,
+			shippingMethod: null,
+		});
 	});
 
 	it("rejeita pedido de cliente não-verificado sem consumir rate limit nem tocar placeOrder", async () => {

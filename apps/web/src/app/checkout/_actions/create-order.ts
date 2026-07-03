@@ -66,6 +66,7 @@ export async function createOrderAction(
 		// chegue ao placeOrder sem revalidar o frete (ex.: destino sem CEP) fica
 		// marcado p/ revisão, em vez de aceito às cegas (defesa em profundidade).
 		let shippingUnverified = true;
+		let shippingMethod: string | null = null;
 		const destinationCep = await resolveDestinationCep(db, input, clientId);
 		if (destinationCep) {
 			// Valor declarado p/ o seguro de frete = subtotal dos itens submetidos
@@ -83,8 +84,10 @@ export async function createOrderAction(
 					quantity: i.quantity,
 				})),
 				declaredValueCents,
+				shippingServiceCode: input.shippingServiceCode,
 			});
 			shippingUnverified = shippingCheck.shippingUnverified;
+			shippingMethod = shippingCheck.shippingMethod;
 		}
 
 		const result = await db.transaction((tx) =>
@@ -94,6 +97,7 @@ export async function createOrderAction(
 				ipAddress,
 				userAgent,
 				shippingUnverified,
+				shippingMethod,
 			})
 		);
 		return { ok: true, ...result };

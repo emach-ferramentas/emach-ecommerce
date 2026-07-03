@@ -233,6 +233,7 @@ export function CheckoutContent({
 					priceAmount: i.priceAmount,
 				})),
 				shippingAmount: (selectedShippingCents / 100).toFixed(2),
+				shippingServiceCode: selectedCarrierId ?? undefined,
 				couponCode: coupon?.code,
 			});
 

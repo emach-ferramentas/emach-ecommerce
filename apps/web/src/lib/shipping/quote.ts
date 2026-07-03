@@ -1,14 +1,18 @@
 import { db } from "@emach/db";
-import {
-	getActiveBoxes,
-	getActiveCarriersWithTables,
-} from "@emach/db/queries/shipping";
-import { quoteShipping as quoteByTables } from "@emach/db/queries/shipping-quote";
+import { getActiveBoxes } from "@emach/db/queries/shipping";
+import { packItems } from "@emach/db/queries/shipping-quote";
 import { tool } from "@emach/db/schema/tools";
+import { env } from "@emach/env/server";
 import { inArray } from "drizzle-orm";
 
+import {
+	buildQuoteCacheKey,
+	getCachedQuote,
+	setCachedQuote,
+} from "@/lib/frenet/cache";
+import { fetchFrenetQuote } from "@/lib/frenet/client";
+import { mapFrenetResponse } from "@/lib/frenet/map";
 import { buildQuoteItems } from "./build-items";
-import { mapQuoteResult } from "./map";
 import type { ShippingOption } from "./types";
 
 export interface QuoteShippingInput {
@@ -17,15 +21,16 @@ export interface QuoteShippingInput {
 	items: { toolId: string; quantity: number }[];
 }
 
-// Cotação por tabelas próprias (substitui SuperFrete). declaredValue = subtotal
-// do carrinho (centavos→reais); GRIS/ad valorem vêm do carrier. Sem cobertura
-// (sem zona/faixa/caixa) → negotiate=true.
+// Cotação via Frenet (substitui o motor de tabelas próprias — spec
+// 2026-07-02). O carrinho ainda é consolidado em caixas reais (packItems +
+// shippingBox): cada caixa vira uma linha do ShippingItemArray; item sem caixa
+// → negotiate ("a combinar") SEM gastar chamada. Cache Redis 30min faz o
+// re-quote do assertShippingQuoted reutilizar a cotação exibida ao cliente.
 export async function quoteShipping(
 	input: QuoteShippingInput
 ): Promise<{ negotiate: boolean; options: ShippingOption[] }> {
 	const toolIds = Array.from(new Set(input.items.map((i) => i.toolId)));
-	const [carriers, boxes, toolRows] = await Promise.all([
-		getActiveCarriersWithTables(db),
+	const [boxes, toolRows] = await Promise.all([
 		getActiveBoxes(db),
 		db
 			.select({
@@ -43,12 +48,38 @@ export async function quoteShipping(
 	]);
 
 	const items = buildQuoteItems(toolRows, input.items);
-	const result = quoteByTables({
-		items,
-		destinationCep: input.destinationCep,
-		declaredValue: (input.declaredValueCents ?? 0) / 100,
-		carriers,
-		boxes,
+	const packages = packItems(items, boxes);
+	if (packages.some((p) => p.outOfCatalog)) {
+		return { negotiate: true, options: [] };
+	}
+
+	const destinationCep = input.destinationCep.replace(/\D/g, "");
+	const declaredValueCents = input.declaredValueCents ?? 0;
+	const cacheKey = buildQuoteCacheKey({
+		sellerCep: env.FRENET_SELLER_CEP,
+		destinationCep,
+		declaredValueCents,
+		packages,
 	});
-	return mapQuoteResult(result);
+	const cached = await getCachedQuote(cacheKey);
+	if (cached) {
+		return cached;
+	}
+
+	const response = await fetchFrenetQuote({
+		SellerCEP: env.FRENET_SELLER_CEP,
+		RecipientCEP: destinationCep,
+		ShipmentInvoiceValue: declaredValueCents / 100,
+		RecipientCountry: "BR",
+		ShippingItemArray: packages.map((p) => ({
+			Weight: p.weightKg,
+			Length: p.lengthCm,
+			Height: p.heightCm,
+			Width: p.widthCm,
+			Quantity: 1,
+		})),
+	});
+	const result = mapFrenetResponse(response);
+	await setCachedQuote(cacheKey, result);
+	return result;
 }

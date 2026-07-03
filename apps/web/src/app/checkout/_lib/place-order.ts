@@ -73,6 +73,9 @@ export const inputSchema = z.object({
 		)
 		.min(1, "Carrinho vazio"),
 	shippingAmount: z.string().regex(/^\d+\.\d{2}$/),
+	// carrierId composto ("COR-40010") da opção Frenet escolhida na UI. Opcional
+	// p/ compat na janela de deploy — sem ele o match cai pro preço apenas.
+	shippingServiceCode: z.string().min(1).optional(),
 	couponCode: z.string().trim().min(1).optional(),
 });
 
@@ -330,24 +333,29 @@ export async function resolveDestinationCep(
 }
 
 /**
- * Anti-fraude: re-cota o frete no servidor e exige que o `shippingCents`
- * enviado pelo cliente bata com alguma opção (tolerância de 1 centavo).
+ * Anti-fraude: re-cota o frete no servidor (via cache Frenet — reutiliza a
+ * cotação que a UI exibiu) e exige que o `shippingCents` enviado pelo cliente
+ * bata com uma opção (tolerância de 1 centavo). Com `shippingServiceCode`
+ * presente, valida o PAR serviço+preço — não basta o preço existir em outra
+ * opção. Devolve `shippingMethod` (label da opção casada) p/ persistir no
+ * pedido.
  *
- * Falha de infra na cotação (ex.: DB indisponível ao ler tabelas/transportadoras)
- * **não** bloqueia a venda (fail-open), mas retorna `shippingUnverified: true` —
- * o pedido é marcado para revisão do staff no dashboard antes de faturar
- * (#97 / dashboard#143). Só um valor adulterado (mismatch) ou frete a combinar
+ * Falha de infra na cotação (Frenet fora/timeout, cache e DB indisponíveis)
+ * **não** bloqueia a venda (fail-open), mas retorna `shippingUnverified: true`
+ * — o pedido é marcado para revisão do staff no dashboard antes de faturar
+ * (#97 / dashboard#143). Só valor adulterado (mismatch) ou frete a combinar
  * lança `OrderError`.
  *
- * Deve rodar **fora** da transação do pedido — a cotação faz suas próprias
- * queries e não pode segurar a transação aberta durante essa latência.
+ * Deve rodar **fora** da transação do pedido — a cotação faz chamada externa
+ * e não pode segurar a transação aberta durante essa latência.
  */
 export async function assertShippingQuoted(params: {
 	shippingCents: number;
 	destinationCep: string;
 	items: Array<{ toolId: string; quantity: number }>;
 	declaredValueCents?: number;
-}): Promise<{ shippingUnverified: boolean }> {
+	shippingServiceCode?: string;
+}): Promise<{ shippingUnverified: boolean; shippingMethod: string | null }> {
 	let quote: Awaited<ReturnType<typeof quoteShipping>>;
 	try {
 		quote = await quoteShipping({
@@ -356,11 +364,11 @@ export async function assertShippingQuoted(params: {
 			declaredValueCents: params.declaredValueCents,
 		});
 	} catch (err) {
-		// Fail-open consciente: falha de infra na cotação (ex.: DB indisponível ao
-		// ler as tabelas de frete) NÃO bloqueia a venda — não punir o cliente por
-		// instabilidade de infraestrutura. Em vez de aceitar o frete às cegas,
-		// sinalizamos `shippingUnverified` — o pedido grava a flag e o staff revisa
-		// no dashboard antes de faturar (limpa via markShippingReviewed). Fecha o
+		// Fail-open consciente: falha de infra na cotação (Frenet fora do ar,
+		// timeout) NÃO bloqueia a venda — não punir o cliente por instabilidade
+		// de terceiro. Em vez de aceitar o frete às cegas, sinalizamos
+		// `shippingUnverified` — o pedido grava a flag e o staff revisa no
+		// dashboard antes de faturar (limpa via markShippingReviewed). Fecha o
 		// vetor "derruba a cotação → frete grátis".
 		log.error({
 			action: "shipping_revalidation_skipped",
@@ -368,20 +376,23 @@ export async function assertShippingQuoted(params: {
 			shippingCents: params.shippingCents,
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
-		return { shippingUnverified: true };
+		return { shippingUnverified: true, shippingMethod: null };
 	}
-	// Item pesado sem valor fixo → frete a combinar; não há opção válida a casar.
+	// Nenhum serviço cotável p/ o CEP/pacote → frete a combinar; sem opção a casar.
 	if (quote.negotiate) {
 		throw new OrderError("Frete a combinar — entre em contato para concluir");
 	}
-	const ok = quote.options.some(
+	const candidates = params.shippingServiceCode
+		? quote.options.filter((o) => o.carrierId === params.shippingServiceCode)
+		: quote.options;
+	const match = candidates.find(
 		(o) =>
 			Math.abs(o.priceCents - params.shippingCents) <= PRICE_TOLERANCE_CENTS
 	);
-	if (!ok) {
+	if (!match) {
 		throw new OrderError("Frete inválido, refaça o checkout");
 	}
-	return { shippingUnverified: false };
+	return { shippingUnverified: false, shippingMethod: match.name };
 }
 
 async function checkAggregateStock(
@@ -417,6 +428,9 @@ export async function placeOrder(
 		// #97: frete não pôde ser revalidado server-side (API de frete fora) →
 		// pedido marcado para revisão do staff. Default false (frete verificado).
 		shippingUnverified?: boolean;
+		// Label do serviço validado pelo assertShippingQuoted (ex.: "Correios —
+		// Sedex"). null quando o frete não pôde ser verificado (fail-open).
+		shippingMethod?: string | null;
 	}
 ): Promise<{ orderId: string; orderNumber: string }> {
 	const {
@@ -425,6 +439,7 @@ export async function placeOrder(
 		ipAddress,
 		userAgent,
 		shippingUnverified = false,
+		shippingMethod = null,
 	} = params;
 
 	const { lines, autoPromoToolIds } = await prepareLines(tx, input);
@@ -568,6 +583,7 @@ export async function placeOrder(
 		discountAmount: (discountCents / 100).toFixed(2),
 		couponId,
 		shippingAmount: input.shippingAmount,
+		shippingMethod,
 		totalAmount,
 		shippingAddress: snapshot,
 		shippingUnverified,

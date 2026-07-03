@@ -29,6 +29,14 @@ export const serverSchema = {
 	// obrigatórias na prática em produção (Vercel).
 	UPSTASH_REDIS_REST_URL: z.url().optional(),
 	UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+	// Frenet — cotação de frete (spec 2026-07-02-frenet-cotacao-design.md).
+	// TOKEN vem do painel (painel.frenet.com.br > Dados Cadastrais); SELLER_CEP é
+	// o CEP de origem do despacho (v1 fixo em env; dashboard exporá via
+	// storeSettings depois). BASE_URL com default → fora das obrigatórias do
+	// check:env.
+	FRENET_TOKEN: z.string().min(1),
+	FRENET_SELLER_CEP: z.string().regex(/^\d{8}$/, "CEP de origem: 8 dígitos"),
+	FRENET_BASE_URL: z.url().default("https://api.frenet.com.br"),
 } as const;
 
 export const clientSchema = {
