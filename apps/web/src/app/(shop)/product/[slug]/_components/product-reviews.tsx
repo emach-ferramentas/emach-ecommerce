@@ -23,14 +23,21 @@ interface ProductReviewsProps {
 	total: number;
 }
 
-function recommendPct(distribution: ToolDetail["reviewStats"]["distribution"]) {
-	const positive = distribution[4] + distribution[5];
-	const total =
+function sumDistribution(
+	distribution: ToolDetail["reviewStats"]["distribution"]
+) {
+	return (
 		distribution[1] +
 		distribution[2] +
 		distribution[3] +
 		distribution[4] +
-		distribution[5];
+		distribution[5]
+	);
+}
+
+function recommendPct(distribution: ToolDetail["reviewStats"]["distribution"]) {
+	const positive = distribution[4] + distribution[5];
+	const total = sumDistribution(distribution);
 	if (total === 0) {
 		return 0;
 	}
@@ -129,12 +136,7 @@ function DistributionBars({
 }: {
 	distribution: ToolDetail["reviewStats"]["distribution"];
 }) {
-	const totalReviews =
-		distribution[1] +
-		distribution[2] +
-		distribution[3] +
-		distribution[4] +
-		distribution[5];
+	const totalReviews = sumDistribution(distribution);
 	const bars = ([5, 4, 3, 2, 1] as const).map((star) => ({
 		star,
 		pct:

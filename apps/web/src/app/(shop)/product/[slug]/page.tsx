@@ -135,7 +135,6 @@ export default async function ProductPage({
 				<Suspense fallback={<ReviewsSkeleton />}>
 					<ProductReviewsSection
 						pathname={`/product/${slug}`}
-						reviewStats={detail.reviewStats}
 						searchParams={searchParams}
 						toolId={detail.tool.id}
 					/>

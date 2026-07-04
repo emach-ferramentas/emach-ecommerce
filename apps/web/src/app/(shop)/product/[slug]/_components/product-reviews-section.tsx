@@ -1,5 +1,5 @@
 import { db } from "@emach/db";
-import { getReviews, type ReviewStats } from "@emach/db/queries/reviews";
+import { getReviewStats, getReviews } from "@emach/db/queries/reviews";
 
 import { SectionLabel } from "@/components/section-label";
 
@@ -25,7 +25,6 @@ function parseReviewPage(value: string | string[] | undefined): number {
 
 interface ProductReviewsSectionProps {
 	pathname: string;
-	reviewStats: ReviewStats;
 	searchParams: Promise<Record<string, string | string[] | undefined>>;
 	toolId: string;
 }
@@ -33,9 +32,12 @@ interface ProductReviewsSectionProps {
 // Buraco dinâmico da página de produto: lê `searchParams` (paginação/ordenação
 // das avaliações) — por isso vive sob Suspense, fora do shell cacheado. Sem
 // avaliações, renderiza a faixa escura de confiança (spec 2026-07-03 §3.5).
+// As stats vêm de query live (NÃO do shell cacheado 600s): o modo da placa é
+// decidido pelo total live, e trilho/barras precisam da MESMA fonte — senão a
+// placa entra em grid com N cards ao lado de "1 avaliação" stale (code-review
+// pós-#195, finding verificado 85/100).
 export async function ProductReviewsSection({
 	pathname,
-	reviewStats,
 	searchParams,
 	toolId,
 }: ProductReviewsSectionProps) {
@@ -43,12 +45,15 @@ export async function ProductReviewsSection({
 	const reviewPage = parseReviewPage(sp.reviewPage);
 	const reviewSort = parseReviewSort(sp.reviewSort);
 
-	const reviewsResult = await getReviews(db, {
-		toolId,
-		page: reviewPage,
-		limit: REVIEWS_PER_PAGE,
-		sort: reviewSort,
-	});
+	const [reviewsResult, reviewStats] = await Promise.all([
+		getReviews(db, {
+			toolId,
+			page: reviewPage,
+			limit: REVIEWS_PER_PAGE,
+			sort: reviewSort,
+		}),
+		getReviewStats(db, toolId),
+	]);
 
 	if (reviewsResult.total === 0) {
 		return (
