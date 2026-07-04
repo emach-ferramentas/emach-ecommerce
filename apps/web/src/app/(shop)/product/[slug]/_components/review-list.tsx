@@ -1,8 +1,10 @@
 import type { Review } from "@emach/db/schema/reviews";
 import type { Route } from "next";
 import Link from "next/link";
+
 import { ReviewCard } from "./review-card";
-import { ReviewSort, type ReviewSortKey } from "./review-sort";
+import { lastRowStart, stretchLast } from "./review-layout";
+import type { ReviewSortKey } from "./review-sort";
 
 interface ReviewListProps {
 	currentSearchParams: Record<string, string | string[] | undefined>;
@@ -10,7 +12,6 @@ interface ReviewListProps {
 	pageSize: number;
 	pathname: string;
 	reviews: Array<Review & { clientName: string }>;
-	sort: ReviewSortKey;
 	total: number;
 }
 
@@ -70,16 +71,15 @@ function buildHref(
 }
 
 const PAGE_BTN =
-	"border border-white/40 px-5 py-2 font-display font-semibold text-[11px] text-white uppercase tracking-[0.14em] transition-colors hover:border-white hover:bg-white hover:text-near-black";
+	"border border-near-black px-5 py-2 font-display font-semibold text-[11px] text-near-black uppercase tracking-[0.14em] transition-colors hover:bg-near-black hover:text-white";
 const PAGE_BTN_DISABLED =
-	"border border-white/20 px-5 py-2 font-display font-semibold text-[11px] text-white/30 uppercase tracking-[0.14em]";
+	"border border-border px-5 py-2 font-display font-semibold text-[11px] text-near-black/30 uppercase tracking-[0.14em]";
 
 export function ReviewList({
 	reviews,
 	total,
 	page,
 	pageSize,
-	sort,
 	pathname,
 	currentSearchParams,
 }: ReviewListProps) {
@@ -92,23 +92,12 @@ export function ReviewList({
 		page < totalPages
 			? buildHref(pathname, currentSearchParams, { reviewPage: page + 1 })
 			: null;
-	// Primeira célula da última linha do grid de 2 colunas — zera a border
-	// inferior dessa linha (linhas correm de borda a borda, igual à ficha).
-	const lastRowStart =
-		reviews.length % 2 === 0 ? reviews.length - 2 : reviews.length - 1;
 
 	return (
 		<>
-			<div className="flex items-center justify-between gap-3 border-white/15 border-b px-6 py-3">
-				<span className="font-display font-semibold text-[11px] text-white/60 uppercase tracking-[0.12em]">
-					{total} {total === 1 ? "avaliação" : "avaliações"}
-				</span>
-				<ReviewSort current={sort} />
-			</div>
-
 			{reviews.length === 0 ? (
-				<div className="py-12 text-center text-[14px] text-white/60">
-					Nenhuma avaliação aprovada ainda.
+				<div className="py-12 text-center text-[14px] text-gray-60">
+					Nenhuma avaliação nesta página.
 				</div>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2">
@@ -116,8 +105,9 @@ export function ReviewList({
 						<ReviewCard
 							index={index}
 							key={review.id}
-							lastRowStart={lastRowStart}
+							lastRowStart={lastRowStart(reviews.length)}
 							review={review}
+							stretch={stretchLast(reviews.length)}
 							total={reviews.length}
 						/>
 					))}
@@ -127,7 +117,7 @@ export function ReviewList({
 			{totalPages > 1 && (
 				<nav
 					aria-label="Paginação de avaliações"
-					className="flex items-center justify-center gap-3 border-white/12 border-t px-6 py-5"
+					className="flex items-center justify-center gap-3 border-border border-t px-6 py-5"
 				>
 					{prevHref ? (
 						<Link className={PAGE_BTN} href={prevHref} scroll={false}>
@@ -136,7 +126,7 @@ export function ReviewList({
 					) : (
 						<span className={PAGE_BTN_DISABLED}>Anterior</span>
 					)}
-					<span className="font-display text-[11px] text-white/60 uppercase tracking-[0.14em]">
+					<span className="font-display text-[11px] text-gray-60 uppercase tracking-[0.14em]">
 						Página {page} de {totalPages}
 					</span>
 					{nextHref ? (

@@ -49,11 +49,11 @@ export function ReviewSort({ current }: ReviewSortProps) {
 			className="flex items-center gap-2"
 			role="status"
 		>
-			<span className="font-display text-[10px] text-white/50 uppercase tracking-[0.14em]">
+			<span className="font-display text-[10px] text-gray-60 uppercase tracking-[0.14em]">
 				Ordenar
 			</span>
 			<Select onValueChange={handleChange} value={current}>
-				<SelectTrigger className="h-8 min-w-[160px] border-white/30 text-white">
+				<SelectTrigger className="h-8 min-w-[160px]">
 					<SelectValue>
 						{(value) => SORT_LABELS[value as ReviewSortKey]}
 					</SelectValue>
