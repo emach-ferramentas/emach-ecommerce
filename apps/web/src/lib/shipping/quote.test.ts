@@ -74,6 +74,9 @@ const SETTINGS = {
 	originCep: null,
 	insurancePolicy: "cart_value" as const,
 	insuranceCapAmount: 3000,
+	// Defaults canônicos de packages/db/src/queries/store-settings.ts
+	fillFactor: 0.9,
+	boxPaddingCm: 0,
 };
 
 beforeEach(() => {
