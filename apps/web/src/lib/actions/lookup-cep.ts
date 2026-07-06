@@ -20,22 +20,24 @@ export interface CepAddress {
 	street: string;
 }
 
+// `reason` distingue o definitivo do transitório: "not_found" = a Frenet
+// respondeu e o CEP não existe na base (a UI avisa o cliente — CEP digitado
+// errado passa batido por todo o resto da pipeline, a Frenet cota preço real
+// até pra CEP inexistente); "unavailable" = infra/rate-limit, não é culpa do
+// CEP e a UI não deve alarmar.
 export type LookupCepResult =
 	| { ok: true; data: CepAddress }
-	| { ok: false; error: string };
-
-const LOOKUP_FAILED = "CEP não encontrado";
+	| { ok: false; reason: "not_found" | "unavailable" };
 
 // Autofill de endereço via Frenet GET /CEP/Address (#191). Progressive
-// enhancement: QUALQUER falha (input, rate limit, Frenet fora, CEP inexistente)
-// vira { ok: false } silencioso — a UI ignora e o cliente digita à mão. O
-// token Frenet nunca vai ao browser; o lookup é sempre server-side.
+// enhancement: falha nunca lança — a UI preenche o que vier e o cliente digita
+// à mão. O token Frenet nunca vai ao browser; o lookup é sempre server-side.
 export async function lookupCepAction(
 	rawCep: string
 ): Promise<LookupCepResult> {
 	const parsed = cepSchema.safeParse(rawCep);
 	if (!parsed.success) {
-		return { ok: false, error: LOOKUP_FAILED };
+		return { ok: false, reason: "not_found" };
 	}
 
 	// Mesmo padrão do quote-shipping/search: rate limit por IP confiável;
@@ -45,7 +47,7 @@ export async function lookupCepAction(
 	if (ip) {
 		const { success } = await cepLimiter.limit(`cep:${ip}`);
 		if (!success) {
-			return { ok: false, error: LOOKUP_FAILED };
+			return { ok: false, reason: "unavailable" };
 		}
 	} else {
 		log.warn({ action: "cep_rate_limit_skipped_no_ip" });
@@ -57,7 +59,7 @@ export async function lookupCepAction(
 		// vazio + Message). Street/District podem faltar em CEP rural — a UI
 		// preenche o que vier e o cliente completa.
 		if (!(address.City && address.UF)) {
-			return { ok: false, error: LOOKUP_FAILED };
+			return { ok: false, reason: "not_found" };
 		}
 		return {
 			ok: true,
@@ -74,6 +76,6 @@ export async function lookupCepAction(
 			action: "lookup_cep_failed",
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
-		return { ok: false, error: LOOKUP_FAILED };
+		return { ok: false, reason: "unavailable" };
 	}
 }

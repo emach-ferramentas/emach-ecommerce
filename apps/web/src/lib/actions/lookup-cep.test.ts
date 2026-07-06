@@ -51,33 +51,37 @@ describe("lookupCepAction", () => {
 		expect(fetchFrenetAddress).toHaveBeenCalledWith("01310100");
 	});
 
-	it("input inválido → ok:false SEM chamar a Frenet", async () => {
-		await expect(lookupCepAction("1234")).resolves.toMatchObject({
+	it("input inválido → not_found SEM chamar a Frenet", async () => {
+		await expect(lookupCepAction("1234")).resolves.toEqual({
 			ok: false,
+			reason: "not_found",
 		});
 		expect(fetchFrenetAddress).not.toHaveBeenCalled();
 	});
 
-	it("CEP não encontrado (sem City) → ok:false, sem lançar", async () => {
+	it("CEP não encontrado (sem City) → not_found (definitivo: UI avisa), sem lançar", async () => {
 		vi.mocked(fetchFrenetAddress).mockResolvedValue({
 			Message: "CEP não encontrado",
 		});
-		await expect(lookupCepAction("99999999")).resolves.toMatchObject({
+		await expect(lookupCepAction("99999999")).resolves.toEqual({
 			ok: false,
+			reason: "not_found",
 		});
 	});
 
-	it("Frenet fora/timeout → ok:false, sem lançar (autofill é enhancement)", async () => {
+	it("Frenet fora/timeout → unavailable (transitório: UI não alarma), sem lançar", async () => {
 		vi.mocked(fetchFrenetAddress).mockRejectedValue(new FrenetError("timeout"));
-		await expect(lookupCepAction("01310100")).resolves.toMatchObject({
+		await expect(lookupCepAction("01310100")).resolves.toEqual({
 			ok: false,
+			reason: "unavailable",
 		});
 	});
 
-	it("rate limit estourado → ok:false sem chamar a Frenet", async () => {
+	it("rate limit estourado → unavailable sem chamar a Frenet", async () => {
 		vi.mocked(cepLimiter.limit).mockResolvedValue({ success: false });
-		await expect(lookupCepAction("01310100")).resolves.toMatchObject({
+		await expect(lookupCepAction("01310100")).resolves.toEqual({
 			ok: false,
+			reason: "unavailable",
 		});
 		expect(fetchFrenetAddress).not.toHaveBeenCalled();
 	});

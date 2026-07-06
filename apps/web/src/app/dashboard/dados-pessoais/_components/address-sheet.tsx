@@ -221,6 +221,11 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 												Buscando endereço…
 											</p>
 										) : null}
+										{cepAutofill.notFound ? (
+											<p className="mt-1 text-destructive text-xs" role="alert">
+												CEP não encontrado — confira o número antes de salvar
+											</p>
+										) : null}
 									</div>
 								)}
 							</form.Field>
