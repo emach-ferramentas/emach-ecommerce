@@ -13,6 +13,7 @@ import {
 	assertShippingQuoted,
 	type CreateOrderInput,
 	type CreateOrderResult,
+	cepKnownToFrenet,
 	inputSchema,
 	OrderError,
 	placeOrder,
@@ -81,17 +82,29 @@ export async function createOrderAction(
 				(sum, l) => sum + l.lineTotalCents,
 				0
 			);
-			const shippingCheck = await assertShippingQuoted({
-				shippingCents: numericToCents(input.shippingAmount),
-				destinationCep,
-				items: input.cartItems.map((i) => ({
-					toolId: i.toolId,
-					quantity: i.quantity,
-				})),
-				declaredValueCents,
-				shippingServiceCode: input.shippingServiceCode,
-			});
-			shippingUnverified = shippingCheck.shippingUnverified;
+			// Em paralelo com o anti-fraude: o CEP existe na base da Frenet? A
+			// cotação cota preço real até pra CEP inexistente, então "preço bate"
+			// não prova endereço entregável. not_found definitivo → pedido criado,
+			// mas marcado p/ revisão staff (mesmo fluxo do fail-open #97, sem
+			// bloquear venda — a base da Frenet pode atrasar CEPs novos).
+			const [shippingCheck, cepKnown] = await Promise.all([
+				assertShippingQuoted({
+					shippingCents: numericToCents(input.shippingAmount),
+					destinationCep,
+					items: input.cartItems.map((i) => ({
+						toolId: i.toolId,
+						quantity: i.quantity,
+					})),
+					declaredValueCents,
+					shippingServiceCode: input.shippingServiceCode,
+				}),
+				cepKnownToFrenet(destinationCep),
+			]);
+			if (cepKnown === false) {
+				log.warn({ action: "order_cep_not_found", destinationCep, clientId });
+			}
+			shippingUnverified =
+				shippingCheck.shippingUnverified || cepKnown === false;
 			shippingMethod = shippingCheck.shippingMethod;
 			shippingServiceCode = shippingCheck.shippingServiceCode;
 		}

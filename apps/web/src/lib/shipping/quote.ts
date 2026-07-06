@@ -87,12 +87,22 @@ export async function quoteShipping(
 
 	const destinationCep = input.destinationCep.replace(/\D/g, "");
 	// Origem: CEP da filial configurada no dashboard; fallback env quando não
-	// configurada. Valor declarado: política de seguro do dashboard. Ambos
-	// entram na chave de cache → setting mudou, chave muda, sem invalidação manual.
-	const sellerCep = (settings.originCep ?? env.FRENET_SELLER_CEP).replace(
-		/\D/g,
-		""
-	);
+	// configurada OU quando o campo (texto livre no dashboard, sem CHECK) não
+	// tem 8 dígitos — `??` sozinho deixaria branch.cep vazio/malformado chegar
+	// à Frenet como SellerCEP inválido. Valor declarado: política de seguro do
+	// dashboard. Ambos entram na chave de cache → setting mudou, chave muda,
+	// sem invalidação manual.
+	const originCepDigits = (settings.originCep ?? "").replace(/\D/g, "");
+	if (settings.originCep != null && originCepDigits.length !== 8) {
+		log.warn({
+			action: "shipping_origin_cep_invalid",
+			originBranchId: settings.originBranchId,
+		});
+	}
+	const sellerCep =
+		originCepDigits.length === 8
+			? originCepDigits
+			: env.FRENET_SELLER_CEP.replace(/\D/g, "");
 	const declaredValueCents = effectiveInsuranceCents(
 		input.declaredValueCents ?? 0,
 		settings

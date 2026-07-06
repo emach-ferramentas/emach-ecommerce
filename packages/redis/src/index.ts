@@ -40,7 +40,17 @@ export function getRedis(): Redis | null {
 	// (3 retries com backoff exponencial ≈ 1,5s no pior caso) seguraria o
 	// login/checkout antes de cair no fallback. 1 retry cobre blip transitório
 	// sem penalizar latência quando o Redis está realmente indisponível.
-	cached = new Redis({ url, token, retry: { retries: 1 } });
+	//
+	// `signal` como FACTORY (não AbortSignal estático — expiraria uma vez e
+	// abortaria todas as chamadas seguintes): sem timeout próprio, um hang de
+	// rede do Upstash segura a server action inteira até o limite da function.
+	// 2s é folgado pro REST do Upstash e curto o bastante pro hot-path fail-open.
+	cached = new Redis({
+		url,
+		token,
+		retry: { retries: 1 },
+		signal: () => AbortSignal.timeout(2000),
+	});
 	return cached;
 }
 

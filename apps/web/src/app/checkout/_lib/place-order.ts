@@ -19,6 +19,7 @@ import {
 } from "@/lib/coupons/validate-coupon";
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
+import { fetchFrenetAddress } from "@/lib/frenet/client";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";
 import { quoteShipping } from "@/lib/shipping/quote";
 import { addressFieldsSchema } from "@/lib/validators/address";
@@ -337,6 +338,29 @@ export async function resolveDestinationCep(
 		: input.newAddress?.zipCode;
 	const cep = raw?.replace(/\D/g, "") ?? "";
 	return cep.length === 8 ? cep : null;
+}
+
+/**
+ * CEP de destino existe na base da Frenet? A cotação retorna preços REAIS até
+ * pra CEP inexistente (probe 2026-07-06: 99999999 cota PAC/Jadlog válidos),
+ * então sem esta checagem um CEP digitado errado atravessa checkout e
+ * anti-fraude como "verificado" e o problema só aparece na entrega física.
+ * `false` = a Frenet respondeu e não conhece o CEP (definitivo); `null` =
+ * infra falhou, não sabemos (fail-open — não punir por instabilidade).
+ */
+export async function cepKnownToFrenet(cep: string): Promise<boolean | null> {
+	try {
+		const address = await fetchFrenetAddress(cep);
+		// Mesma regra do lookup-cep: sem City/UF = inexistente na base (a Frenet
+		// devolve 200 com body vazio + Message).
+		return Boolean(address.City && address.UF);
+	} catch (err) {
+		log.warn({
+			action: "order_cep_lookup_failed",
+			error: err instanceof Error ? err.message : "erro inesperado",
+		});
+		return null;
+	}
 }
 
 /**

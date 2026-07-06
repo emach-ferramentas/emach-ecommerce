@@ -13,13 +13,19 @@ const { orderLimit } = vi.hoisted(() => ({
 	orderLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-const { placeOrder, assertShippingQuoted, resolveDestinationCep } = vi.hoisted(
-	() => ({
-		placeOrder: vi.fn(),
-		assertShippingQuoted: vi.fn(),
-		resolveDestinationCep: vi.fn().mockResolvedValue(null),
-	})
-);
+const {
+	placeOrder,
+	assertShippingQuoted,
+	resolveDestinationCep,
+	prepareLines,
+	cepKnownToFrenet,
+} = vi.hoisted(() => ({
+	placeOrder: vi.fn(),
+	assertShippingQuoted: vi.fn(),
+	resolveDestinationCep: vi.fn().mockResolvedValue(null),
+	prepareLines: vi.fn(),
+	cepKnownToFrenet: vi.fn(),
+}));
 
 vi.mock("@/lib/session", () => ({ requireCurrentClient }));
 
@@ -43,7 +49,14 @@ vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
 // Mantém inputSchema/OrderError reais; só troca os efeitos colaterais pesados.
 vi.mock("../_lib/place-order", async (importActual) => {
 	const actual = await importActual<typeof import("../_lib/place-order")>();
-	return { ...actual, placeOrder, assertShippingQuoted, resolveDestinationCep };
+	return {
+		...actual,
+		placeOrder,
+		assertShippingQuoted,
+		resolveDestinationCep,
+		prepareLines,
+		cepKnownToFrenet,
+	};
 });
 
 import { createOrderAction } from "./create-order";
@@ -116,5 +129,56 @@ describe("createOrderAction — gate de verificação de e-mail (#93)", () => {
 		}
 		expect(orderLimit).toHaveBeenCalledTimes(1);
 		expect(placeOrder).toHaveBeenCalledTimes(1);
+	});
+});
+
+// A Frenet cota preço REAL até pra CEP inexistente (probe 2026-07-06), então
+// "anti-fraude casou o preço" não prova endereço entregável — o lookup de CEP
+// definitivo-negativo precisa marcar o pedido pra revisão staff, sem bloquear.
+describe("createOrderAction — CEP inexistente na base da Frenet", () => {
+	beforeEach(() => {
+		requireCurrentClient.mockReset();
+		requireCurrentClient.mockResolvedValue(sessionWith(true));
+		orderLimit.mockClear();
+		placeOrder.mockReset();
+		placeOrder.mockResolvedValue({ orderId: "o1", orderNumber: "2026-000002" });
+		resolveDestinationCep.mockResolvedValue("99999999");
+		prepareLines.mockResolvedValue({
+			lines: [{ lineTotalCents: 10_000 }],
+			autoPromoToolIds: new Set(),
+		});
+		assertShippingQuoted.mockResolvedValue({
+			shippingUnverified: false,
+			shippingMethod: "Correios — PAC",
+			shippingServiceCode: "COR-03298",
+		});
+		cepKnownToFrenet.mockReset();
+	});
+
+	it("not_found definitivo → pedido criado com shippingUnverified=true", async () => {
+		cepKnownToFrenet.mockResolvedValue(false);
+
+		const result = await createOrderAction(VALID_INPUT);
+
+		expect(result.ok).toBe(true);
+		expect(placeOrder).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ shippingUnverified: true })
+		);
+	});
+
+	it("lookup inconclusivo (infra fora) NÃO marca o pedido — fail-open", async () => {
+		cepKnownToFrenet.mockResolvedValue(null);
+
+		const result = await createOrderAction(VALID_INPUT);
+
+		expect(result.ok).toBe(true);
+		expect(placeOrder).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({
+				shippingUnverified: false,
+				shippingMethod: "Correios — PAC",
+			})
+		);
 	});
 });

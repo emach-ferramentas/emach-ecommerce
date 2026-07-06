@@ -28,6 +28,15 @@ const target = (process.argv
 	.find((a) => a.startsWith("--target="))
 	?.split("=")[1] ?? "production") as "production" | "preview" | "development";
 
+// Opcionais no Zod (dev roda sem Redis — fallback in-memory), mas obrigatórias
+// no deploy: sem elas, cache Frenet e rate-limiters degradam pra in-memory por
+// instância em silêncio (warn `redis_not_configured` só aparece em runtime).
+// O Zod não pode exigi-las senão dev local quebraria — o gate é só aqui.
+const REQUIRED_IN_PRODUCTION = [
+	"UPSTASH_REDIS_REST_URL",
+	"UPSTASH_REDIS_REST_TOKEN",
+];
+
 function requiredKeys(schema: Record<string, z.ZodType>): string[] {
 	// Obrigatória = o schema rejeita `undefined`. Cobre `.optional()` e
 	// `.default()` (ambos aceitam undefined) sem casos especiais.
@@ -95,6 +104,7 @@ async function main() {
 	const required = [
 		...requiredKeys(serverSchema),
 		...requiredKeys(clientSchema),
+		...(target === "production" ? REQUIRED_IN_PRODUCTION : []),
 	];
 	const token = readToken();
 	const { orgId, projectId } = readProjectRef();
