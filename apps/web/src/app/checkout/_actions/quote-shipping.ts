@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getClientIp } from "@/lib/client-ip";
 import { log } from "@/lib/evlog";
 import { RATE_LIMIT_MESSAGE, shippingLimiter } from "@/lib/rate-limit";
+import { requireCurrentClient } from "@/lib/session";
 import { quoteShipping } from "@/lib/shipping/quote";
 import type { ShippingOption } from "@/lib/shipping/types";
 
@@ -32,15 +33,19 @@ export type QuoteShippingResult =
 export async function quoteShippingAction(
 	rawInput: unknown
 ): Promise<QuoteShippingResult> {
+	// Único caller é o checkout (autenticado) — sessão obrigatória fecha o
+	// endpoint contra anônimos gastando cota da API Frenet.
+	await requireCurrentClient();
+
 	const parsed = inputSchema.safeParse(rawInput);
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos para cotação" };
 	}
 
-	// Action pública (usada no freight-calculator da página de produto) → sem
-	// sessão; rate limit por IP confiável. Sem IP (dev/edge sem proxy) → fail-open
-	// + log: evita um bucket "anon" compartilhado que causaria DoS mútuo entre
-	// usuários sem-IP. Em prod (Vercel) o IP sempre existe via x-forwarded-for.
+	// Rate limit por IP como segunda camada. Sem IP (dev/edge sem proxy) →
+	// fail-open + log: evita um bucket "anon" compartilhado que causaria DoS
+	// mútuo entre usuários sem-IP. Em prod (Vercel) o IP sempre existe via
+	// x-forwarded-for.
 	const ip = getClientIp(await headers());
 	if (ip) {
 		const { success } = await shippingLimiter.limit(`shipping:${ip}`);

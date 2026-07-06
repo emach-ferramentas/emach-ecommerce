@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EmachButton } from "@/components/emach-button";
-import { FreightCalculator } from "@/components/freight-calculator";
 import { ProductRating } from "@/components/product-rating";
 import { QuantityPicker } from "@/components/quantity-picker";
 import { SectionLabel } from "@/components/section-label";
@@ -320,12 +319,6 @@ export function ProductInfo({
 					</EmachButton>
 				</div>
 			</div>
-
-			<FreightCalculator
-				quantity={qty}
-				subtotal={numericToCents(finalAmount) * qty}
-				toolId={tool.id}
-			/>
 
 			<div className="flex flex-col border border-border sm:flex-row">
 				<div className="flex flex-1 items-center gap-2.5 border-border border-b px-4 py-3 sm:border-r sm:border-b-0">
