@@ -68,7 +68,11 @@ export const inputSchema = z.object({
 				toolId: z.string().min(1),
 				variantId: z.string().min(1),
 				quantity: z.number().int().positive(),
-				priceAmount: z.string().min(1),
+				// Mesmo formato do shippingAmount: sem o regex, "abc" viraria NaN em
+				// numericToCents e passaria mudo pela comparação de preço (NaN > tol
+				// é false) — o pedido gravaria o preço do DB, mas sem rejeitar o
+				// payload malformado.
+				priceAmount: z.string().regex(/^\d+\.\d{2}$/),
 			})
 		)
 		.min(1, "Carrinho vazio"),
@@ -214,7 +218,10 @@ interface PreparedLine {
 	};
 }
 
-async function prepareLines(
+// Exportado p/ o createOrderAction derivar o valor declarado do seguro dos
+// preços VERIFICADOS (fora da transação) — dentro da transação o placeOrder
+// re-executa esta função como autoridade final.
+export async function prepareLines(
 	tx: typeof db,
 	input: CreateOrderInput
 ): Promise<{ lines: PreparedLine[]; autoPromoToolIds: Set<string> }> {

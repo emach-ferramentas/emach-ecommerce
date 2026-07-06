@@ -204,6 +204,13 @@ export function CheckoutContent({
 			onDynamic: checkoutSchema,
 		},
 		onSubmit: async ({ value }) => {
+			// Recotação em voo (carrinho/CEP mudou): submeter agora enviaria o
+			// shippingAmount da cotação ANTERIOR — o anti-fraude rejeitaria um
+			// pedido legítimo. O botão já desabilita; guarda cobre submit implícito.
+			if (shippingStatus === "loading") {
+				toast.error("Aguarde o recálculo do frete");
+				return;
+			}
 			if (selectedShippingCents === null) {
 				toast.error("Selecione uma opção de frete");
 				return;
@@ -515,6 +522,15 @@ export function CheckoutContent({
 																Buscando endereço…
 															</p>
 														) : null}
+														{cepAutofill.notFound ? (
+															<p
+																className="mt-1 text-destructive text-xs"
+																role="alert"
+															>
+																CEP não encontrado — confira o número antes de
+																continuar
+															</p>
+														) : null}
 													</div>
 												)}
 											</form.Field>
@@ -631,7 +647,12 @@ export function CheckoutContent({
 							>
 								{({ canSubmit, isSubmitting }) => (
 									<EmachButton
-										disabled={!canSubmit || isSubmitting || !emailVerified}
+										disabled={
+											!canSubmit ||
+											isSubmitting ||
+											!emailVerified ||
+											shippingStatus === "loading"
+										}
 										size="lg"
 										type="submit"
 										variant="primary"

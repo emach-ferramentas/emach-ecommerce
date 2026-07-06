@@ -16,6 +16,7 @@ import {
 	inputSchema,
 	OrderError,
 	placeOrder,
+	prepareLines,
 	resolveDestinationCep,
 } from "../_lib/place-order";
 
@@ -70,11 +71,14 @@ export async function createOrderAction(
 		let shippingServiceCode: string | null = null;
 		const destinationCep = await resolveDestinationCep(db, input, clientId);
 		if (destinationCep) {
-			// Valor declarado p/ o seguro de frete = subtotal dos itens submetidos
-			// (consistente com a cotação do cliente). O preço em si é revalidado
-			// contra o DB dentro do placeOrder.
-			const declaredValueCents = input.cartItems.reduce(
-				(sum, i) => sum + numericToCents(i.priceAmount) * i.quantity,
+			// Valor declarado p/ o seguro de frete derivado dos preços VERIFICADOS
+			// (prepareLines valida contra o DB e lança em mismatch) — o priceAmount
+			// cru do cliente não entra: sob política 'cart_value', payload
+			// subdeclarado reduziria o seguro. Custa 1 leitura extra fora da
+			// transação; dentro dela o placeOrder re-executa como autoridade.
+			const { lines } = await prepareLines(db, input);
+			const declaredValueCents = lines.reduce(
+				(sum, l) => sum + l.lineTotalCents,
 				0
 			);
 			const shippingCheck = await assertShippingQuoted({
