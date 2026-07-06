@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
+import { Fragment } from "react";
 
 import { PageContainer } from "@/components/page-container";
 import { SiteHeader } from "@/components/site-header";
 import {
+	type BusinessHoursRow,
 	branchMapsUrl,
 	formatBranchAddress,
-	formatBusinessHours,
 	formatPhone,
 	getActiveBranches,
+	getBusinessHoursRows,
 } from "@/lib/branches";
 
 export const metadata: Metadata = {
@@ -56,7 +58,7 @@ const sideNotes = [
 
 interface BranchCardData {
 	address: string;
-	hours: string | null;
+	hoursRows: BusinessHoursRow[] | null;
 	id: string;
 	locality: string;
 	mapEmbedUrl: string | null;
@@ -106,7 +108,7 @@ async function getBranches(): Promise<BranchCardData[]> {
 			locality,
 			address,
 			phone: formatPhone(row.phone),
-			hours: formatBusinessHours(row.businessHours),
+			hoursRows: getBusinessHoursRows(row.businessHours),
 			mapEmbedUrl: mapsQuery ? buildMapsEmbedUrl(mapsQuery) : null,
 			mapsUrl: mapsQuery ? branchMapsUrl(row) : null,
 		};
@@ -292,9 +294,27 @@ function BranchCard({ branch }: { branch: BranchCardData }) {
 							<strong className="text-white">Telefone</strong>: {branch.phone}
 						</div>
 					)}
-					{branch.hours && (
+					{branch.hoursRows && (
 						<div>
-							<strong className="text-white">Horário</strong>: {branch.hours}
+							<strong className="text-white">Horário</strong>
+							<div className="mt-1 grid grid-cols-[72px_1fr] gap-x-4 gap-y-0.5">
+								{branch.hoursRows.map((row) => (
+									<Fragment key={row.label}>
+										<span className="self-center font-bold font-display text-[11px] text-white/45 uppercase tracking-[0.14em]">
+											{row.label}
+										</span>
+										<span
+											className={
+												row.value === "Fechado"
+													? "text-white/38 tabular-nums"
+													: "text-white/78 tabular-nums"
+											}
+										>
+											{row.value}
+										</span>
+									</Fragment>
+								))}
+							</div>
 						</div>
 					)}
 				</div>

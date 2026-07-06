@@ -1,5 +1,8 @@
 import { db } from "@emach/db";
-import type { BranchBusinessHours } from "@emach/db/schema/inventory";
+import type {
+	BranchBusinessHours,
+	BranchBusinessHoursPeriod,
+} from "@emach/db/schema/inventory";
 import { branch as branchTable } from "@emach/db/schema/inventory";
 import { asc, eq } from "drizzle-orm";
 
@@ -60,27 +63,38 @@ export function formatPhone(phone: string | null) {
 	return phone;
 }
 
-export function formatBusinessHours(hours: BranchBusinessHours | null) {
+// Alinhado ao formatBusinessPeriod do dashboard (lib/format/branch.ts de lá),
+// estendido com o intervalo de almoço (breakStart/breakEnd) da issue #198.
+export function formatBusinessPeriod(
+	period: BranchBusinessHoursPeriod | null | undefined
+) {
+	if (!(period?.isOpen && period.opensAt && period.closesAt)) {
+		return "Fechado";
+	}
+	// Intervalo parcial (só um dos campos): o Zod do dashboard garante
+	// ambos-ou-nenhum, mas o jsonb não tem constraint — degrada pra turno único.
+	if (period.breakStart && period.breakEnd) {
+		return `${period.opensAt}–${period.breakStart} · ${period.breakEnd}–${period.closesAt}`;
+	}
+	return `${period.opensAt}–${period.closesAt}`;
+}
+
+export interface BusinessHoursRow {
+	label: string;
+	value: string;
+}
+
+export function getBusinessHoursRows(
+	hours: BranchBusinessHours | null
+): BusinessHoursRow[] | null {
 	if (!hours) {
 		return null;
 	}
-	const formatPeriod = (
-		label: string,
-		period: BranchBusinessHours[keyof BranchBusinessHours]
-	) => {
-		if (!period?.isOpen) {
-			return `${label}: fechado`;
-		}
-		if (!(period.opensAt && period.closesAt)) {
-			return `${label}: aberto`;
-		}
-		return `${label}: ${period.opensAt}-${period.closesAt}`;
-	};
 	return [
-		formatPeriod("Seg-sex", hours.weekdays),
-		formatPeriod("Sáb", hours.saturday),
-		formatPeriod("Feriados", hours.holidays),
-	].join(" | ");
+		{ label: "Seg–sex", value: formatBusinessPeriod(hours.weekdays) },
+		{ label: "Sábado", value: formatBusinessPeriod(hours.saturday) },
+		{ label: "Feriados", value: formatBusinessPeriod(hours.holidays) },
+	];
 }
 
 export function formatBranchAddress(row: {
