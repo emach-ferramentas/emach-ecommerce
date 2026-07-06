@@ -1,6 +1,8 @@
 import { getRedis, RATE_LIMIT_WINDOW_SECONDS } from "@emach/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 
+import { warnRedisMissingOnce } from "@/lib/redis-monitor";
+
 export interface Limiter {
 	limit(key: string): Promise<{ success: boolean }>;
 }
@@ -50,6 +52,7 @@ function createLimiter(max: number): Limiter {
 			prefix: "checkout",
 		});
 	}
+	warnRedisMissingOnce();
 	return memoryLimiter(max);
 }
 

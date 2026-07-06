@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { getRedis } from "@emach/redis";
 
 import { log } from "@/lib/evlog";
+import { warnRedisMissingOnce } from "@/lib/redis-monitor";
 import type { ShippingOption } from "@/lib/shipping/types";
 
 export interface CachedQuote {
@@ -51,6 +52,7 @@ export async function getCachedQuote(key: string): Promise<CachedQuote | null> {
 			return null;
 		}
 	}
+	warnRedisMissingOnce();
 	const hit = memory.get(key);
 	if (hit && hit.expiresAt > Date.now()) {
 		return hit.value;
@@ -77,6 +79,7 @@ export async function setCachedQuote(
 	}
 	// Fallback in-memory (dev/local — mesmo espírito do rate-limit): poda
 	// preguiçosa das expiradas só quando o Map cresce, sem varredura por request.
+	warnRedisMissingOnce();
 	if (memory.size >= MEMORY_MAX_KEYS) {
 		const now = Date.now();
 		for (const [k, v] of memory) {

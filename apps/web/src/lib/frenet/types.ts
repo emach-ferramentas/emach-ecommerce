@@ -22,7 +22,9 @@ export interface FrenetShippingService {
 	Carrier?: string;
 	CarrierCode?: string;
 	DeliveryTime?: string;
-	Error?: boolean;
+	// O SDK oficial (frenet-php) trata Error como boolean OU string ("true") —
+	// a doc pública tipa boolean, mas os integradores de 1ª parte divergem.
+	Error?: boolean | string;
 	Msg?: string;
 	ServiceCode?: string;
 	ServiceDescription?: string;

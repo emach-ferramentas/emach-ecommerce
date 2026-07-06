@@ -9,6 +9,7 @@ import { tool } from "@emach/db/schema/tools";
 import { env } from "@emach/env/server";
 import { inArray } from "drizzle-orm";
 
+import { log } from "@/lib/evlog";
 import {
 	buildQuoteCacheKey,
 	getCachedQuote,
@@ -70,7 +71,17 @@ export async function quoteShipping(
 
 	const items = buildQuoteItems(toolRows, input.items);
 	const packages = packItems(items, boxes);
-	if (packages.some((p) => p.outOfCatalog)) {
+	const outOfCatalog = packages.filter((p) => p.outOfCatalog);
+	if (outOfCatalog.length > 0) {
+		// Sem este warn, "negotiate por falta de caixa" (dado de catálogo
+		// corrigível no dashboard) é indistinguível de "Frenet sem serviço".
+		log.warn({
+			action: "shipping_negotiate_packing",
+			toolIds,
+			packages: outOfCatalog.map(
+				(p) => `${p.lengthCm}x${p.widthCm}x${p.heightCm}cm:${p.weightKg}kg`
+			),
+		});
 		return { negotiate: true, options: [] };
 	}
 
@@ -111,6 +122,11 @@ export async function quoteShipping(
 		})),
 	});
 	const result = mapFrenetResponse(response);
+	if (result.negotiate) {
+		// Contraparte do warn de packing: aqui a Frenet respondeu, mas nenhum
+		// serviço cotou (CEP sem cobertura ou todos com Error por serviço).
+		log.warn({ action: "shipping_negotiate_no_services", destinationCep });
+	}
 	await setCachedQuote(cacheKey, result);
 	return result;
 }
