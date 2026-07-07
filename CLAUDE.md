@@ -3,6 +3,12 @@
 > Log de mistakes recorrentes e decisões não-óbvias. Código vence em conflito.
 > Storefront BR de ferramentas (furadeiras, serras, EPIs). Compartilha DB Supabase com `emach-dashboard` (repo irmão, admin staff).
 
+## ⛔ Guardrails duros (incidentes 2026-06/07)
+
+- **Banco único dev=prod compartilhado.** NUNCA `seed`/`truncate`/`drop`/INSERT/UPDATE em dado real sem autorização explícita NESTA sessão (writes de smoke em banner/promoção de produção já foram barrados pelo classifier 3×). Subagente que toca banco recebe esta restrição colada no prompt.
+- **NUNCA `cd`/Read/Edit/`gh issue` no `emach-dashboard` a partir daqui** (ADR-0009): mudança de schema/issue do dashboard abre-se LÁ; aqui só se consome o PR de sync automático.
+- CWD é a RAIZ do monorepo (turbo/bun) — nunca `cd apps/web`; paths absolutos.
+
 ## Auth — invariantes P0 (qualquer violação é bug crítico)
 
 Duas instâncias **completamente isoladas** Better Auth no mesmo banco. Este app usa só a `ecommerce` (clientes BR via email/senha + Google OAuth).
