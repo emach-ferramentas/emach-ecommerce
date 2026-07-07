@@ -94,48 +94,45 @@ export async function SiteFooter() {
 						<p className="mt-3.5 max-w-[40ch] text-[13.5px] text-gray-55 leading-relaxed">
 							Ferramentas profissionais que não abandonam você no meio da obra.
 						</p>
+						<p className="mt-4 text-[12px] text-gray-55 leading-relaxed opacity-85">
+							CNPJ 04.128.615/0001-59
+						</p>
 					</div>
-
-					<nav
-						aria-label="Navegar"
-						className="flex flex-wrap gap-x-7 gap-y-2.5 md:justify-end md:pt-1.5"
-					>
-						{navLinks.map((link) => (
-							<Link
-								className={navLinkClassName}
-								href={link.href}
-								key={link.label}
-							>
-								{link.label}
-							</Link>
-						))}
-					</nav>
-				</div>
-
-				<div className="mt-8 flex flex-col gap-5 border-white/10 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-					<p className="text-[12px] text-gray-55 leading-relaxed">
-						<span className="font-medium text-gray-20">
-							EMACH Ferramentas Gerais LTDA
-						</span>
-						<span className="mx-1.5">·</span>
-						CNPJ 04.128.615/0001-59
-					</p>
-					{socialLinks.length > 0 && (
-						<nav aria-label="Redes sociais" className="flex items-center gap-4">
-							{socialLinks.map(({ network, url }) => (
-								<a
-									aria-label={socialNetworkMeta[network].label}
-									className="rounded-[2px] text-gray-20 transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
-									href={url}
-									key={network}
-									rel="noopener noreferrer"
-									target="_blank"
+					<div className="flex flex-col gap-5 md:items-end">
+						<nav
+							aria-label="Navegar"
+							className="flex flex-wrap gap-x-7 gap-y-2.5 md:justify-end md:pt-1.5"
+						>
+							{navLinks.map((link) => (
+								<Link
+									className={navLinkClassName}
+									href={link.href}
+									key={link.label}
 								>
-									<SocialIcon network={network} />
-								</a>
+									{link.label}
+								</Link>
 							))}
 						</nav>
-					)}
+						{socialLinks.length > 0 && (
+							<nav
+								aria-label="Redes sociais"
+								className="flex items-center gap-4"
+							>
+								{socialLinks.map(({ network, url }) => (
+									<a
+										aria-label={socialNetworkMeta[network].label}
+										className="rounded-[2px] text-gray-20 transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
+										href={url}
+										key={network}
+										rel="noopener noreferrer"
+										target="_blank"
+									>
+										<SocialIcon network={network} />
+									</a>
+								))}
+							</nav>
+						)}
+					</div>
 				</div>
 			</PageContainer>
 		</footer>

@@ -77,7 +77,7 @@ export async function BranchMapSection() {
 	return (
 		<section
 			aria-label="Onde estamos"
-			className="overflow-hidden border-emach-red border-y-2 bg-cinema-3 text-white [color-scheme:dark]"
+			className="overflow-hidden border-t-2 border-t-emach-red border-b border-b-white/10 bg-cinema-3 text-white [color-scheme:dark]"
 		>
 			<PageContainer className="grid min-h-110 grid-cols-1 px-0 md:grid-cols-[36%_1fr]">
 				<div className="flex flex-col justify-center gap-4 px-5 py-12 sm:px-10 sm:py-16 md:px-16">
