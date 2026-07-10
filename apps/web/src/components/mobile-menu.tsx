@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useOverlay } from "@/lib/use-overlay";
+import { useSectionInView } from "@/lib/use-section-in-view";
 
 interface MobileMenuProps {
 	onClose: () => void;
@@ -28,6 +29,8 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 	const router = useRouter();
 	// Esc, focus-trap, scroll-lock e restauração de foco vêm do hook.
 	const panelRef = useOverlay(open, onClose);
+	// Scroll-spy: em /sobre, "Filiais" marca enquanto a seção #filiais está na tela.
+	const filiaisInView = useSectionInView("filiais", pathname === "/sobre");
 	const onCloseRef = useRef(onClose);
 	onCloseRef.current = onClose;
 
@@ -51,15 +54,8 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 		router.refresh();
 	}
 
-	const isActive = (href: string) => {
-		const [path, hash] = href.split("#");
-		if (pathname !== path) {
-			return false;
-		}
-		// Distingue /sobre de /sobre#filiais pelo hash atual da URL.
-		const current = typeof window === "undefined" ? "" : window.location.hash;
-		return hash ? current === `#${hash}` : current === "";
-	};
+	const activeHref =
+		pathname === "/sobre" && filiaisInView ? "/sobre#filiais" : pathname;
 
 	return (
 		<div
@@ -72,7 +68,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 		>
 			<nav className="mt-2 flex flex-col">
 				{NAV_LINKS.map((link, i) => {
-					const active = isActive(link.href);
+					const active = link.href === activeHref;
 					return (
 						<div
 							className="fade-in slide-in-from-bottom-3 animate-in fill-mode-both duration-400 ease-out motion-reduce:animate-none"
@@ -80,6 +76,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 							style={{ animationDelay: `${80 + i * 60}ms` }}
 						>
 							<Link
+								aria-current={active ? "page" : undefined}
 								className={cn(
 									"relative block py-1 font-display font-semibold text-[clamp(40px,13vw,52px)] uppercase leading-[1.06] tracking-[0.01em] transition-colors",
 									"focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2",
