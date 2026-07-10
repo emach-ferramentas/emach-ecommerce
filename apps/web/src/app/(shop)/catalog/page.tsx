@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getCachedCategoryTree } from "@/lib/catalog-cache";
 import { getVoltagesByTool } from "@/lib/variant-voltages";
 import { CatalogContent } from "./_components/catalog-content";
+import { getFacetCounts } from "./_lib/facet-counts";
 
 const PAGE_SIZE = 24;
 
@@ -113,7 +114,7 @@ async function CatalogResults({ searchParams }: CatalogPageProps) {
 		}
 	}
 
-	const [{ tools, total }, categoryTree] = await Promise.all([
+	const [{ tools, total }, categoryTree, facetCounts] = await Promise.all([
 		getTools(db, {
 			categoryId,
 			search,
@@ -126,6 +127,14 @@ async function CatalogResults({ searchParams }: CatalogPageProps) {
 			offset: (page - 1) * PAGE_SIZE,
 		}),
 		getCachedCategoryTree(),
+		getFacetCounts({
+			categoryId,
+			search,
+			voltages,
+			priceMin,
+			priceMax,
+			onlyPromo,
+		}),
 	]);
 
 	const voltagesByTool = await getVoltagesByTool(tools.map((t) => t.id));
@@ -135,7 +144,8 @@ async function CatalogResults({ searchParams }: CatalogPageProps) {
 			categoryTree={categoryTree}
 			currentCategoryDescription={currentCategoryDescription}
 			currentCategoryName={currentCategoryName}
-			currentCategorySlug={params.cat ?? null}
+			currentCategorySlug={categoryId ? (params.cat ?? null) : null}
+			facetCounts={facetCounts}
 			onlyPromo={onlyPromo}
 			page={page}
 			pageSize={PAGE_SIZE}

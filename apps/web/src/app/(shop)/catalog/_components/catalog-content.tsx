@@ -23,6 +23,7 @@ import {
 	type SortKey,
 	type VoltageKey,
 } from "../_lib/catalog-filters";
+import type { FacetCounts } from "../_lib/facet-counts";
 import { ActiveFilters } from "./active-filters";
 import { FilterDrawer } from "./filter-drawer";
 import { FilterPanel } from "./filter-panel";
@@ -32,6 +33,7 @@ interface CatalogContentProps {
 	currentCategoryDescription: string | null;
 	currentCategoryName: string | null;
 	currentCategorySlug: string | null;
+	facetCounts: FacetCounts;
 	onlyPromo: boolean;
 	page: number;
 	pageSize: number;
@@ -52,6 +54,7 @@ export function CatalogContent({
 	currentCategoryName,
 	currentCategoryDescription,
 	categoryTree,
+	facetCounts,
 	query,
 	sort,
 	voltages,
@@ -125,6 +128,12 @@ export function CatalogContent({
 		});
 	}
 
+	function selectPriceRange(pmin: number | null, pmax: number | null) {
+		setPminLocal(pmin === null ? "" : String(pmin));
+		setPmaxLocal(pmax === null ? "" : String(pmax));
+		navigate({ pmin, pmax });
+	}
+
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 	const showFrom = total === 0 ? 0 : (page - 1) * pageSize + 1;
 	const showTo = Math.min(page * pageSize, total);
@@ -184,16 +193,20 @@ export function CatalogContent({
 					</div>
 					<FilterPanel
 						activeSlug={currentCategorySlug}
+						facetCounts={facetCounts}
 						idPrefix="desktop"
 						onApplyPrice={applyPriceFilters}
 						onlyPromo={onlyPromo}
 						onPmaxChange={setPmaxLocal}
 						onPminChange={setPminLocal}
 						onSelectCategory={(slug) => navigate({ cat: slug })}
+						onSelectPriceRange={selectPriceRange}
 						onTogglePromo={(v) => navigate({ promo: v ? true : null })}
 						onToggleVoltage={toggleVoltage}
 						pmaxValue={pmaxLocal}
 						pminValue={pminLocal}
+						priceMax={priceMax}
+						priceMin={priceMin}
 						tree={categoryTree}
 						voltages={voltages}
 					/>
@@ -386,16 +399,20 @@ export function CatalogContent({
 			>
 				<FilterPanel
 					activeSlug={currentCategorySlug}
+					facetCounts={facetCounts}
 					idPrefix="mobile"
 					onApplyPrice={applyPriceFilters}
 					onlyPromo={onlyPromo}
 					onPmaxChange={setPmaxLocal}
 					onPminChange={setPminLocal}
 					onSelectCategory={(slug) => navigate({ cat: slug })}
+					onSelectPriceRange={selectPriceRange}
 					onTogglePromo={(v) => navigate({ promo: v ? true : null })}
 					onToggleVoltage={toggleVoltage}
 					pmaxValue={pmaxLocal}
 					pminValue={pminLocal}
+					priceMax={priceMax}
+					priceMin={priceMin}
 					tree={categoryTree}
 					voltages={voltages}
 				/>
