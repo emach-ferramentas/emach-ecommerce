@@ -19,23 +19,11 @@
       "skillPath": "better-auth/emailAndPassword/SKILL.md",
       "computedHash": "747d7f73bd9e2ec5317b8ef88dc70f97df716d00e3d02de4051feebaa48b062d"
     },
-    "frontend-design": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "skillPath": "skills/frontend-design/SKILL.md",
-      "computedHash": "4eabc66183767153e404b39d1b839b1c37f2d82d86f0a0d7e880a579d8d62336"
-    },
-    "improve": {
-      "source": "shadcn/improve",
-      "sourceType": "github",
-      "skillPath": "skills/improve/SKILL.md",
-      "computedHash": "39a9358732dcff385e9e4d3e60b4547856f834e54a58b35e455aa9bd49928c13"
-    },
     "next-cache-components-optimizer": {
       "source": "vercel/next.js",
       "sourceType": "github",
       "skillPath": "skills/next-cache-components-optimizer/SKILL.md",
-      "computedHash": "b8d757a1fe10ebe7b10de1d5ee83f9bcdbd1de1e1147efc68cf249377f471067"
+      "computedHash": "f67b08843bfc4e9cde4ac4bfe8b14aa0d2d9d2694611be077fa333bad2605a65"
     },
     "redis-js": {
       "source": "upstash/redis-js",
@@ -47,25 +35,25 @@
       "source": "shadcn/ui",
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
-      "computedHash": "d81caa0f86aabab65b25e302d454f23a3328760386ed9078345584c0d5c8058e"
+      "computedHash": "c1a68ee06a668aced9ab2b5fbdea5f989864123794eb2e056b339a072dbb7f10"
     },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase/SKILL.md",
-      "computedHash": "17a437f3de2371ec43ad8a17d3e858337695efb46ed4af5dd6426f330bb6d032"
+      "computedHash": "886743d08edece523e48b5c6c737afa29029503bdd3b28a722795712cedfcd91"
     },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
-      "computedHash": "ec56a54fba0e97bee52c7f244ba603bb284bf8d1b739c66a5cc84ec3df709d9d"
+      "computedHash": "e14e276241805c97dbcfe40dcbea1a3035269cc7293cac4b1832dda41a835e60"
     },
     "turborepo": {
       "source": "vercel/turborepo",
       "sourceType": "github",
       "skillPath": "skills/turborepo/SKILL.md",
-      "computedHash": "89b09216da74e889842201a5bb689e23214500a87e3bae987c63ffad8f75595c"
+      "computedHash": "d6efa117c8940c29b2fe1d1214351eb928ca5dd5d941b29990b2ce7b41c7b4f2"
     },
     "ultracite": {
       "source": "haydenbleasel/ultracite",
