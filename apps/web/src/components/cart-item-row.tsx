@@ -97,7 +97,7 @@ export function CartItemRow({
 						<QuantityPicker onChange={onQuantityChange} value={item.quantity} />
 						<button
 							aria-label={`Remover ${item.name} do carrinho`}
-							className="cursor-pointer border-none bg-transparent text-[12px] text-gray-60 underline hover:text-near-black"
+							className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent text-[12px] text-gray-60 underline transition-colors hover:text-near-black active:text-near-black"
 							onClick={onRemove}
 							type="button"
 						>
@@ -113,7 +113,6 @@ export function CartItemRow({
 					<QuantityPicker
 						min={0}
 						onChange={onQuantityChange}
-						size="sm"
 						value={item.quantity}
 					/>
 				</div>

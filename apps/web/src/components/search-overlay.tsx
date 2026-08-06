@@ -193,7 +193,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 						value={query}
 					/>
 					<button
-						className="emach-ghost-btn font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]"
+						className="emach-ghost-btn -mr-3 inline-flex min-h-11 items-center px-3 font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]"
 						onClick={onClose}
 						type="button"
 					>

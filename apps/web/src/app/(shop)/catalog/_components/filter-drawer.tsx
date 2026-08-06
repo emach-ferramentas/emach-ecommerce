@@ -55,7 +55,7 @@ export function FilterDrawer({
 					</span>
 					<button
 						aria-label="Fechar filtros"
-						className="-mr-1.5 flex size-9 cursor-pointer items-center justify-center text-white/70 hover:text-white"
+						className="-mr-3 flex size-11 cursor-pointer items-center justify-center text-white/70 transition-colors hover:text-white active:text-white/80"
 						onClick={onClose}
 						type="button"
 					>
@@ -68,7 +68,7 @@ export function FilterDrawer({
 				<div className="flex items-center gap-3 border-border border-t bg-gray-10 p-4">
 					{activeCount > 0 && (
 						<button
-							className="cursor-pointer font-display font-semibold text-[12px] text-emach-red-deep uppercase tracking-[0.08em]"
+							className="inline-flex min-h-11 cursor-pointer items-center px-3 font-display font-semibold text-[12px] text-emach-red-deep uppercase tracking-[0.08em] transition-opacity active:opacity-60"
 							onClick={onClearAll}
 							type="button"
 						>

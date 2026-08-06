@@ -2,8 +2,10 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cn } from "@emach/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
+// `active:` espelha o EmachButton (afunda 1px + escurece, 75ms): os dois
+// primitivos de botão precisam responder ao toque da mesma forma.
 const buttonVariants = cva(
-	"group/button inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-none border border-transparent bg-clip-padding font-medium text-xs outline-none transition-all focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+	"group/button inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap rounded-none border border-transparent bg-clip-padding font-medium text-xs outline-none transition-all focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 active:translate-y-px active:brightness-90 active:duration-75 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 motion-reduce:active:translate-y-0 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
 	{
 		variants: {
 			variant: {
@@ -18,6 +20,9 @@ const buttonVariants = cva(
 					"bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 dark:hover:bg-destructive/30",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
+			// Densidade de desktop. Os `icon*` ficam abaixo dos 44px de alvo de
+			// toque do PRODUCT.md de propósito — em superfície tocável (drawer,
+			// header mobile, filtros) o call site sobe a hit area com size-11.
 			size: {
 				default:
 					"h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",

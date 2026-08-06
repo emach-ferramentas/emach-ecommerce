@@ -223,7 +223,7 @@ export function CatalogContent({
 							aria-controls="filter-drawer"
 							aria-expanded={filterOpen}
 							aria-haspopup="dialog"
-							className="flex h-9 cursor-pointer items-center gap-2 border border-border bg-white px-3 font-display font-semibold text-[12px] text-near-black uppercase tracking-[0.08em] lg:hidden"
+							className="flex h-11 cursor-pointer items-center gap-2 border border-border bg-white px-3.5 font-display font-semibold text-[12px] text-near-black uppercase tracking-[0.08em] transition-colors active:bg-gray-10 lg:hidden"
 							onClick={() => setFilterOpen(true)}
 							type="button"
 						>
@@ -255,11 +255,12 @@ export function CatalogContent({
 							<div className="flex border border-border">
 								<button
 									aria-label="Grade"
+									aria-pressed={view === "grid"}
 									className={cn(
-										"flex size-9 cursor-pointer items-center justify-center border-none",
+										"flex size-11 cursor-pointer items-center justify-center border-none transition-colors",
 										view === "grid"
 											? "bg-near-black text-white"
-											: "bg-white text-near-black"
+											: "bg-white text-near-black active:bg-gray-10"
 									)}
 									onClick={() => setView("grid")}
 									type="button"
@@ -268,11 +269,12 @@ export function CatalogContent({
 								</button>
 								<button
 									aria-label="Lista"
+									aria-pressed={view === "list"}
 									className={cn(
-										"flex size-9 cursor-pointer items-center justify-center border-none",
+										"flex size-11 cursor-pointer items-center justify-center border-none transition-colors",
 										view === "list"
 											? "bg-near-black text-white"
-											: "bg-white text-near-black"
+											: "bg-white text-near-black active:bg-gray-10"
 									)}
 									onClick={() => setView("list")}
 									type="button"

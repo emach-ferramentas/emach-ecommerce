@@ -1,11 +1,11 @@
 "use client";
 
-import { cn } from "@emach/ui/lib/utils";
 import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
+import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { authClient } from "@/lib/auth-client";
 
 export function ResetPasswordForm() {
@@ -143,16 +143,12 @@ export function ResetPasswordForm() {
 						})}
 					>
 						{({ canSubmit, isSubmitting }) => (
-							<button
-								className={cn(
-									"mt-2 w-full cursor-pointer rounded-[2px] border-0 bg-emach-red py-3 font-semibold text-[14px] text-white transition-all duration-180",
-									canSubmit ? "opacity-100" : "opacity-65"
-								)}
-								disabled={!canSubmit || isSubmitting}
-								type="submit"
-							>
-								{isSubmitting ? "Redefinindo…" : "Redefinir senha"}
-							</button>
+							<AuthSubmitButton
+								canSubmit={canSubmit}
+								isSubmitting={isSubmitting}
+								label="Redefinir senha"
+								pendingLabel="Redefinindo…"
+							/>
 						)}
 					</form.Subscribe>
 				</form>

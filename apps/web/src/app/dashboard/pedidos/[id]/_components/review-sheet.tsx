@@ -37,7 +37,7 @@ function StarInput({
 				<button
 					aria-label={`${n} estrela${n > 1 ? "s" : ""}`}
 					aria-pressed={value === n}
-					className="p-0.5"
+					className="flex min-h-11 min-w-11 items-center justify-center"
 					key={n}
 					onClick={() => onChange(n)}
 					onMouseEnter={() => setHover(n)}

@@ -41,12 +41,12 @@ export function RebuyButton({
 
 	return (
 		<EmachButton
-			disabled={pending}
+			isLoading={pending}
 			onClick={onClick}
 			size="sm"
 			variant={variant}
 		>
-			Comprar novamente
+			{pending ? "Adicionando" : "Comprar novamente"}
 		</EmachButton>
 	);
 }

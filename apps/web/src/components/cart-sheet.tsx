@@ -4,7 +4,7 @@ import { ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 
 import { CartItemRow } from "@/components/cart-item-row";
-import { EmachButton } from "@/components/emach-button";
+import { emachButtonVariants } from "@/components/emach-button";
 import { useCart } from "@/lib/cart-context";
 import { fmtBRL, numericToCents } from "@/lib/format";
 import { useOverlay } from "@/lib/use-overlay";
@@ -62,7 +62,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 						</div>
 						<button
 							aria-label="Fechar carrinho"
-							className="-mr-1 flex size-8 cursor-pointer items-center justify-center text-white/60 transition-colors hover:text-white"
+							className="-mr-3 flex size-11 cursor-pointer items-center justify-center text-white/60 transition-colors hover:text-white active:text-white/80"
 							onClick={close}
 							type="button"
 						>
@@ -84,13 +84,15 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 							trabalho.
 						</p>
 						<Link
-							className="mt-6 w-full max-w-[220px]"
+							className={emachButtonVariants({
+								className: "mt-6 w-full max-w-[220px]",
+								size: "md",
+								variant: "primary",
+							})}
 							href="/catalog"
 							onClick={close}
 						>
-							<EmachButton full size="md" variant="primary">
-								Ver catálogo
-							</EmachButton>
+							Ver catálogo
 						</Link>
 					</div>
 				) : (
@@ -124,15 +126,31 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 								</span>
 							</div>
 
-							<Link className="mb-2 block" href="/checkout" onClick={close}>
-								<EmachButton full size="lg" variant="primary">
-									Finalizar compra
-								</EmachButton>
+							{/* Link estilizado com as variantes, não <Link><button> —
+							    botão dentro de âncora é markup inválido e o leitor de
+							    tela anuncia dois controles. */}
+							<Link
+								className={emachButtonVariants({
+									className: "mb-2",
+									full: true,
+									size: "lg",
+									variant: "primary",
+								})}
+								href="/checkout"
+								onClick={close}
+							>
+								Finalizar compra
 							</Link>
-							<Link className="block" href="/cart" onClick={close}>
-								<EmachButton full size="md" variant="ghost-light">
-									Ver carrinho
-								</EmachButton>
+							<Link
+								className={emachButtonVariants({
+									full: true,
+									size: "md",
+									variant: "ghost-light",
+								})}
+								href="/cart"
+								onClick={close}
+							>
+								Ver carrinho
 							</Link>
 						</div>
 					</>

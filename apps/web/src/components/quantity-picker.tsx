@@ -9,7 +9,6 @@ interface QuantityPickerProps {
 	max?: number;
 	min?: number;
 	onChange: (next: number) => void;
-	size?: "default" | "sm";
 	value: number;
 }
 
@@ -18,14 +17,13 @@ export const QuantityPicker = ({
 	onChange,
 	min = 1,
 	max = 99,
-	size = "default",
 	className,
 }: QuantityPickerProps) => {
 	const decrement = () => onChange(Math.max(min, value - 1));
 	const increment = () => onChange(Math.min(max, value + 1));
-	// Touch target ≥44px (WCAG 2.5.5 / padrão do projeto p/ mobile). `sm` (drawer)
-	// fica em 40px por densidade — acima do piso WCAG 2.2 AA (24px).
-	const cell = size === "sm" ? "size-10" : "size-11";
+	// 44px em todo lugar (WCAG 2.5.5 / piso do PRODUCT.md). A drawer tinha uma
+	// variante de 40px por densidade — mas é lá que o dedo opera, não o mouse.
+	const cell = "size-11";
 
 	return (
 		<div className={cn("flex items-center", className)}>

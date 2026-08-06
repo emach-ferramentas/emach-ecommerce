@@ -34,15 +34,29 @@ export function CancelOrderButton({
 		});
 	}
 
+	function label() {
+		if (pending) {
+			return "Cancelando";
+		}
+		return confirming ? "Confirmar cancelamento?" : "Cancelar pedido";
+	}
+
 	return (
-		<EmachButton
-			disabled={pending}
-			onBlur={() => setConfirming(false)}
-			onClick={onClick}
-			size="sm"
-			variant={variant}
-		>
-			{confirming ? "Confirmar cancelamento?" : "Cancelar pedido"}
-		</EmachButton>
+		<>
+			<EmachButton
+				isLoading={pending}
+				onBlur={() => setConfirming(false)}
+				onClick={onClick}
+				size="sm"
+				variant={variant}
+			>
+				{label()}
+			</EmachButton>
+			{/* O rótulo troca no lugar; sem isso o leitor de tela não anuncia
+			    que o botão virou uma confirmação. */}
+			<span aria-live="polite" className="sr-only" role="status">
+				{confirming && !pending ? "Confirme para cancelar o pedido" : undefined}
+			</span>
+		</>
 	);
 }

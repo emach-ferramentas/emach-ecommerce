@@ -53,7 +53,10 @@ export function ReviewSort({ current }: ReviewSortProps) {
 				Ordenar
 			</span>
 			<Select onValueChange={handleChange} value={current}>
-				<SelectTrigger className="h-8 min-w-[160px]">
+				<SelectTrigger
+					aria-busy={isPending}
+					className="h-11 min-w-[160px] transition-opacity aria-busy:pointer-events-none aria-busy:opacity-60 sm:h-8"
+				>
 					<SelectValue>
 						{(value) => SORT_LABELS[value as ReviewSortKey]}
 					</SelectValue>

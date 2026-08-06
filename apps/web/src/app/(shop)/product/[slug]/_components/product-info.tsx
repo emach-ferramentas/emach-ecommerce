@@ -12,7 +12,7 @@ import {
 	Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { EmachButton } from "@/components/emach-button";
 import { ProductRating } from "@/components/product-rating";
@@ -82,6 +82,9 @@ export function ProductInfo({
 	const buyActionsRef = useRef<HTMLDivElement>(null);
 	const { add, clear } = useCartActions();
 	const router = useRouter();
+	// A navegação pro checkout é a maior janela morta da página: sem isso o
+	// usuário aperta, nada muda, e ele aperta de novo.
+	const [isNavigating, startNavigation] = useTransition();
 
 	// Mostra a barra sticky só depois que a buy box inline foi rolada pra cima
 	// (acima do viewport) — não aparece no load nem enquanto ela está à vista.
@@ -167,7 +170,9 @@ export function ProductInfo({
 		}
 		clear();
 		add(buildCartItem(), qty);
-		router.push("/checkout");
+		startNavigation(() => {
+			router.push("/checkout");
+		});
 	}
 
 	async function handleShare() {
@@ -294,9 +299,17 @@ export function ProductInfo({
 				)}
 
 				<div className="mt-5 space-y-3" ref={buyActionsRef}>
-					<div className="flex items-stretch gap-3">
-						<QuantityPicker onChange={setQty} value={qty} />
+					{/* Abaixo de 440px o stepper (132px fixos) + o CTA (rótulo em
+					    whitespace-nowrap) não cabem lado a lado e empurravam a página
+					    pra fora da tela. Empilhar preserva o rótulo inteiro. */}
+					<div className="flex min-w-0 flex-col items-stretch gap-3 min-[440px]:flex-row">
+						<QuantityPicker
+							className="self-start min-[440px]:self-auto"
+							onChange={setQty}
+							value={qty}
+						/>
 						<EmachButton
+							className="min-w-0"
 							disabled={!inStock}
 							full
 							icon={<ShoppingBag size={16} />}
@@ -311,11 +324,12 @@ export function ProductInfo({
 						disabled={!inStock}
 						full
 						icon={<Zap size={16} />}
+						isLoading={isNavigating}
 						onClick={handleBuyNow}
 						size="md"
 						variant="primary"
 					>
-						Comprar agora
+						{isNavigating ? "Abrindo checkout" : "Comprar agora"}
 					</EmachButton>
 				</div>
 			</div>

@@ -116,12 +116,12 @@ export async function SiteFooter() {
 						{socialLinks.length > 0 && (
 							<nav
 								aria-label="Redes sociais"
-								className="flex items-center gap-4"
+								className="-mx-3 flex items-center gap-1"
 							>
 								{socialLinks.map(({ network, url }) => (
 									<a
 										aria-label={socialNetworkMeta[network].label}
-										className="rounded-[2px] text-gray-20 transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
+										className="inline-flex size-11 items-center justify-center rounded-[2px] text-gray-20 transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3 active:text-emach-red-hover"
 										href={url}
 										key={network}
 										rel="noopener noreferrer"

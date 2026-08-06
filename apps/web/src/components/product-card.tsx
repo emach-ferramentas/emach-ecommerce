@@ -93,7 +93,7 @@ export function ProductCard({
 
 				{tool.inStock ? (
 					<QuickAddButton
-						className="absolute inset-x-0 bottom-0 z-[3] flex translate-y-full items-center justify-center gap-2 bg-emach-red py-2.5 font-bold font-display text-[13px] text-white uppercase tracking-[0.1em] transition-transform duration-[var(--card-dur)] ease-[var(--card-ease)] hover:bg-emach-red-hover group-hover:translate-y-0 motion-reduce:transition-none"
+						className="absolute inset-x-0 bottom-0 z-[3] flex min-h-11 pointer-coarse:translate-y-0 translate-y-full items-center justify-center gap-2 bg-emach-red py-2.5 font-bold font-display text-[13px] text-white uppercase tracking-[0.1em] transition-transform duration-[var(--card-dur)] ease-[var(--card-ease)] hover:bg-emach-red-hover group-focus-within:translate-y-0 group-hover:translate-y-0 motion-reduce:transition-none"
 						item={snapshot}
 					/>
 				) : (

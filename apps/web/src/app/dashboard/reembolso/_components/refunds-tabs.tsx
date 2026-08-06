@@ -25,7 +25,7 @@ export function RefundsTabs({ refunds }: { refunds: RefundListItem[] }) {
 			<TabsList variant="line">
 				{REFUND_TABS.map((tab) => (
 					<TabsTrigger
-						className="h-auto flex-1 border-none px-0 py-3.5 font-semibold text-[13px]/[14px] data-active:text-near-black"
+						className="h-auto min-h-11 flex-1 border-none px-0 py-3.5 font-semibold text-[13px]/[14px] data-active:text-near-black"
 						key={tab}
 						value={tab}
 					>

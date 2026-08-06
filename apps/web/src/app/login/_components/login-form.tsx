@@ -9,7 +9,6 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@emach/ui/components/tabs";
-import { cn } from "@emach/ui/lib/utils";
 import { maskPhone, onlyDigits } from "@emach/validators";
 import { useForm } from "@tanstack/react-form";
 import type { Route } from "next";
@@ -19,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
+import { AuthSubmitButton } from "@/components/auth-submit-button";
 import Loader from "@/components/loader";
 import { authClient } from "@/lib/auth-client";
 import { LoginBrandPanel } from "./login-brand-panel";
@@ -258,16 +258,12 @@ export function LoginForm() {
 									})}
 								>
 									{({ canSubmit, isSubmitting }) => (
-										<button
-											className={cn(
-												"mt-2 w-full cursor-pointer rounded-[2px] border-0 bg-emach-red py-3 font-semibold text-[14px] text-white transition-all duration-180",
-												canSubmit ? "opacity-100" : "opacity-65"
-											)}
-											disabled={!canSubmit || isSubmitting}
-											type="submit"
-										>
-											{isSubmitting ? "Entrando…" : "Entrar"}
-										</button>
+										<AuthSubmitButton
+											canSubmit={canSubmit}
+											isSubmitting={isSubmitting}
+											label="Entrar"
+											pendingLabel="Entrando…"
+										/>
 									)}
 								</signInForm.Subscribe>
 							</form>
@@ -403,16 +399,12 @@ export function LoginForm() {
 									})}
 								>
 									{({ canSubmit, isSubmitting }) => (
-										<button
-											className={cn(
-												"mt-2 w-full cursor-pointer rounded-[2px] border-0 bg-emach-red py-3 font-semibold text-[14px] text-white transition-all duration-180",
-												canSubmit ? "opacity-100" : "opacity-65"
-											)}
-											disabled={!canSubmit || isSubmitting}
-											type="submit"
-										>
-											{isSubmitting ? "Criando conta…" : "Criar conta"}
-										</button>
+										<AuthSubmitButton
+											canSubmit={canSubmit}
+											isSubmitting={isSubmitting}
+											label="Criar conta"
+											pendingLabel="Criando conta…"
+										/>
 									)}
 								</signUpForm.Subscribe>
 							</form>

@@ -272,7 +272,9 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 36px;
+	/* 44px: o chip é alvo de toque de verdade (buscas recentes/sugestões),
+	   não um badge estático. */
+	min-height: 44px;
 	padding: 0 16px;
 	font-family: var(--font-sans);
 	font-size: 13px;
@@ -287,6 +289,11 @@
 }
 .emach-chip:hover {
 	border-color: var(--near-black);
+}
+.emach-chip:active {
+	background: var(--gray-10);
+	border-color: var(--near-black);
+	transition-duration: 75ms;
 }
 .emach-chip--active {
 	color: #fff;
@@ -367,6 +374,17 @@
 	cursor: pointer;
 	background: transparent;
 	border: none;
+	transition: opacity 150ms ease;
+}
+/* O reset zera o fundo, então a pressão só pode falar por opacidade. */
+.emach-ghost-btn:active {
+	opacity: 0.6;
+	transition-duration: 75ms;
+}
+@media (prefers-reduced-motion: reduce) {
+	.emach-ghost-btn {
+		transition: none;
+	}
 }
 
 /* ---------- Toast (sonner) EMACH style ---------- */
