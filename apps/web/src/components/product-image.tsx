@@ -1,6 +1,9 @@
+"use client";
+
 import { cn } from "@emach/ui/lib/utils";
 import { Disc3, Drill, Ruler, Shield, Wrench } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
 	eletricas: Drill,
@@ -32,13 +35,25 @@ export function ProductImage({
 	src,
 	zoom = false,
 }: ProductImageProps) {
+	const [loaded, setLoaded] = useState(false);
+	// Fade-in no onLoad mata o "pop" da foto sobre o tile claro. Imagem
+	// priority (candidata a LCP) renderiza visível direto — opacity-0 até a
+	// hydration atrasaria a métrica sem ganho perceptual.
+	const fade = !priority;
+
 	if (src) {
 		return (
 			<div className={cn(WRAPPER_BASE, zoom && ZOOM_ON_HOVER)}>
 				<Image
 					alt={alt ?? ""}
-					className="object-cover"
+					className={cn(
+						"object-cover",
+						fade &&
+							"transition-opacity duration-300 ease-out motion-reduce:transition-none",
+						fade && !loaded && "opacity-0"
+					)}
 					fill
+					onLoad={fade ? () => setLoaded(true) : undefined}
 					priority={priority}
 					sizes={sizes}
 					src={src}

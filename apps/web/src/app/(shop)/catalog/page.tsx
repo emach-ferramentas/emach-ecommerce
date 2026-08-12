@@ -1,15 +1,9 @@
-import { db } from "@emach/db";
-import { getCategoryBySlug } from "@emach/db/queries/categories";
-import { getTools } from "@emach/db/queries/tools";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { getCachedCategoryTree } from "@/lib/catalog-cache";
-import { getVoltagesByTool } from "@/lib/variant-voltages";
 import { CatalogContent } from "./_components/catalog-content";
-import { getFacetCounts } from "./_lib/facet-counts";
-
-const PAGE_SIZE = 24;
+import { CatalogSkeleton } from "./_components/catalog-skeleton";
+import { CATALOG_PAGE_SIZE, getCatalogData } from "./_lib/catalog-data";
 
 const VALID_SORTS = [
 	"relevance",
@@ -71,14 +65,6 @@ export const metadata: Metadata = {
 		"Todas as ferramentas da EMACH: elétricas, manuais, medição e EPIs. Filtre por categoria, voltagem e preço.",
 };
 
-function CatalogSkeleton() {
-	return (
-		<div className="mx-auto max-w-[1440px] px-10 py-10">
-			<div className="h-[70vh] w-full animate-pulse bg-near-black/5" />
-		</div>
-	);
-}
-
 export default function CatalogPage({ searchParams }: CatalogPageProps) {
 	return (
 		<>
@@ -91,7 +77,8 @@ export default function CatalogPage({ searchParams }: CatalogPageProps) {
 }
 
 // Buraco dinâmico do catálogo: lê searchParams (filtros/busca/paginação) — por
-// isso vive sob Suspense. A árvore de categorias vem do cache (shell).
+// isso vive sob Suspense. Os dados vêm de getCatalogData ('use cache' por
+// combinação de filtros): hit não toca o Postgres.
 async function CatalogResults({ searchParams }: CatalogPageProps) {
 	const params = await searchParams;
 	const sort = parseSort(params.sort);
@@ -102,53 +89,34 @@ async function CatalogResults({ searchParams }: CatalogPageProps) {
 	const page = Math.max(1, parsePositiveInt(params.page) ?? 1);
 	const search = params.q?.trim() ? params.q.trim() : undefined;
 
-	let categoryId: string | undefined;
-	let currentCategoryName: string | null = null;
-	let currentCategoryDescription: string | null = null;
-	if (params.cat) {
-		const detail = await getCategoryBySlug(db, params.cat);
-		if (detail) {
-			categoryId = detail.id;
-			currentCategoryName = detail.name;
-			currentCategoryDescription = detail.description;
-		}
-	}
-
-	const [{ tools, total }, categoryTree, facetCounts] = await Promise.all([
-		getTools(db, {
-			categoryId,
-			search,
-			voltage: voltages.length > 0 ? voltages : undefined,
-			priceMin,
-			priceMax,
-			onlyPromo,
-			sort,
-			limit: PAGE_SIZE,
-			offset: (page - 1) * PAGE_SIZE,
-		}),
-		getCachedCategoryTree(),
-		getFacetCounts({
-			categoryId,
-			search,
-			voltages,
-			priceMin,
-			priceMax,
-			onlyPromo,
-		}),
-	]);
-
-	const voltagesByTool = await getVoltagesByTool(tools.map((t) => t.id));
+	const {
+		categoryTree,
+		currentCategory,
+		facetCounts,
+		tools,
+		total,
+		voltagesByTool,
+	} = await getCatalogData({
+		cat: params.cat,
+		search,
+		voltages,
+		priceMin,
+		priceMax,
+		onlyPromo,
+		sort,
+		page,
+	});
 
 	return (
 		<CatalogContent
 			categoryTree={categoryTree}
-			currentCategoryDescription={currentCategoryDescription}
-			currentCategoryName={currentCategoryName}
-			currentCategorySlug={categoryId ? (params.cat ?? null) : null}
+			currentCategoryDescription={currentCategory?.description ?? null}
+			currentCategoryName={currentCategory?.name ?? null}
+			currentCategorySlug={currentCategory?.slug ?? null}
 			facetCounts={facetCounts}
 			onlyPromo={onlyPromo}
 			page={page}
-			pageSize={PAGE_SIZE}
+			pageSize={CATALOG_PAGE_SIZE}
 			priceMax={priceMax ?? null}
 			priceMin={priceMin ?? null}
 			query={params.q ?? ""}

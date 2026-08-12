@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 
 import { PageContainer } from "@/components/page-container";
 import { SiteHeader } from "@/components/site-header";
@@ -119,135 +119,149 @@ function pluralizeBranches(count: number) {
 	return count === 1 ? "filial" : "filiais";
 }
 
-export default async function AboutPage() {
+// Fallback do cache-miss (getBranches é 'use cache' 600s): segura o canvas
+// preto do hero (100svh - navbar) sem flash branco até os dados chegarem.
+function AboutSkeleton() {
+	return (
+		<main className="bg-gray-10" id="main-content">
+			<section className="min-h-[calc(100svh-56px)] bg-black" />
+		</main>
+	);
+}
+
+export default function AboutPage() {
+	return (
+		<>
+			<SiteHeader />
+			<Suspense fallback={<AboutSkeleton />}>
+				<AboutContent />
+			</Suspense>
+		</>
+	);
+}
+
+async function AboutContent() {
 	const branches = await getBranches();
 	const branchCount = branches.length;
 	const branchLabel = pluralizeBranches(branchCount);
 
 	return (
-		<>
-			<SiteHeader />
+		<main className="bg-gray-10" id="main-content">
+			<section className="relative min-h-[calc(100svh-56px)] overflow-hidden bg-black text-white">
+				<div
+					aria-hidden="true"
+					className="absolute inset-0 bg-[radial-gradient(circle_at_66%_28%,rgba(218,41,28,0.19),transparent_24%),linear-gradient(128deg,rgba(255,255,255,0.065)_0_1px,transparent_1px_34px)]"
+				/>
+				<div
+					aria-hidden="true"
+					className="absolute top-10 right-[-0.08em] font-bold font-display text-[clamp(86px,14vw,190px)] text-white/8 leading-[0.75] tracking-[-0.055em]"
+				>
+					EMACH
+				</div>
 
-			<main className="bg-gray-10" id="main-content">
-				<section className="relative min-h-[calc(100svh-56px)] overflow-hidden bg-black text-white">
-					<div
-						aria-hidden="true"
-						className="absolute inset-0 bg-[radial-gradient(circle_at_66%_28%,rgba(218,41,28,0.19),transparent_24%),linear-gradient(128deg,rgba(255,255,255,0.065)_0_1px,transparent_1px_34px)]"
-					/>
-					<div
-						aria-hidden="true"
-						className="absolute top-10 right-[-0.08em] font-bold font-display text-[clamp(86px,14vw,190px)] text-white/8 leading-[0.75] tracking-[-0.055em]"
-					>
-						EMACH
-					</div>
+				<PageContainer className="relative grid min-h-[calc(100svh-56px)] grid-cols-1 gap-8 px-6 py-12 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_360px_minmax(0,0.9fr)] lg:px-12 lg:py-14 xl:gap-10">
+					<div className="flex flex-col justify-between gap-10">
+						<h1 className="max-w-180 text-balance font-bold font-display text-[clamp(46px,8vw,82px)] leading-[0.88] tracking-[-0.02em]">
+							Ferramenta profissional, e quem responde por ela
+						</h1>
 
-					<PageContainer className="relative grid min-h-[calc(100svh-56px)] grid-cols-1 gap-8 px-6 py-12 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_360px_minmax(0,0.9fr)] lg:px-12 lg:py-14 xl:gap-10">
-						<div className="flex flex-col justify-between gap-10">
-							<h1 className="max-w-180 text-balance font-bold font-display text-[clamp(46px,8vw,82px)] leading-[0.88] tracking-[-0.02em]">
-								Ferramenta profissional, e quem responde por ela
-							</h1>
-
-							<div className="grid gap-3 sm:grid-cols-2">
-								{aboutPillars.map((pillar) => (
-									<article
+						<div className="grid gap-3 sm:grid-cols-2">
+							{aboutPillars.map((pillar) => (
+								<article
+									className={
+										pillar.tone === "light"
+											? "bg-gray-10 p-5 text-near-black"
+											: "border border-white/20 bg-white/[0.035] p-5 text-white"
+									}
+									key={pillar.id}
+								>
+									<div
 										className={
 											pillar.tone === "light"
-												? "bg-gray-10 p-5 text-near-black"
-												: "border border-white/20 bg-white/[0.035] p-5 text-white"
+												? "font-bold font-display text-[11px] text-gray-60 uppercase tracking-[0.16em]"
+												: "font-bold font-display text-[11px] text-gray-50 uppercase tracking-[0.16em]"
 										}
-										key={pillar.id}
 									>
-										<div
-											className={
-												pillar.tone === "light"
-													? "font-bold font-display text-[11px] text-gray-60 uppercase tracking-[0.16em]"
-													: "font-bold font-display text-[11px] text-gray-50 uppercase tracking-[0.16em]"
-											}
-										>
-											{pillar.label}
-										</div>
-										<h2 className="mt-2 font-bold text-[21px] leading-[1.05]">
-											{pillar.title}
-										</h2>
-										<p
-											className={
-												pillar.tone === "light"
-													? "mt-2 text-[13px] text-gray-60 leading-relaxed"
-													: "mt-2 text-[13px] text-white/62 leading-relaxed"
-											}
-										>
-											{pillar.description}
-										</p>
-									</article>
-								))}
-							</div>
-						</div>
-
-						<div className="relative flex items-center justify-center py-4">
-							<div
-								aria-hidden="true"
-								className="absolute inset-x-0 top-12 bottom-12 hidden -skew-x-12 border border-white/15 lg:block"
-							/>
-							<div className="relative flex -skew-x-[9deg] flex-col items-center text-center">
-								<div className="font-bold font-display text-[12px] text-white/55 uppercase tracking-[0.2em]">
-									Presença local
-								</div>
-								<div className="-my-2 font-display font-semibold text-[clamp(190px,26vw,320px)] text-transparent leading-[0.78] tracking-[-0.04em] [-webkit-text-stroke:3px_#da291c]">
-									{branchCount}
-								</div>
-								<div className="font-bold font-display text-[clamp(22px,2.6vw,32px)] text-white uppercase tracking-[0.2em]">
-									{branchLabel}
-								</div>
-							</div>
-						</div>
-
-						<div className="flex flex-col justify-end gap-3 lg:pb-8">
-							{sideNotes.map((note) => (
-								<article
-									className="border border-white/20 bg-white/[0.035] p-5"
-									key={note.id}
-								>
-									<div className="font-bold font-display text-[11px] text-gray-50 uppercase tracking-[0.16em]">
-										{note.label}
+										{pillar.label}
 									</div>
-									<p className="mt-2 font-bold text-[18px] leading-[1.12]">
-										{note.text}
+									<h2 className="mt-2 font-bold text-[21px] leading-[1.05]">
+										{pillar.title}
+									</h2>
+									<p
+										className={
+											pillar.tone === "light"
+												? "mt-2 text-[13px] text-gray-60 leading-relaxed"
+												: "mt-2 text-[13px] text-white/62 leading-relaxed"
+										}
+									>
+										{pillar.description}
 									</p>
 								</article>
 							))}
 						</div>
+					</div>
 
+					<div className="relative flex items-center justify-center py-4">
 						<div
 							aria-hidden="true"
-							className="absolute right-6 bottom-10 left-6 h-px bg-white/15 lg:right-12 lg:left-12"
+							className="absolute inset-x-0 top-12 bottom-12 hidden -skew-x-12 border border-white/15 lg:block"
 						/>
-					</PageContainer>
-				</section>
-
-				<section
-					className="scroll-mt-20 bg-gray-10 py-12 sm:py-16"
-					id="filiais"
-				>
-					<PageContainer className="px-6 sm:px-8 lg:px-12">
-						<div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-							<h2 className="max-w-155 font-bold font-display text-[clamp(36px,5vw,52px)] text-near-black leading-[0.95] tracking-[-0.01em]">
-								Onde a gente te atende
-							</h2>
-							<div
-								aria-hidden="true"
-								className="h-0.5 w-40 bg-near-black sm:w-55"
-							/>
+						<div className="relative flex -skew-x-[9deg] flex-col items-center text-center">
+							<div className="font-bold font-display text-[12px] text-white/55 uppercase tracking-[0.2em]">
+								Presença local
+							</div>
+							<div className="-my-2 font-display font-semibold text-[clamp(190px,26vw,320px)] text-transparent leading-[0.78] tracking-[-0.04em] [-webkit-text-stroke:3px_#da291c]">
+								{branchCount}
+							</div>
+							<div className="font-bold font-display text-[clamp(22px,2.6vw,32px)] text-white uppercase tracking-[0.2em]">
+								{branchLabel}
+							</div>
 						</div>
+					</div>
 
-						<div className="grid gap-5 lg:grid-cols-2">
-							{branches.map((branch) => (
-								<BranchCard branch={branch} key={branch.id} />
-							))}
-						</div>
-					</PageContainer>
-				</section>
-			</main>
-		</>
+					<div className="flex flex-col justify-end gap-3 lg:pb-8">
+						{sideNotes.map((note) => (
+							<article
+								className="border border-white/20 bg-white/[0.035] p-5"
+								key={note.id}
+							>
+								<div className="font-bold font-display text-[11px] text-gray-50 uppercase tracking-[0.16em]">
+									{note.label}
+								</div>
+								<p className="mt-2 font-bold text-[18px] leading-[1.12]">
+									{note.text}
+								</p>
+							</article>
+						))}
+					</div>
+
+					<div
+						aria-hidden="true"
+						className="absolute right-6 bottom-10 left-6 h-px bg-white/15 lg:right-12 lg:left-12"
+					/>
+				</PageContainer>
+			</section>
+
+			<section className="scroll-mt-20 bg-gray-10 py-12 sm:py-16" id="filiais">
+				<PageContainer className="px-6 sm:px-8 lg:px-12">
+					<div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+						<h2 className="max-w-155 font-bold font-display text-[clamp(36px,5vw,52px)] text-near-black leading-[0.95] tracking-[-0.01em]">
+							Onde a gente te atende
+						</h2>
+						<div
+							aria-hidden="true"
+							className="h-0.5 w-40 bg-near-black sm:w-55"
+						/>
+					</div>
+
+					<div className="grid gap-5 lg:grid-cols-2">
+						{branches.map((branch) => (
+							<BranchCard branch={branch} key={branch.id} />
+						))}
+					</div>
+				</PageContainer>
+			</section>
+		</main>
 	);
 }
 

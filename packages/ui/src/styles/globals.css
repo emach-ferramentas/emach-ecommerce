@@ -430,13 +430,72 @@
 	animation: emach-cart-leave 220ms ease forwards;
 }
 
+/* ---------- Route loading: shimmer + chegada de conteúdo ---------- */
+/* Varredura de luz nos tiles de imagem dos skeletons (par do animate-pulse das
+   linhas de texto). Base = --image-bg, o mesmo tile claro do produto real. */
+@keyframes emach-shimmer {
+	to {
+		background-position: -200% 0;
+	}
+}
+.emach-shimmer {
+	background-image: linear-gradient(
+		100deg,
+		var(--image-bg) 40%,
+		#f7f7f7 50%,
+		var(--image-bg) 60%
+	);
+	background-size: 200% 100%;
+	animation: emach-shimmer 1.4s linear infinite;
+}
+/* ---------- Navegação pendente: hairline global ---------- */
+/* Régua de 2px no topo do viewport, montada pelo NavigationProgress. Só
+   aparece quando a soft navigation passa do delay da máquina de estados
+   (lib/nav-progress.ts) — navegação rápida nunca pisca. */
+@keyframes emach-nav-sweep {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(350%);
+	}
+}
+.emach-nav-progress {
+	position: fixed;
+	inset: 0 0 auto 0;
+	z-index: 90;
+	height: 2px;
+	overflow: hidden;
+	pointer-events: none;
+}
+.emach-nav-progress__bar {
+	width: 40%;
+	height: 100%;
+	background: var(--emach-red);
+	animation: emach-nav-sweep 1.1s var(--card-ease) infinite;
+}
+.emach-nav-progress[data-state="done"] .emach-nav-progress__bar {
+	width: 100%;
+	opacity: 0;
+	transition: opacity 200ms ease;
+	animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.emach-nav-progress__bar {
+		width: 100%;
+		opacity: 0.85;
+		animation: none !important;
+	}
+}
+
 /* ---------- Reduced motion: safety net global ----------
    Neutraliza animações contínuas/decorativas (skeletons, spinners, pulse do
    badge) p/ quem pede prefers-reduced-motion. Motion intencional já trata isso
    por componente (hero/auth/category-grid); isto cobre o que escapou. */
 @media (prefers-reduced-motion: reduce) {
 	.animate-pulse,
-	.animate-spin {
+	.animate-spin,
+	.emach-shimmer {
 		animation: none !important;
 	}
 	.emach-cart-badge[data-pulse="true"] {

@@ -3,7 +3,9 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Suspense } from "react";
 
+import { NavigationProgress } from "@/components/navigation-progress";
 import Providers from "@/components/providers";
 import "../index.css";
 
@@ -61,6 +63,10 @@ export default function RootLayout({
 				suppressHydrationWarning
 			>
 				<Providers>{children}</Providers>
+				{/* useSearchParams (sinal de chegada) exige o Suspense próprio. */}
+				<Suspense fallback={null}>
+					<NavigationProgress />
+				</Suspense>
 				<Analytics />
 				<SpeedInsights />
 			</body>

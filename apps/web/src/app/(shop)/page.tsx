@@ -5,6 +5,7 @@ import { banner } from "@emach/db/schema/banner";
 import { category } from "@emach/db/schema/categories";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { cacheLife } from "next/cache";
+import { Suspense } from "react";
 import { BranchMapSection } from "@/components/branch-map-section";
 import { CategoryGrid } from "@/components/category-grid";
 import { HeroCarousel } from "@/components/hero-carousel";
@@ -118,7 +119,29 @@ async function loadHome() {
 	};
 }
 
-export default async function HomePage() {
+// Fallback do cache-miss (raro: loadHome é 'use cache' 600s). Espelha a caixa
+// do hero (70svh mobile / svh desktop) em preto pra navbar overlay não flutuar
+// sobre flash branco enquanto os dados chegam.
+function HomeSkeleton() {
+	return (
+		<main id="main-content">
+			<div className="h-[70svh] min-h-[30rem] w-full bg-black lg:h-svh lg:min-h-0" />
+		</main>
+	);
+}
+
+export default function HomePage() {
+	return (
+		<>
+			<SiteHeader overlay />
+			<Suspense fallback={<HomeSkeleton />}>
+				<HomeContent />
+			</Suspense>
+		</>
+	);
+}
+
+async function HomeContent() {
 	const {
 		banners,
 		categoryImages,
@@ -134,54 +157,50 @@ export default async function HomePage() {
 	}));
 
 	return (
-		<>
-			<SiteHeader overlay />
+		<main id="main-content">
+			<HeroCarousel banners={banners} />
 
-			<main id="main-content">
-				<HeroCarousel banners={banners} />
+			{rootCategories.length > 0 && (
+				<section aria-label="Categorias" className="bg-gray-10">
+					<PageContainer className="px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18">
+						<SectionHeader
+							label="Categorias"
+							link={{
+								href: "/catalog",
+								label: "Ver todas",
+								variant: "arrow",
+							}}
+							title="Explorar por categoria"
+						/>
+						<CategoryGrid categories={rootCategoriesWithImages} />
+					</PageContainer>
+				</section>
+			)}
 
-				{rootCategories.length > 0 && (
-					<section aria-label="Categorias" className="bg-gray-10">
-						<PageContainer className="px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18">
-							<SectionHeader
-								label="Categorias"
-								link={{
-									href: "/catalog",
-									label: "Ver todas",
-									variant: "arrow",
-								}}
-								title="Explorar por categoria"
-							/>
-							<CategoryGrid categories={rootCategoriesWithImages} />
-						</PageContainer>
-					</section>
-				)}
+			{featuredPromotion && featuredPromotion.tools.length >= 2 && (
+				<PromoHighlight
+					promotion={featuredPromotion}
+					voltagesByTool={voltagesByTool}
+				/>
+			)}
 
-				{featuredPromotion && featuredPromotion.tools.length >= 2 && (
-					<PromoHighlight
-						promotion={featuredPromotion}
-						voltagesByTool={voltagesByTool}
-					/>
-				)}
+			{recentTools.length > 0 && (
+				<section
+					aria-label="Novidades"
+					className="bg-gray-10 px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18"
+				>
+					<PageContainer>
+						<ProductCarousel
+							label="Novidades"
+							title="Recém-chegadas"
+							tools={recentTools}
+							voltagesByTool={voltagesByTool}
+						/>
+					</PageContainer>
+				</section>
+			)}
 
-				{recentTools.length > 0 && (
-					<section
-						aria-label="Novidades"
-						className="bg-gray-10 px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18"
-					>
-						<PageContainer>
-							<ProductCarousel
-								label="Novidades"
-								title="Recém-chegadas"
-								tools={recentTools}
-								voltagesByTool={voltagesByTool}
-							/>
-						</PageContainer>
-					</section>
-				)}
-
-				<BranchMapSection />
-			</main>
-		</>
+			<BranchMapSection />
+		</main>
 	);
 }
