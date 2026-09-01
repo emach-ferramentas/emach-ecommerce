@@ -16,10 +16,11 @@ const navLinkClassName =
 
 const navLinks: { href: Route; label: string }[] = [
 	{ href: "/catalog", label: "Catálogo" },
-	{ href: "/catalog", label: "Categorias" },
 	{ href: "/catalog?promo=1" as Route, label: "Ofertas" },
 	{ href: "/catalog?sort=newest" as Route, label: "Novidades" },
 	{ href: "/sobre", label: "Sobre" },
+	{ href: "/entrega", label: "Entrega" },
+	{ href: "/privacidade", label: "Privacidade" },
 ];
 
 const socialNetworkMeta: Record<

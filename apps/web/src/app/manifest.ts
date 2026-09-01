@@ -4,8 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "EMACH — Ferramentas Profissionais",
 		short_name: "EMACH",
-		description:
-			"Ferramentas elétricas e manuais de alta performance para profissionais.",
+		description: "Ferramentas elétricas, manuais e EPIs para obra e oficina.",
 		start_url: "/",
 		display: "standalone",
 		background_color: "#000000",

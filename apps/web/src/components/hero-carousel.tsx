@@ -126,7 +126,10 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 			>
 				{/* h1 invisível para leitores de tela quando nenhum banner tem título visível */}
 				{h1Index === -1 && (
-					<h1 className="sr-only">EMACH — Ferramentas Profissionais</h1>
+					<h1 className="sr-only">
+						Ferramentas profissionais, EPIs e equipamentos de medição para obra
+						e oficina
+					</h1>
 				)}
 				<Carousel
 					className="h-full w-full"
