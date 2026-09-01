@@ -1,6 +1,7 @@
 import { db } from "@emach/db";
 import { getCategoryBySlug } from "@emach/db/queries/categories";
 import { getTools, type ToolListItem } from "@emach/db/queries/tools";
+import type { Route } from "next";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeader } from "@/components/section-header";
 
@@ -68,9 +69,9 @@ export async function RelatedProducts({
 				<SectionHeader
 					label="Continue explorando"
 					link={{
-						href: rootCategory
-							? `/catalog?cat=${rootCategory.slug}`
-							: "/catalog",
+						href: (rootCategory
+							? `/catalog/${rootCategory.slug}`
+							: "/catalog") as Route,
 						label: "Ver categoria",
 						variant: "arrow",
 					}}

@@ -21,6 +21,8 @@ const FILTER_SECTIONS = ["categoria", "preco", "voltagem"];
 
 interface FilterPanelProps {
 	activeSlug: string | null;
+	/** Href de cada categoria do drilldown (link rastreável). */
+	categoryHrefFor: (slug: string | null) => string;
 	facetCounts: FacetCounts;
 	/** Prefixo de id p/ evitar colisão entre instâncias (desktop × drawer). */
 	idPrefix: string;
@@ -70,6 +72,7 @@ export function FilterPanel({
 	tree,
 	activeSlug,
 	facetCounts,
+	categoryHrefFor,
 	onSelectCategory,
 	pminValue,
 	pmaxValue,
@@ -100,6 +103,7 @@ export function FilterPanel({
 						<CategoryDrilldown
 							activeSlug={activeSlug}
 							counts={facetCounts.byCategory}
+							hrefFor={categoryHrefFor}
 							onSelect={onSelectCategory}
 							totalCount={facetCounts.total}
 							tree={tree}

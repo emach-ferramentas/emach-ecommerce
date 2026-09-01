@@ -234,9 +234,7 @@ describe("buildBreadcrumbJsonLd", () => {
 			"Furadeiras",
 			"Furadeira X",
 		]);
-		expect(data.itemListElement[2]?.item).toBe(
-			`${BASE}/catalog?cat=furadeiras`
-		);
+		expect(data.itemListElement[2]?.item).toBe(`${BASE}/catalog/furadeiras`);
 	});
 
 	it("sem categoria fica com 3 itens em sequência", () => {

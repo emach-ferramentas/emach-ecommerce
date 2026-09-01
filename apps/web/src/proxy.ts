@@ -1,5 +1,6 @@
 import { evlogMiddleware } from "evlog/next";
 import { type NextRequest, NextResponse } from "next/server";
+import { legacyCategoryRedirect } from "@/lib/seo/catalog-redirect";
 
 const PROTECTED = ["/dashboard", "/pedidos"];
 
@@ -7,8 +8,19 @@ const runEvlog = evlogMiddleware({
 	exclude: ["/api/auth/**", "/_next/**", "/favicon/**"],
 });
 
-export async function proxy(req: NextRequest) {
+// Retorno anotado como `Response` (super-tipo de `NextResponse`): o `evlog`
+// tipa a resposta do middleware estruturalmente (só `headers`), então sem a
+// anotação a união perde `status` pra quem consome o proxy. Só tipos mudam.
+export async function proxy(req: NextRequest): Promise<Response> {
 	const { pathname } = req.nextUrl;
+
+	// URL legada de categoria (`/catalog?cat=x`) → rota própria. 308 preserva
+	// método e é tratado como permanente pelo Google.
+	const legacy = legacyCategoryRedirect(req.nextUrl);
+	if (legacy) {
+		return NextResponse.redirect(legacy, 308);
+	}
+
 	// 1ª camada (edge, só existência do cookie); a validação real da sessão fica
 	// no content sob Suspense (requireCurrentClient). Com cacheComponents o shell
 	// é servido com 200, então sem o edge-redirect o cliente deslogado veria o
@@ -35,7 +47,8 @@ export async function proxy(req: NextRequest) {
 		}
 	}
 
-	return await runEvlog(req);
+	// evlog entrega a Response real do middleware, mas declara só `headers`.
+	return (await runEvlog(req)) as Response;
 }
 
 export const config = {

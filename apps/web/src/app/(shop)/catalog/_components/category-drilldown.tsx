@@ -3,12 +3,17 @@
 import type { CategoryNode } from "@emach/db/queries/categories";
 import { cn } from "@emach/ui/lib/utils";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { deriveDrilldownLevel } from "../_lib/drilldown-level";
+import { isModifiedClick } from "../_lib/is-modified-click";
 
 interface CategoryDrilldownProps {
 	activeSlug: string | null;
 	/** facetCounts.byCategory (id → count). */
 	counts: Record<string, number>;
+	/** Href real de cada linha — o crawler segue; o clique é interceptado. */
+	hrefFor: (slug: string | null) => string;
 	onSelect: (slug: string | null) => void;
 	/** facetCounts.total — contagem da linha "Todas". */
 	totalCount: number;
@@ -26,6 +31,7 @@ export function CategoryDrilldown({
 	counts,
 	totalCount,
 	onSelect,
+	hrefFor,
 }: CategoryDrilldownProps) {
 	const level = deriveDrilldownLevel(tree, activeSlug);
 
@@ -35,14 +41,21 @@ export function CategoryDrilldown({
 	return (
 		<nav aria-label="Categorias" className="flex flex-col">
 			{level.back && (
-				<button
+				<Link
 					className="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-[13px] text-gray-60 transition-colors hover:text-near-black lg:min-h-9"
-					onClick={() => onSelect(level.back?.slug ?? null)}
-					type="button"
+					href={hrefFor(level.back.slug) as Route}
+					onClick={(e) => {
+						// ctrl/cmd/shift/alt e botão do meio ficam com o browser (nova aba).
+						if (isModifiedClick(e)) {
+							return;
+						}
+						e.preventDefault();
+						onSelect(level.back?.slug ?? null);
+					}}
 				>
 					<ArrowLeft aria-hidden="true" className="size-3 shrink-0" />
 					{level.back.name}
-				</button>
+				</Link>
 			)}
 
 			{level.active ? (
@@ -74,11 +87,17 @@ export function CategoryDrilldown({
 				)}
 			>
 				{level.rows.map((row) => (
-					<button
+					<Link
 						className={rowClass}
+						href={hrefFor(row.slug) as Route}
 						key={row.id}
-						onClick={() => onSelect(row.slug)}
-						type="button"
+						onClick={(e) => {
+							if (isModifiedClick(e)) {
+								return;
+							}
+							e.preventDefault();
+							onSelect(row.slug);
+						}}
 					>
 						<span className="flex-1">{row.name}</span>
 						{row.hasChildren && (
@@ -90,7 +109,7 @@ export function CategoryDrilldown({
 						<span className="pl-1 text-[11.5px] text-gray-60 tabular-nums">
 							{counts[row.id] ?? 0}
 						</span>
-					</button>
+					</Link>
 				))}
 			</div>
 		</nav>

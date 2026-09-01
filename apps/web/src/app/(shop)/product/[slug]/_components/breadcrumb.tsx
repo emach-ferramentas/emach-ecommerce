@@ -30,7 +30,7 @@ export function Breadcrumb({ category, productName }: BreadcrumbProps) {
 						<li>
 							<Link
 								className="transition-colors hover:text-near-black"
-								href={`/catalog?cat=${category.slug}`}
+								href={`/catalog/${category.slug}`}
 							>
 								{category.name}
 							</Link>
@@ -45,7 +45,7 @@ export function Breadcrumb({ category, productName }: BreadcrumbProps) {
 			<div className="sm:hidden">
 				<Link
 					className="font-semibold text-near-black"
-					href={category ? `/catalog?cat=${category.slug}` : "/catalog"}
+					href={category ? `/catalog/${category.slug}` : "/catalog"}
 				>
 					‹ {category?.name ?? "Catálogo"}
 				</Link>

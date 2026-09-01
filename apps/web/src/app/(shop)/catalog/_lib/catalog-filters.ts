@@ -36,6 +36,11 @@ export interface ActiveFilter {
 	value: string;
 }
 
+/**
+ * Href completo do catálogo para um estado de filtros. A categoria vive no
+ * PATH (`/catalog/<slug>`, rota indexável com metadata própria); os demais
+ * filtros vão na query. `page: null` remove a paginação.
+ */
 export function buildHref(current: FilterState, updates: FilterUpdate): string {
 	const params = new URLSearchParams();
 	const cat = "cat" in updates ? updates.cat : current.currentCategorySlug;
@@ -47,9 +52,6 @@ export function buildHref(current: FilterState, updates: FilterUpdate): string {
 	const promo = "promo" in updates ? updates.promo : current.onlyPromo;
 	const page = "page" in updates ? updates.page : null;
 
-	if (cat) {
-		params.set("cat", cat);
-	}
 	if (q) {
 		params.set("q", q);
 	}
@@ -72,8 +74,9 @@ export function buildHref(current: FilterState, updates: FilterUpdate): string {
 		params.set("page", String(page));
 	}
 
+	const path = cat ? `/catalog/${encodeURIComponent(cat)}` : "/catalog";
 	const qs = params.toString();
-	return qs ? `?${qs}` : "";
+	return qs ? `${path}?${qs}` : path;
 }
 
 export function deriveActiveFilters(state: FilterState): ActiveFilter[] {

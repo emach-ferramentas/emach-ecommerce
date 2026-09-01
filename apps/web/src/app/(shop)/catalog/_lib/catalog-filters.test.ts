@@ -17,18 +17,50 @@ const base: FilterState = {
 };
 
 describe("buildHref", () => {
-	it("returns empty string with no filters", () => {
-		expect(buildHref(base, {})).toBe("");
+	it("sem filtros devolve a raiz do catálogo", () => {
+		expect(buildHref(base, {})).toBe("/catalog");
 	});
-	it("omits default sort and page 1, keeps the rest", () => {
+	it("categoria vai no path, nunca na query", () => {
 		expect(
 			buildHref(base, { cat: "furadeiras", sort: "relevance", page: 1 })
-		).toBe("?cat=furadeiras");
+		).toBe("/catalog/furadeiras");
 	});
-	it("serializes voltages joined by comma", () => {
-		expect(buildHref(base, { voltage: ["127V", "220V"] })).toBe(
-			"?voltage=127V%2C220V"
+	it("categoria com page > 1 mantém a página na query", () => {
+		expect(buildHref(base, { cat: "serras", page: 3 })).toBe(
+			"/catalog/serras?page=3"
 		);
+	});
+	it("mantém a categoria atual ao mudar outro filtro", () => {
+		expect(
+			buildHref(
+				{
+					...base,
+					currentCategorySlug: "serras",
+					currentCategoryName: "Serras",
+				},
+				{ sort: "price-asc" }
+			)
+		).toBe("/catalog/serras?sort=price-asc");
+	});
+	it("cat: null volta pra raiz preservando os demais filtros", () => {
+		expect(
+			buildHref(
+				{
+					...base,
+					currentCategorySlug: "serras",
+					currentCategoryName: "Serras",
+				},
+				{ cat: null, promo: true }
+			)
+		).toBe("/catalog?promo=1");
+	});
+	it("serializa voltagens separadas por vírgula", () => {
+		expect(buildHref(base, { voltage: ["127V", "220V"] })).toBe(
+			"/catalog?voltage=127V%2C220V"
+		);
+	});
+	it("escapa slug com caractere especial", () => {
+		expect(buildHref(base, { cat: "epi/luvas" })).toBe("/catalog/epi%2Fluvas");
 	});
 });
 

@@ -200,7 +200,7 @@ export function buildBreadcrumbJsonLd(input: {
 		...(input.category
 			? [
 					{
-						item: `${base}/catalog?cat=${input.category.slug}`,
+						item: `${base}/catalog/${input.category.slug}`,
 						name: input.category.name,
 					},
 				]

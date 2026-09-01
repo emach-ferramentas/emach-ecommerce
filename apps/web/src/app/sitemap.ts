@@ -1,4 +1,5 @@
 import { db } from "@emach/db";
+import { getAllCategorySlugs } from "@emach/db/queries/categories";
 import { getAllToolSlugs } from "@emach/db/queries/tools";
 import { env } from "@emach/env/web";
 import type { MetadataRoute } from "next";
@@ -18,8 +19,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		{ url: `${BASE_URL}/sobre`, lastModified: now, priority: 0.5 },
 	];
 
-	// Categorias voltam ao sitemap como /catalog/[slug] (Track 2); com query + canonical estático seriam duplicatas.
-	const toolSlugs = await getAllToolSlugs(db);
+	const [toolSlugs, categorySlugs] = await Promise.all([
+		getAllToolSlugs(db),
+		getAllCategorySlugs(db),
+	]);
+
+	const categoryRoutes: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
+		url: `${BASE_URL}/catalog/${slug}`,
+		lastModified: now,
+		priority: 0.8,
+	}));
 
 	const productRoutes: MetadataRoute.Sitemap = toolSlugs.map((slug) => ({
 		url: `${BASE_URL}/product/${slug}`,
@@ -27,5 +36,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		priority: 0.7,
 	}));
 
-	return [...staticRoutes, ...productRoutes];
+	return [...staticRoutes, ...categoryRoutes, ...productRoutes];
 }

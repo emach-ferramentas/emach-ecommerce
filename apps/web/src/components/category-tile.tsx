@@ -34,7 +34,7 @@ export function CategoryTile({ active, category, index }: CategoryTileProps) {
 		<Link
 			className="group emach-bg-tile-spot relative block aspect-4/5 overflow-hidden rounded-[2px] border border-white/14 transition-[transform,border-color] duration-[var(--card-dur)] ease-[var(--card-ease)] hover:-translate-y-[3px] hover:border-white/32 data-[active=true]:-translate-y-[3px] data-[active=true]:border-white/32 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
 			data-active={active ? "true" : undefined}
-			href={`/catalog?cat=${category.slug}`}
+			href={`/catalog/${category.slug}`}
 		>
 			{/* Número marca d'água — sangra o canto, acende em vermelho no destaque */}
 			<span
