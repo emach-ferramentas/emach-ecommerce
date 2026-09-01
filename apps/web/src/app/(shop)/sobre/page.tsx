@@ -12,11 +12,13 @@ import {
 	getActiveBranches,
 	getBusinessHoursRows,
 } from "@/lib/branches";
+import { canonicalFor } from "@/lib/seo/canonical";
 
 export const metadata: Metadata = {
 	title: "Quem somos",
 	description:
 		"Como escolhemos as ferramentas que vendemos, o suporte que damos antes e depois da compra e onde ficam nossas filiais.",
+	alternates: canonicalFor("/sobre"),
 };
 
 const aboutPillars = [

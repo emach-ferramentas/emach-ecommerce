@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
+import { canonicalFor } from "@/lib/seo/canonical";
 import { CatalogContent } from "./_components/catalog-content";
 import { CatalogSkeleton } from "./_components/catalog-skeleton";
 import { CATALOG_PAGE_SIZE, getCatalogData } from "./_lib/catalog-data";
@@ -63,6 +64,9 @@ export const metadata: Metadata = {
 	title: "Catálogo",
 	description:
 		"Todas as ferramentas da EMACH: elétricas, manuais, medição e EPIs. Filtre por categoria, voltagem e preço.",
+	// Canonical estático: a rota aceita 8 filtros por query e todos são a
+	// mesma página. Não ler searchParams aqui (bloquearia o prerender do shell).
+	alternates: canonicalFor("/catalog"),
 };
 
 export default function CatalogPage({ searchParams }: CatalogPageProps) {

@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 import { SiteHeader } from "@/components/site-header";
 import { getProductShell } from "@/lib/product-detail";
+import { canonicalFor } from "@/lib/seo/canonical";
 
 import { Breadcrumb } from "./_components/breadcrumb";
 import { ProductGallery } from "./_components/product-gallery";
@@ -41,14 +42,16 @@ export async function generateMetadata({
 	const title = detail.tool.name;
 	const description = detail.tool.description ?? detail.tool.name;
 	const ogImage = detail.images[0]?.url;
+	const path = `/product/${detail.tool.slug ?? detail.tool.id}`;
 	return {
 		title,
 		description,
+		alternates: canonicalFor(path),
 		openGraph: {
 			title,
 			description,
 			type: "website",
-			url: `/product/${detail.tool.slug ?? detail.tool.id}`,
+			url: path,
 			siteName: "EMACH",
 			...(ogImage ? { images: [ogImage] } : {}),
 		},

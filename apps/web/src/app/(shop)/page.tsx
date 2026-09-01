@@ -4,6 +4,7 @@ import { getRecentTools } from "@emach/db/queries/tools";
 import { banner } from "@emach/db/schema/banner";
 import { category } from "@emach/db/schema/categories";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import { Suspense } from "react";
 import { BranchMapSection } from "@/components/branch-map-section";
@@ -14,7 +15,12 @@ import { ProductCarousel } from "@/components/product-carousel";
 import { PromoHighlight } from "@/components/promo-highlight";
 import { SectionHeader } from "@/components/section-header";
 import { SiteHeader } from "@/components/site-header";
+import { canonicalFor } from "@/lib/seo/canonical";
 import { getVoltagesByTool } from "@/lib/variant-voltages";
+
+export const metadata: Metadata = {
+	alternates: canonicalFor("/"),
+};
 
 // Banners ativos do hero. Query inline (não owned-by-dashboard): leitura trivial,
 // decisão registrada no #122 (ADR-0009 dispensa virar query sincronizada).
