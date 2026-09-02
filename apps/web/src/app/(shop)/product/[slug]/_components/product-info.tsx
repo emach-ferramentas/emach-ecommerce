@@ -22,6 +22,7 @@ import { useCartActions } from "@/lib/cart-context";
 import type { CartItemSnapshot } from "@/lib/cart-store";
 import { fmtBRL, fmtNumericBRL, numericToCents } from "@/lib/format";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";
+import { hasPrice } from "@/lib/sellable-variant";
 import { StickyBuyBar } from "./sticky-buy-bar";
 
 interface ProductInfoProps {
@@ -65,7 +66,9 @@ export function ProductInfo({
 	primaryImageUrl,
 }: ProductInfoProps) {
 	// React Compiler memoiza derivações automaticamente — sem useMemo manual.
-	const orderedVariants = [...variants].sort((a, b) => {
+	// Variante sem preço (rascunho do dashboard) não entra na buy box; se
+	// nenhuma sobrar, cai no fallback "indisponível" abaixo.
+	const orderedVariants = variants.filter(hasPrice).sort((a, b) => {
 		if (a.isDefault !== b.isDefault) {
 			return a.isDefault ? -1 : 1;
 		}

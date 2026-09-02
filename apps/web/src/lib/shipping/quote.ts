@@ -17,7 +17,7 @@ import {
 } from "@/lib/frenet/cache";
 import { fetchFrenetQuote } from "@/lib/frenet/client";
 import { mapFrenetResponse } from "@/lib/frenet/map";
-import { buildQuoteItems } from "./build-items";
+import { buildQuoteItems, hasShippingDims } from "./build-items";
 import type { ShippingOption } from "./types";
 
 export interface QuoteShippingInput {
@@ -69,7 +69,19 @@ export async function quoteShipping(
 			.where(inArray(tool.id, toolIds)),
 	]);
 
-	const items = buildQuoteItems(toolRows, input.items);
+	// Ferramenta sem peso/dimensões (rascunho que escapou do gate do dashboard)
+	// não tem como ser cotada: "a combinar" sem gastar chamada, com warn pra
+	// ser corrigível no catálogo.
+	const missingDims = toolRows.filter((row) => !hasShippingDims(row));
+	if (missingDims.length > 0) {
+		log.warn({
+			action: "shipping_negotiate_missing_dims",
+			toolIds: missingDims.map((row) => row.id),
+		});
+		return { negotiate: true, options: [] };
+	}
+
+	const items = buildQuoteItems(toolRows.filter(hasShippingDims), input.items);
 	const packages = packItems(items, boxes);
 	const outOfCatalog = packages.filter((p) => p.outOfCatalog);
 	if (outOfCatalog.length > 0) {

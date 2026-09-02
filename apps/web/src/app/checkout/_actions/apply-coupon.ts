@@ -15,6 +15,7 @@ import {
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
 import { couponLimiter, RATE_LIMIT_MESSAGE } from "@/lib/rate-limit";
+import { hasPrice } from "@/lib/sellable-variant";
 import { requireCurrentClient } from "@/lib/session";
 
 const schema = z.object({
@@ -61,10 +62,10 @@ export async function applyCouponAction(
 			if (!variant || variant.toolId !== item.toolId) {
 				return { ok: false, error: "Carrinho inválido" };
 			}
-			// Variante virou hidden depois de adicionada: bloqueia o cupom (mesma
-			// barreira que o place-order vai aplicar). Mensagem genérica pra não
-			// vazar estado interno.
-			if (!variant.visibleOnSite) {
+			// Variante virou hidden (ou perdeu o preço) depois de adicionada:
+			// bloqueia o cupom (mesma barreira que o place-order vai aplicar).
+			// Mensagem genérica pra não vazar estado interno.
+			if (!(variant.visibleOnSite && hasPrice(variant))) {
 				return { ok: false, error: "Item indisponível no carrinho" };
 			}
 			lines.push({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildQuoteItems } from "./build-items";
+import { buildQuoteItems, hasShippingDims } from "./build-items";
 
 const row = {
 	id: "t1",
@@ -32,5 +32,20 @@ describe("buildQuoteItems", () => {
 		expect(() => buildQuoteItems([], [{ toolId: "x", quantity: 1 }])).toThrow(
 			"Ferramenta x não encontrada"
 		);
+	});
+});
+
+describe("hasShippingDims", () => {
+	it("aceita linha com peso e dimensões", () => {
+		expect(hasShippingDims(row)).toBe(true);
+	});
+
+	it.each([
+		"weightKg",
+		"lengthCm",
+		"widthCm",
+		"heightCm",
+	] as const)("rejeita linha sem %s", (field) => {
+		expect(hasShippingDims({ ...row, [field]: null })).toBe(false);
 	});
 });

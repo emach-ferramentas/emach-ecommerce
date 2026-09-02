@@ -161,7 +161,8 @@ describe("buildProductJsonLd", () => {
 			{ baseUrl: BASE, now: NOW }
 		);
 		expect(one.offers).toMatchObject({ sku: "FX-220" }); // sobrou uma → objeto
-		expect(one.sku).toBe("FX-127");
+		// Product.sku = a variante que a PDP mostra (primeira com preço).
+		expect(one.sku).toBe("FX-220");
 	});
 
 	it("sem nenhuma Offer e sem rating não emite JSON-LD", () => {

@@ -124,6 +124,15 @@ function finalPriceAmount(
  * Product JSON-LD, ou `null` quando não há nada indexável: sem nenhuma Offer e
  * sem `aggregateRating` o Product é inválido no Rich Results (melhor não emitir).
  */
+// `Product.sku` acompanha a variante que a PDP exibe: a primeira COM preço
+// (product-info filtra as sem preço); sem nenhuma, a primeira do array.
+function productSku(
+	variants: ProductJsonLdInput["variants"]
+): { sku: string } | null {
+	const v = variants.find((x) => x.priceAmount !== null) ?? variants[0];
+	return v ? { sku: v.sku } : null;
+}
+
 export function buildProductJsonLd(
 	input: ProductJsonLdInput,
 	opts: { baseUrl: string; now: Date }
@@ -176,7 +185,7 @@ export function buildProductJsonLd(
 		name: tool.name,
 		...(tool.description ? { description: tool.description } : {}),
 		...(images.length > 0 ? { image: images.map((i) => i.url) } : {}),
-		...(variants[0] ? { sku: variants[0].sku } : {}),
+		...(productSku(variants) ?? {}),
 		...(tool.manufacturerName
 			? { brand: { "@type": "Brand", name: tool.manufacturerName } }
 			: {}),

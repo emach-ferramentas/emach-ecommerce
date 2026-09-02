@@ -133,6 +133,18 @@ describe("quoteShipping (adapter Frenet)", () => {
 		expect(fetchFrenetQuote).not.toHaveBeenCalled();
 	});
 
+	it("ferramenta sem peso/dimensões → negotiate SEM gastar chamada Frenet", async () => {
+		selectWhere.mockResolvedValue([{ ...TOOL_ROW, weightKg: null }]);
+
+		const result = await quoteShipping({
+			destinationCep: "14270000",
+			items: [{ toolId: "t1", quantity: 1 }],
+		});
+
+		expect(result).toEqual({ negotiate: true, options: [] });
+		expect(fetchFrenetQuote).not.toHaveBeenCalled();
+	});
+
 	it("cache hit → retorna a cotação cacheada sem chamar a Frenet", async () => {
 		const cached = {
 			negotiate: false,

@@ -5,6 +5,7 @@ import { order, orderItem } from "@emach/db/schema/orders";
 import { tool, toolVariant, type Voltage } from "@emach/db/schema/tools";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
+import { hasPrice } from "@/lib/sellable-variant";
 import { primaryImageByToolId } from "@/lib/tool-images";
 
 export interface RebuyItem {
@@ -112,10 +113,11 @@ export async function getRebuyItems(
 			categoryName: cat?.name ?? null,
 			categorySlug: cat?.slug ?? null,
 			quantity: i.quantity,
-			// Variante hidden = bloqueia compra (place-order rejeitará); botão
-			// "Comprar de novo" não deve oferecê-la como disponível.
-			available:
-				Boolean(v) && (v?.visibleOnSite ?? false) && total >= i.quantity,
+			// Variante hidden ou sem preço = bloqueia compra (place-order
+			// rejeitará); botão "Comprar de novo" não deve oferecê-la.
+			available: v
+				? v.visibleOnSite && hasPrice(v) && total >= i.quantity
+				: false,
 		};
 	});
 }

@@ -13,8 +13,9 @@ const VOLTAGE_ORDER: Voltage[] = ["127V", "220V", "380V", "Bivolt"];
  * só traz a voltagem da variante default + `hasOtherVariants`. Para listar TODAS
  * as voltagens sem editar a query dashboard-owned, agregamos aqui.
  *
- * Filtra `visibleOnSite = true` para não exibir voltagens de variantes ocultas
- * (variante hidden = bloqueia compra, então o selo do card não pode anunciá-la).
+ * Filtra `visibleOnSite = true` e `priceAmount IS NOT NULL` para não exibir
+ * voltagens de variantes que a PDP não vende (hidden ou rascunho sem preço =
+ * bloqueia compra, então o selo do card não pode anunciá-la).
  */
 export async function getVoltagesByTool(
 	toolIds: string[]
@@ -31,6 +32,7 @@ export async function getVoltagesByTool(
 			and(
 				inArray(toolVariant.toolId, toolIds),
 				isNotNull(toolVariant.voltage),
+				isNotNull(toolVariant.priceAmount),
 				eq(toolVariant.visibleOnSite, true)
 			)
 		);

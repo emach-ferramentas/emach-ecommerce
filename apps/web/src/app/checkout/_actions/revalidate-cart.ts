@@ -9,6 +9,7 @@ import { fetchAutoPromosByToolId } from "@/lib/auto-promo";
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";
+import { hasPrice } from "@/lib/sellable-variant";
 import { requireCurrentClient } from "@/lib/session";
 
 const schema = z.object({
@@ -59,10 +60,15 @@ export async function computeFinalPrices(
 	const prices: RevalidatedPrice[] = [];
 	for (const item of items) {
 		const variant = byId.get(item.variantId);
-		// Variante removida ou virou hidden: pula daqui. O preço antigo do snapshot
-		// segue exibido no carrinho, mas place-order vai rejeitar com OrderError
-		// específica — barreira final de bloqueio.
-		if (!variant || variant.toolId !== item.toolId || !variant.visibleOnSite) {
+		// Variante removida, hidden ou sem preço: pula daqui. O preço antigo do
+		// snapshot segue exibido no carrinho, mas place-order vai rejeitar com
+		// OrderError específica — barreira final de bloqueio.
+		if (
+			!variant ||
+			variant.toolId !== item.toolId ||
+			!variant.visibleOnSite ||
+			!hasPrice(variant)
+		) {
 			continue;
 		}
 		const base = numericToCents(variant.priceAmount);

@@ -21,6 +21,7 @@ import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
 import { fetchFrenetAddress } from "@/lib/frenet/client";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";
+import { hasPrice } from "@/lib/sellable-variant";
 import { quoteShipping } from "@/lib/shipping/quote";
 import { addressFieldsSchema } from "@/lib/validators/address";
 
@@ -212,7 +213,7 @@ interface PreparedLine {
 		id: string;
 		toolId: string;
 		sku: string;
-		barcode: string;
+		barcode: string | null;
 		voltage: "127V" | "220V" | "Bivolt" | "380V" | null;
 		priceAmount: string;
 		visibleOnSite: boolean;
@@ -279,6 +280,11 @@ export async function prepareLines(
 		// O catálogo e o PDP já filtram variantes hidden, então em fluxo normal
 		// isso é inalcançável — mas é a única barreira contra payload adulterado.
 		if (!variant.visibleOnSite) {
+			throw new OrderError(`Variante indisponível para venda: ${toolRow.name}`);
+		}
+		// Variante sem preço (rascunho do dashboard, sync #216) não é vendável:
+		// mesma barreira, mesma mensagem.
+		if (!hasPrice(variant)) {
 			throw new OrderError(`Variante indisponível para venda: ${toolRow.name}`);
 		}
 		const promos = autoPromosByToolId.get(cartItem.toolId) ?? [];
