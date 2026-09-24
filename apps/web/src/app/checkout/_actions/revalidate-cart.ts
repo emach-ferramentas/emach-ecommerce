@@ -29,7 +29,9 @@ export interface RevalidatedPrice {
 }
 
 export type RevalidateCartResult =
-	| { ok: true; prices: RevalidatedPrice[] }
+	// `unavailable`: variantIds sem preço na resposta (removidas, ocultas ou sem
+	// preço) — o checkout tira do carrinho e avisa, em vez de travar no submit.
+	| { ok: true; prices: RevalidatedPrice[]; unavailable: string[] }
 	| { ok: false; error: string };
 
 /**
@@ -60,9 +62,8 @@ export async function computeFinalPrices(
 	const prices: RevalidatedPrice[] = [];
 	for (const item of items) {
 		const variant = byId.get(item.variantId);
-		// Variante removida, hidden ou sem preço: pula daqui. O preço antigo do
-		// snapshot segue exibido no carrinho, mas place-order vai rejeitar com
-		// OrderError específica — barreira final de bloqueio.
+		// Variante removida, hidden ou sem preço: pula daqui. A action devolve
+		// esses ids em `unavailable`; place-order segue como barreira final.
 		if (
 			!variant ||
 			variant.toolId !== item.toolId ||
@@ -98,7 +99,11 @@ export async function revalidateCartAction(
 	await requireCurrentClient();
 	try {
 		const prices = await computeFinalPrices(db, parsed.data.cartItems);
-		return { ok: true, prices };
+		const priced = new Set(prices.map((p) => p.variantId));
+		const unavailable = parsed.data.cartItems
+			.filter((i) => !priced.has(i.variantId))
+			.map((i) => i.variantId);
+		return { ok: true, prices, unavailable };
 	} catch (err) {
 		log.error({
 			action: "revalidate_cart_failed",

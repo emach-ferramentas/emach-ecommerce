@@ -40,7 +40,6 @@ const TOOL = {
 function input(priceAmount = "199.90"): CreateOrderInput {
 	return {
 		name: "Cliente Teste",
-		email: "cliente@example.com",
 		phone: "11999999999",
 		document: "52998224725",
 		addressId: "addr",
@@ -69,6 +68,13 @@ describe("prepareLines", () => {
 			.mockResolvedValueOnce([{ ...VARIANT, priceAmount: null }])
 			.mockResolvedValueOnce([TOOL]);
 		await expect(prepareLines(tx, input("0.00"))).rejects.toThrow(
+			new OrderError("Variante indisponível para venda: Furadeira")
+		);
+	});
+
+	it("variante apagada nomeia o produto na mensagem", async () => {
+		selectWhere.mockResolvedValueOnce([]).mockResolvedValueOnce([TOOL]);
+		await expect(prepareLines(tx, input())).rejects.toThrow(
 			new OrderError("Variante indisponível para venda: Furadeira")
 		);
 	});

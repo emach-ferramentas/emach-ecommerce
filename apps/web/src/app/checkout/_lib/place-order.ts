@@ -5,7 +5,7 @@ import { stockLevel } from "@emach/db/schema/inventory";
 import { order, orderItem } from "@emach/db/schema/orders";
 import { promotion } from "@emach/db/schema/promotions";
 import { tool, toolVariant } from "@emach/db/schema/tools";
-import { isValidCpfCnpj, onlyDigits } from "@emach/validators";
+import { isValidCpfCnpj, isValidPhone, onlyDigits } from "@emach/validators";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -54,9 +54,13 @@ function isDocumentUniqueViolation(err: unknown): boolean {
 }
 
 export const inputSchema = z.object({
-	name: z.string().min(2),
-	email: z.email(),
-	phone: z.string().min(10),
+	name: z.string().trim().min(2).max(120),
+	// O update de `client` abaixo é Drizzle direto: o hook do Better Auth que
+	// normaliza o telefone não roda aqui, então a invariante "só dígitos" é daqui.
+	phone: z
+		.string()
+		.transform((v) => onlyDigits(v))
+		.refine(isValidPhone, "Telefone inválido"),
 	document: z
 		.string()
 		.transform((v) => onlyDigits(v))
@@ -220,6 +224,26 @@ interface PreparedLine {
 	};
 }
 
+// Variante apagada no dashboard some do SELECT: nomeia o produto (pelo tool,
+// que costuma sobreviver) p/ o cliente saber o que tirar do carrinho.
+function assertVariantsFound(
+	cartItems: CreateOrderInput["cartItems"],
+	variantRows: Array<{ id: string }>,
+	toolRows: Array<{ id: string; name: string }>
+): void {
+	const found = new Set(variantRows.map((v) => v.id));
+	const missing = cartItems.find((i) => !found.has(i.variantId));
+	if (!missing) {
+		return;
+	}
+	const name = toolRows.find((t) => t.id === missing.toolId)?.name;
+	throw new OrderError(
+		name
+			? `Variante indisponível para venda: ${name}`
+			: "Um item do carrinho não está mais disponível"
+	);
+}
+
 // Exportado p/ o createOrderAction derivar o valor declarado do seguro dos
 // preços VERIFICADOS (fora da transação) — dentro da transação o placeOrder
 // re-executa esta função como autoridade final.
@@ -261,6 +285,7 @@ export async function prepareLines(
 		fetchAutoPromosByToolId(tx, toolIds, new Date()),
 	]);
 
+	assertVariantsFound(input.cartItems, variantRows, toolRows);
 	if (variantRows.length !== variantIds.length) {
 		throw new OrderError("Variante inválida no carrinho");
 	}
@@ -374,8 +399,8 @@ export async function cepKnownToFrenet(cep: string): Promise<boolean | null> {
  * cotação que a UI exibiu) e exige que o `shippingCents` enviado pelo cliente
  * bata com uma opção (tolerância de 1 centavo). Com `shippingServiceCode`
  * presente, valida o PAR serviço+preço — não basta o preço existir em outra
- * opção. Devolve `shippingMethod` (label da opção casada) p/ persistir no
- * pedido.
+ * opção. Devolve `shippingMethod` (label da opção casada) e `shippingCents`
+ * (preço cotado da opção casada, não o enviado) p/ persistir no pedido.
  *
  * Falha de infra na cotação (Frenet fora/timeout, cache e DB indisponíveis)
  * **não** bloqueia a venda (fail-open), mas retorna `shippingUnverified: true`
@@ -398,6 +423,7 @@ export async function assertShippingQuoted(params: {
 	// #186: carrierId composto ("COR-40010") da opção CASADA pelo anti-fraude
 	// (não o input cru do cliente) — persistido p/ habilitar tracking Frenet.
 	shippingServiceCode: string | null;
+	shippingCents: number | null;
 }> {
 	let quote: Awaited<ReturnType<typeof quoteShipping>>;
 	try {
@@ -423,6 +449,7 @@ export async function assertShippingQuoted(params: {
 			shippingUnverified: true,
 			shippingMethod: null,
 			shippingServiceCode: null,
+			shippingCents: null,
 		};
 	}
 	// Nenhum serviço cotável p/ o CEP/pacote → frete a combinar; sem opção a casar.
@@ -443,6 +470,7 @@ export async function assertShippingQuoted(params: {
 		shippingUnverified: false,
 		shippingMethod: match.name,
 		shippingServiceCode: match.carrierId,
+		shippingCents: match.priceCents,
 	};
 }
 
@@ -485,6 +513,10 @@ export async function placeOrder(
 		// #186: carrierId composto validado ("COR-40010") — base do tracking
 		// Frenet (POST /tracking/trackinginfo exige ShippingServiceCode).
 		shippingServiceCode?: string | null;
+		// Preço da opção casada pelo assertShippingQuoted. null quando o frete não
+		// foi verificado (fail-open ou sem CEP): aí vale o do input, já marcado
+		// `shippingUnverified` p/ revisão do staff.
+		verifiedShippingCents: number | null;
 	}
 ): Promise<{ orderId: string; orderNumber: string }> {
 	const {
@@ -495,13 +527,15 @@ export async function placeOrder(
 		shippingUnverified = false,
 		shippingMethod = null,
 		shippingServiceCode = null,
+		verifiedShippingCents,
 	} = params;
 
 	const { lines, autoPromoToolIds } = await prepareLines(tx, input);
 	await checkAggregateStock(tx, lines);
 
 	const subtotalCents = lines.reduce((s, l) => s + l.lineTotalCents, 0);
-	const shippingCents = numericToCents(input.shippingAmount);
+	const shippingCents =
+		verifiedShippingCents ?? numericToCents(input.shippingAmount);
 	let discountCents = 0;
 	let couponId: string | null = null;
 	if (input.couponCode) {
@@ -637,7 +671,7 @@ export async function placeOrder(
 		subtotalAmount,
 		discountAmount: (discountCents / 100).toFixed(2),
 		couponId,
-		shippingAmount: input.shippingAmount,
+		shippingAmount: (shippingCents / 100).toFixed(2),
 		shippingMethod,
 		shippingServiceCode,
 		totalAmount,

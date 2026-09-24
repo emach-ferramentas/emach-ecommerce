@@ -5,6 +5,7 @@ import { Checkbox } from "@emach/ui/components/checkbox";
 import { Separator } from "@emach/ui/components/separator";
 import {
 	isValidCpfCnpj,
+	isValidPhone,
 	maskCpfCnpj,
 	maskPhone,
 	onlyDigits,
@@ -52,10 +53,7 @@ const newAddressFormShape = z.object({
 const checkoutSchema = z
 	.object({
 		name: z.string().min(2, "Nome é obrigatório"),
-		email: z.email("E-mail inválido"),
-		phone: z
-			.string()
-			.refine((v) => onlyDigits(v).length >= 10, "Telefone inválido"),
+		phone: z.string().refine(isValidPhone, "Telefone inválido"),
 		document: z.string().refine(isValidCpfCnpj, "CPF ou CNPJ inválido"),
 		addressId: z.string().min(1, "Selecione ou cadastre um endereço"),
 		newAddress: newAddressFormShape,
@@ -104,7 +102,7 @@ export function CheckoutContent({
 	emailVerified,
 }: CheckoutContentProps) {
 	const router = useRouter();
-	const { items, clear, reconcile, hydrated } = useCart();
+	const { items, clear, reconcile, remove, hydrated } = useCart();
 	const submittedRef = useRef(false);
 	const revalidatedRef = useRef(false);
 	const [resendingVerification, setResendingVerification] = useState(false);
@@ -153,6 +151,15 @@ export function CheckoutContent({
 				})),
 			});
 			if (result.ok) {
+				const unavailable = new Set(result.unavailable);
+				for (const item of items) {
+					if (unavailable.has(item.variantId)) {
+						remove(item.variantId);
+						toast.error(
+							`${item.name} não está mais disponível e saiu do carrinho`
+						);
+					}
+				}
 				const fresh = new Map(
 					result.prices.map((p) => [
 						p.variantId,
@@ -162,7 +169,7 @@ export function CheckoutContent({
 				reconcile(fresh);
 			}
 		})();
-	}, [items, reconcile]);
+	}, [items, reconcile, remove]);
 
 	// React Compiler memoiza derivações automaticamente — sem useMemo manual.
 	const orderItems = items;
@@ -182,7 +189,6 @@ export function CheckoutContent({
 	const form = useForm({
 		defaultValues: {
 			name: clientName,
-			email: clientEmail,
 			phone: clientPhone ? maskPhone(clientPhone) : "",
 			document: clientDocument ? maskCpfCnpj(clientDocument) : "",
 			addressId: defaultAddressId,
@@ -217,7 +223,6 @@ export function CheckoutContent({
 			}
 			const result = await createOrderAction({
 				name: value.name.trim(),
-				email: value.email.trim().toLowerCase(),
 				phone: onlyDigits(value.phone),
 				document: onlyDigits(value.document),
 				addressId: value.addressId === NEW_ADDRESS_ID ? null : value.addressId,
@@ -252,7 +257,9 @@ export function CheckoutContent({
 
 			submittedRef.current = true;
 			clear();
-			toast.success(`Pedido ${result.orderNumber} confirmado`);
+			toast.success(
+				`Pedido ${result.orderNumber} recebido, aguardando pagamento`
+			);
 			router.push(`/pedidos/${result.orderNumber}` as Route);
 		},
 	});
@@ -347,7 +354,7 @@ export function CheckoutContent({
 			<div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px] lg:gap-12">
 				<div>
 					<h1 className="font-display font-medium text-[28px] tracking-[-0.01em]">
-						Dados Pessoais
+						Finalizar compra
 					</h1>
 					<p className="mt-1 text-gray-60 text-sm">
 						Confira seus dados e endereço de entrega
@@ -384,6 +391,10 @@ export function CheckoutContent({
 							form.handleSubmit();
 						}}
 					>
+						<h2 className="font-display font-medium text-xl tracking-[-0.01em]">
+							Seus dados
+						</h2>
+
 						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<TextField
 								autoComplete="name"
@@ -393,14 +404,23 @@ export function CheckoutContent({
 								placeholder="Maria da Silva"
 								transform={onlyLetters}
 							/>
-							<TextField
-								autoComplete="email"
-								form={form}
-								label="E-mail"
-								name="email"
-								placeholder="seu@email.com"
-								type="email"
-							/>
+							<div className="emach-field">
+								<label className="emach-field__label" htmlFor="email">
+									E-mail
+								</label>
+								<input
+									aria-describedby="email-hint"
+									autoComplete="email"
+									className="emach-input bg-gray-10! text-gray-60!"
+									id="email"
+									readOnly
+									type="email"
+									value={clientEmail}
+								/>
+								<span className="emach-field__hint" id="email-hint">
+									E-mail da sua conta
+								</span>
+							</div>
 						</div>
 
 						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -453,7 +473,7 @@ export function CheckoutContent({
 						<Separator />
 
 						<h2 className="font-display font-medium text-xl tracking-[-0.01em]">
-							Endereço de Entrega
+							Endereço de entrega
 						</h2>
 
 						<form.Field name="addressId">
@@ -637,7 +657,7 @@ export function CheckoutContent({
 								})}
 								href="/cart"
 							>
-								Voltar ao Carrinho
+								Voltar ao carrinho
 							</Link>
 							<form.Subscribe
 								selector={(state) => ({
@@ -657,7 +677,7 @@ export function CheckoutContent({
 										type="submit"
 										variant="primary"
 									>
-										{isSubmitting ? "Processando..." : "Confirmar pedido"}
+										{isSubmitting ? "Processando…" : "Confirmar pedido"}
 									</EmachButton>
 								)}
 							</form.Subscribe>
@@ -668,7 +688,7 @@ export function CheckoutContent({
 				<div>
 					<div className="space-y-4 border border-gray-20 p-6 lg:sticky lg:top-10">
 						<h2 className="font-display font-semibold text-xs uppercase tracking-[0.14em]">
-							Resumo do Pedido
+							Resumo do pedido
 						</h2>
 						<Separator />
 

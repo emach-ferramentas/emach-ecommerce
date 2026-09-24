@@ -2,8 +2,9 @@
 
 import { db } from "@emach/db";
 import { order, orderStatusHistory } from "@emach/db/schema/orders";
+import { promotion } from "@emach/db/schema/promotions";
 import type { Voltage } from "@emach/db/schema/tools";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { log } from "@/lib/evlog";
@@ -32,7 +33,11 @@ export async function cancelOrderAction(raw: {
 	try {
 		const result = await db.transaction(async (tx) => {
 			const [row] = await tx
-				.select({ id: order.id, status: order.status })
+				.select({
+					id: order.id,
+					status: order.status,
+					couponId: order.couponId,
+				})
 				.from(order)
 				.where(and(eq(order.id, orderId), eq(order.clientId, clientId)))
 				.limit(1);
@@ -46,10 +51,30 @@ export async function cancelOrderAction(raw: {
 				};
 			}
 
-			await tx
+			// Status lido no WHERE: se o staff (ou o webhook de pagamento) mudou o
+			// pedido depois do SELECT, o UPDATE não pega linha nenhuma.
+			const updated = await tx
 				.update(order)
 				.set({ status: "canceled", canceledAt: new Date() })
-				.where(eq(order.id, orderId));
+				.where(and(eq(order.id, orderId), eq(order.status, row.status)))
+				.returning({ id: order.id });
+			if (updated.length === 0) {
+				return {
+					ok: false as const,
+					error: "O status do pedido mudou. Atualize a página.",
+				};
+			}
+
+			// O uso do cupom é contado na criação do pedido (place-order); cancelar
+			// devolve esse uso.
+			if (row.couponId) {
+				await tx
+					.update(promotion)
+					.set({
+						redemptionCount: sql`GREATEST(${promotion.redemptionCount} - 1, 0)`,
+					})
+					.where(eq(promotion.id, row.couponId));
+			}
 
 			await tx.insert(orderStatusHistory).values({
 				id: crypto.randomUUID(),

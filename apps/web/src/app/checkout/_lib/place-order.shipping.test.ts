@@ -39,6 +39,7 @@ describe("assertShippingQuoted", () => {
 			shippingMethod: "Correios — Sedex",
 			// #186: código do serviço casado, persistido p/ tracking Frenet.
 			shippingServiceCode: "COR-40010",
+			shippingCents: 3596,
 		});
 	});
 
@@ -58,6 +59,7 @@ describe("assertShippingQuoted", () => {
 			shippingUnverified: false,
 			shippingMethod: "Correios — PAC",
 			shippingServiceCode: "COR-41106",
+			shippingCents: 1890,
 		});
 	});
 
@@ -88,6 +90,7 @@ describe("assertShippingQuoted", () => {
 			shippingUnverified: true,
 			shippingMethod: null,
 			shippingServiceCode: null,
+			shippingCents: null,
 		});
 	});
 

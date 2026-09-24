@@ -6,7 +6,7 @@ import { ChevronDown, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AccountSection } from "@/app/dashboard/_components/account-section";
-import type { OrderDetailData } from "@/lib/orders/queries";
+import type { OrderHistoryEntry } from "@/lib/orders/queries";
 import { isTerminalNegative, ORDER_STATUS_BADGE } from "@/lib/orders/status";
 
 const DATETIME_FMT = new Intl.DateTimeFormat("pt-BR", {
@@ -89,7 +89,7 @@ function placeholderMessage(status: OrderStatus): string {
 	return "Pedido em preparação. O código de rastreio aparece aqui assim que sair para entrega.";
 }
 
-function HistoryTimeline({ history }: { history: OrderDetailData["history"] }) {
+function HistoryTimeline({ history }: { history: OrderHistoryEntry[] }) {
 	if (history.length === 0) {
 		return (
 			<p className="text-[13px] text-gray-50">Sem histórico registrado.</p>
@@ -116,22 +116,26 @@ function HistoryTimeline({ history }: { history: OrderDetailData["history"] }) {
 }
 
 export function OrderTracking({
-	order,
 	history,
+	shippingMethod,
+	status,
+	trackingCode,
 }: {
-	history: OrderDetailData["history"];
-	order: OrderDetailData["order"];
+	history: OrderHistoryEntry[];
+	shippingMethod: string | null;
+	status: OrderStatus;
+	trackingCode: string | null;
 }) {
 	const [open, setOpen] = useState(false);
-	const negative = isTerminalNegative(order.status);
+	const negative = isTerminalNegative(status);
 
 	return (
 		<AccountSection id="rastreio" title="Rastreio do envio">
 			<TrackingBody
-				method={order.shippingMethod}
+				method={shippingMethod}
 				negative={negative}
-				status={order.status}
-				trackingCode={order.shippingTrackingCode}
+				status={status}
+				trackingCode={trackingCode}
 			/>
 
 			<button

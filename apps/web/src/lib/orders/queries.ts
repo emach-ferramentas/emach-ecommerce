@@ -63,10 +63,54 @@ export interface OrderItemRow {
 	voltage: string | null;
 }
 
+/** Colunas de `order` que o detalhe do cliente exibe — sem nota interna, ref do gateway, filial nem flags de revisão do staff. */
+const ORDER_DETAIL_COLUMNS = {
+	id: order.id,
+	number: order.number,
+	status: order.status,
+	createdAt: order.createdAt,
+	canceledAt: order.canceledAt,
+	refundedAt: order.refundedAt,
+	returnedAt: order.returnedAt,
+	couponId: order.couponId,
+	subtotalAmount: order.subtotalAmount,
+	discountAmount: order.discountAmount,
+	shippingAmount: order.shippingAmount,
+	totalAmount: order.totalAmount,
+	paymentMethod: order.paymentMethod,
+	paymentReceiptUrl: order.paymentReceiptUrl,
+	shippingMethod: order.shippingMethod,
+	shippingTrackingCode: order.shippingTrackingCode,
+	shippingAddress: order.shippingAddress,
+	nfeNumber: order.nfeNumber,
+	nfeStatus: order.nfeStatus,
+	nfeUrl: order.nfeUrl,
+	nfeXmlUrl: order.nfeXmlUrl,
+} as const;
+
+/** Histórico exibido na timeline — sem o `actorUserId` do staff. */
+const ORDER_HISTORY_COLUMNS = {
+	id: orderStatusHistory.id,
+	toStatus: orderStatusHistory.toStatus,
+	reason: orderStatusHistory.reason,
+	createdAt: orderStatusHistory.createdAt,
+} as const;
+
+type OrderDetailRow = {
+	[K in keyof typeof ORDER_DETAIL_COLUMNS]: (typeof order.$inferSelect)[K];
+};
+
+export interface OrderHistoryEntry {
+	createdAt: Date;
+	id: string;
+	reason: string | null;
+	toStatus: OrderStatus;
+}
+
 export interface OrderDetailData {
-	history: (typeof orderStatusHistory.$inferSelect)[];
+	history: OrderHistoryEntry[];
 	items: (OrderItemRow & { imageUrl: string | null })[];
-	order: typeof order.$inferSelect;
+	order: OrderDetailRow;
 	reviewedToolIds: string[];
 }
 
@@ -74,7 +118,15 @@ export async function listClientOrders(
 	clientId: string
 ): Promise<OrderListItem[]> {
 	const orders = await db
-		.select()
+		.select({
+			id: order.id,
+			number: order.number,
+			status: order.status,
+			createdAt: order.createdAt,
+			totalAmount: order.totalAmount,
+			subtotalAmount: order.subtotalAmount,
+			shippingAmount: order.shippingAmount,
+		})
 		.from(order)
 		.where(eq(order.clientId, clientId))
 		.orderBy(desc(order.createdAt));
@@ -129,7 +181,7 @@ export async function getClientOrderDetail(
 	orderId: string
 ): Promise<OrderDetailData | null> {
 	const [orderRow] = await db
-		.select()
+		.select(ORDER_DETAIL_COLUMNS)
 		.from(order)
 		.where(and(eq(order.id, orderId), eq(order.clientId, clientId)))
 		.limit(1);
@@ -149,7 +201,7 @@ export async function getClientOrderDetail(
 	);
 
 	const history = await db
-		.select()
+		.select(ORDER_HISTORY_COLUMNS)
 		.from(orderStatusHistory)
 		.where(eq(orderStatusHistory.orderId, orderId))
 		.orderBy(desc(orderStatusHistory.createdAt));

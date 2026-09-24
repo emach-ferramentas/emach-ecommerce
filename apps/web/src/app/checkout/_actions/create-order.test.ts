@@ -66,7 +66,6 @@ const RE_EMAIL_NOT_VERIFIED = /confirme seu e-mail/i;
 // CPF válido (dígitos verificadores corretos) para passar o inputSchema real.
 const VALID_INPUT = {
 	name: "Maria Silva",
-	email: "maria@example.com",
 	phone: "11999998888",
 	document: "52998224725",
 	addressId: "addr-1",

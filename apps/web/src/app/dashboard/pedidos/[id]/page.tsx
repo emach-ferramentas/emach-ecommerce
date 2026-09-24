@@ -78,7 +78,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
 					subtotalAmount={order.subtotalAmount}
 					totalAmount={order.totalAmount}
 				/>
-				<OrderTracking history={history} order={order} />
+				<OrderTracking
+					history={history}
+					shippingMethod={order.shippingMethod}
+					status={order.status}
+					trackingCode={order.shippingTrackingCode}
+				/>
 				<BuyerInfo buyer={buyer} />
 				<ShippingAddress address={order.shippingAddress} />
 				<OrderDocuments

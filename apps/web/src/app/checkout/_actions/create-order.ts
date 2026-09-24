@@ -70,6 +70,7 @@ export async function createOrderAction(
 		let shippingUnverified = true;
 		let shippingMethod: string | null = null;
 		let shippingServiceCode: string | null = null;
+		let verifiedShippingCents: number | null = null;
 		const destinationCep = await resolveDestinationCep(db, input, clientId);
 		if (destinationCep) {
 			// Valor declarado p/ o seguro de frete derivado dos preços VERIFICADOS
@@ -107,6 +108,7 @@ export async function createOrderAction(
 				shippingCheck.shippingUnverified || cepKnown === false;
 			shippingMethod = shippingCheck.shippingMethod;
 			shippingServiceCode = shippingCheck.shippingServiceCode;
+			verifiedShippingCents = shippingCheck.shippingCents;
 		}
 
 		const result = await db.transaction((tx) =>
@@ -118,6 +120,7 @@ export async function createOrderAction(
 				shippingUnverified,
 				shippingMethod,
 				shippingServiceCode,
+				verifiedShippingCents,
 			})
 		);
 		return { ok: true, ...result };

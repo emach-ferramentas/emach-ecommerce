@@ -36,8 +36,14 @@ export function useCepAutofill(onFill: (address: CepAddress) => void) {
 		lastNotFound.current = false;
 		setLoading(true);
 		setNotFound(false);
+		// Resposta de um CEP que já foi trocado não preenche nem mexe no spinner
+		// do lookup em voo.
+		const isStale = () => cep !== lastCep.current;
 		lookupCepAction(cep)
 			.then((result) => {
+				if (isStale()) {
+					return;
+				}
 				if (result.ok) {
 					onFill(result.data);
 					return;
@@ -50,7 +56,11 @@ export function useCepAutofill(onFill: (address: CepAddress) => void) {
 			.catch(() => {
 				// Action não lança por contrato; guarda contra falha de rede do RSC.
 			})
-			.finally(() => setLoading(false));
+			.finally(() => {
+				if (!isStale()) {
+					setLoading(false);
+				}
+			});
 	}
 
 	return { loading, notFound, maybeLookup };
