@@ -81,4 +81,4 @@ bun db:studio                 # Drizzle Studio (inspeção visual)
 
 ## Testes
 
-Vitest configurado mas **suite vazia** (diretório `test/` não existe). Quando entrarem: viver em `packages/db/test/`. Boot Supabase local: `bun test:supabase:start/stop` (precisa Docker).
+Testes unitários (Vitest, sem banco) vivem em `src/queries/__tests__/` e chegam pelo sync do dashboard, junto das queries. Rodam no CI via `bun run --filter=@emach/db test`, que é o mesmo comando local na raiz. Boot Supabase local: `bun test:supabase:start/stop` (precisa Docker).

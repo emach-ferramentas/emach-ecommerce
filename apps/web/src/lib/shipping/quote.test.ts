@@ -21,7 +21,10 @@ vi.mock("@/lib/frenet/cache", () => ({
 }));
 
 import { getActiveBoxes } from "@emach/db/queries/shipping";
-import { getShippingSettings } from "@emach/db/queries/store-settings";
+import {
+	getShippingSettings,
+	type ShippingSettings,
+} from "@emach/db/queries/store-settings";
 import { env } from "@emach/env/server";
 import {
 	buildQuoteCacheKey,
@@ -74,10 +77,7 @@ const SETTINGS = {
 	originCep: null,
 	insurancePolicy: "cart_value" as const,
 	insuranceCapAmount: 3000,
-	// Defaults canônicos de packages/db/src/queries/store-settings.ts
-	fillFactor: 0.9,
-	boxPaddingCm: 0,
-};
+} satisfies ShippingSettings;
 
 beforeEach(() => {
 	vi.mocked(getActiveBoxes).mockResolvedValue([BOX]);

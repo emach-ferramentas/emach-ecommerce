@@ -14,9 +14,12 @@ jobs:
         with:
           bun-version: 1.3.11
       - run: bun install --frozen-lockfile
+      - run: bun check
       - run: bun check-types
       - run: bun run --filter=web test:ci
       - run: bun run --filter=@emach/validators test
+      - run: bun run --filter=@emach/db test
+      - run: bun run --filter=@emach/auth test
 
   check-env:
     runs-on: ubuntu-latest

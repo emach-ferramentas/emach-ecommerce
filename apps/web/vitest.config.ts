@@ -9,8 +9,6 @@ const INTEGRATION = [
 	"**/lib/auto-promo.integration.test.ts",
 	"**/lib/tool-images.integration.test.ts",
 	"**/checkout/_lib/place-order.test.ts",
-	"**/checkout/_lib/place-order.shipping.test.ts",
-	"**/checkout/_actions/create-order.test.ts",
 	"**/checkout/_actions/revalidate-cart.test.ts",
 	"**/lib/coupons/validate-coupon.test.ts",
 	"**/catalog/_lib/facet-counts.test.ts",
