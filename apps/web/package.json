@@ -29,7 +29,7 @@
     "evlog": "2.19.1",
     "framer-motion": "^12.39.0",
     "lucide-react": "catalog:",
-    "next": "^16.2.0",
+    "next": "^16.3.6",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-inner-image-zoom": "^4.0.1",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "@emach/config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
-    "@types/node": "^22.13.14",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "d3-geo": "^3.1.1",
