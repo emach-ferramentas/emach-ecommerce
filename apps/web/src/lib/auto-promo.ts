@@ -11,7 +11,7 @@ export interface AutoPromo {
  * Para cada tool, as promoções automáticas ativas/vigentes que a cobrem
  * (global via `applies_to_all` OU específica via `promotion_tool`).
  * Fonte única ecommerce-side da regra de elegibilidade. O SQL `LATERAL` em
- * packages/db/src/queries/catalog.ts aplica a MESMA regra na vitrine/PDP, mas
+ * packages/db/src/queries/tools.ts aplica a MESMA regra na vitrine/PDP, mas
  * é owned-by-dashboard (nasce lá, chega via sync — ADR-0009); não unificar aqui.
  *
  * Módulo server-only: importa `db`/drizzle. NÃO importar em Client Components.

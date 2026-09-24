@@ -1,7 +1,7 @@
 /**
  * Preço unitário (em centavos) após UMA promoção automática.
  * `percent`: base × (1 − valor/100); `fixed`: max(base − valor, 0).
- * Espelha a regra do SQL em packages/db/src/queries/catalog.ts.
+ * Espelha a regra do SQL em packages/db/src/queries/tools.ts.
  */
 export function effectiveAutoDiscountCents(
 	baseCents: number,

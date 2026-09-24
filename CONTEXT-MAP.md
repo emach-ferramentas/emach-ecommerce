@@ -10,7 +10,7 @@ O domínio EMACH é servido por dois apps que compartilham uma única base Postg
 - [Customer Accounts](./docs/contexts/customer-accounts/CONTEXT.md) — identidade do cliente brasileiro (B2C/B2B) e seus endereços. _Escrito pelo storefront._
 - [Staff Access](./docs/contexts/staff-access/CONTEXT.md) — identidade, papéis e filiais do staff interno. _Escrito pelo dashboard._
 - [Ordering](./docs/contexts/ordering/CONTEXT.md) — pedidos, itens e o ciclo de vida do pedido. _Criado pelo storefront no checkout; o ciclo de vida é conduzido pelo dashboard._
-- [Inventory](./docs/contexts/inventory/CONTEXT.md) — filiais, níveis de estoque e o ledger de movimentos. _Gerido pelo dashboard; o storefront debita na venda._
+- [Inventory](./docs/contexts/inventory/CONTEXT.md) — filiais, níveis de estoque e o ledger de movimentos. _Gerido pelo dashboard; o storefront só valida o estoque agregado no checkout (o débito virá na transição para `paid`, ADR-0003)._
 - [Promotions](./docs/contexts/promotions/CONTEXT.md) — descontos automáticos e cupons aplicados ao catálogo. _Escrito pelo dashboard._
 - [Reviews](./docs/contexts/reviews/CONTEXT.md) — avaliações de produto por clientes, moderadas pelo staff. _Criado pelo storefront; moderado pelo dashboard._
 - [Data Governance](./docs/contexts/data-governance/CONTEXT.md) — tratamento lícito de dados pessoais (LGPD): consentimento, auditoria, exportação e anonimização. _Escrito por ambos._
@@ -33,5 +33,5 @@ O domínio EMACH é servido por dois apps que compartilham uma única base Postg
 
 - **Cart** não é um contexto — é estado efêmero client-side (`localStorage`) no storefront. Um **Order** só passa a existir quando o checkout o cria, já em `pending_payment`.
 - **Payment** não é um contexto próprio hoje — o estado de pagamento vive em `order.status` (`pending_payment`/`paid`/`payment_failed`) mais `payment_method`/`payment_provider_ref`. Tornar-se-á um contexto se entrar uma integração real com provedor de pagamento.
-- **Shipping** não é um contexto — frete é **cotado no checkout via SuperFrete** (`apps/web/src/lib/superfrete/`, origem = CEP da `DEFAULT_BRANCH_ID` via `getOriginBranchCep()`) e seus dados ficam embutidos no **Order** (`shipping_*`). A cotação é fail-open (falha da API não bloqueia a venda). A configuração de origem/seguro de frete (`store_settings` singleton + query `getShippingSettings`) **já chegou sincronizada** do dashboard (#119); a troca `getOriginBranchCep → getShippingSettings` no storefront é trabalho pendente.
+- **Shipping** não é um contexto. O frete é cotado no checkout via **Frenet** (`apps/web/src/lib/shipping/quote.ts` + `apps/web/src/lib/frenet/`). A origem é o CEP da filial em `store_settings.shipping_origin_branch_id`, lido por `getShippingSettings`. Sem filial configurada ou com CEP inválido, a origem cai em `FRENET_SELLER_CEP`. Os dados do frete ficam embutidos no **Order** (`shipping_*`). A cotação é fail-open: falha da Frenet não bloqueia a venda e o pedido nasce com `shipping_unverified = true` para revisão do staff.
 - Não há integração via **API key** entre os apps: eles compartilham a DB diretamente. A tabela `api_key` não existe na DB real.

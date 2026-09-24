@@ -7,22 +7,22 @@ Drizzle 0.45 + node-postgres + Supabase Postgres. Schema TS aqui é **cópia ver
 - **Mudanças de schema começam no dashboard.** Workflow `sync-db-schema.yml` no dashboard abre PR aqui quando `packages/db/src/{schema,queries,sql/triggers.sql}` muda na `main` do dashboard.
 - **Não editar `schema/*.ts` em isolamento.** Toda mudança vem por PR de sync.
 - **`db:generate` / `db:migrate` são legacy** — scripts ainda no `package.json` mas não usar. Pasta `migrations/` foi removida.
-- **Pós-merge do PR sync (ou pós-`db:push` em dev local):** rodar `bun db:apply-triggers`.
+- **Pós-merge do PR sync (ou pós-`db:push` em dev local):** rodar `bun --cwd packages/db db:apply-triggers`.
 - **`src/index.ts` (barrel singleton) está FORA do escopo do sync** (o glob só cobre `schema/`/`queries/`/`triggers.sql`). Quando o dashboard **adiciona/remove uma relation ou tabela** (ex.: #118 removeu `supplierRelations` de `tools.ts`), o `index.ts` continua importando/registrando o símbolo antigo e **quebra o build** (`error TS2305: no exported member`) — o sync não pega isso. **Sempre rodar `bun check-types` pós-merge de PR sync** e ajustar o import/objeto `schema` em `src/index.ts` à mão.
 
-**Drop & recreate em dev** (renames ambíguos sem TTY): `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres, public;` via pg client → `bunx drizzle-kit push && bun db:apply-triggers && bun db:seed-categories && bun db:seed-attributes`. Só em dev.
+**Drop & recreate em dev** (renames ambíguos sem TTY): `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres, public;` via pg client → de dentro de `packages/db`: `bunx drizzle-kit push && bun db:apply-triggers && bun db:seed-categories && bun db:seed-attributes`. Só em dev.
 
 ## Triggers PL/pgSQL
 
-`src/sql/triggers.sql` (owned-by-dashboard, cópia aqui) tem 4 triggers que Drizzle Kit **não consegue gerar**: anti-ciclo de categoria + `path`/`depth` materializados, cascade de path, `client.last_seen`, derivação de `client.type`. Aplicar:
+`src/sql/triggers.sql` (owned-by-dashboard, cópia aqui) tem 5 triggers que Drizzle Kit **não consegue gerar**: anti-ciclo de categoria + `path`/`depth` materializados, cascade de path, `client.last_seen`, derivação de `client.type`, nota automática no pedido quando a NF-e é cancelada (`trg_order_nfe_cancelled`). Aplicar:
 
 ```bash
-bun db:apply-triggers   # idempotente (CREATE OR REPLACE FUNCTION + DROP TRIGGER IF EXISTS)
+bun --cwd packages/db db:apply-triggers   # idempotente (CREATE OR REPLACE FUNCTION + DROP TRIGGER IF EXISTS)
 ```
 
 Idempotência de débito de venda em `stockMovement` **não** é trigger — é partial unique index no schema.
 
-**RLS deny-all (#90):** `src/sql/rls.sql` (owned-by-dashboard, cópia aqui; canônico avaliado no dashboard #142) habilita RLS **sem policies** nas 13 tabelas `public` expostas via PostgREST (`tool*`, `category`, `branch`, `stock_level`, `promotion*`, `review`, `attribute_definition`). O app **não usa PostgREST** — todo acesso é server-side via Drizzle/`DATABASE_URL`, role `postgres` (BYPASSRLS), então deny-all fecha a porta REST (anon/authenticated veem 0 linhas) sem afetar o app. RLS é flag de tabela (não recriada por `db:push`) — **não** precisa reaplicar pós-push. Se algum dia o client ler catálogo via `supabase-js`, terá que **adicionar policy de SELECT pra anon** — hoje não há nenhuma (deny-all real).
+**RLS deny-all (#90):** `src/sql/rls.sql` (owned-by-dashboard, cópia aqui; canônico avaliado no dashboard #142) habilita RLS **sem policies** nas 14 tabelas `public` expostas via PostgREST (`tool*`, `category`, `branch`, `stock_level`, `promotion*`, `review`, `attribute_definition`, `cart_event`). O app **não usa PostgREST** — todo acesso é server-side via Drizzle/`DATABASE_URL`, role `postgres` (BYPASSRLS), então deny-all fecha a porta REST (anon/authenticated veem 0 linhas) sem afetar o app. RLS é flag de tabela (não recriada por `db:push`) — **não** precisa reaplicar pós-push. Se algum dia o client ler catálogo via `supabase-js`, terá que **adicionar policy de SELECT pra anon** — hoje não há nenhuma (deny-all real).
 
 ## Convenções de schema
 
@@ -37,6 +37,8 @@ Idempotência de débito de venda em `stockMovement` **não** é trigger — é 
 - **Owned-by-dashboard** (autoritativo, mudanças via PR no dashboard): `tool`, `toolVariant`, `toolCategory`, `toolImage`, `toolAttributeAssignment`, `category`, `supplier`, `supplierAuditLog`, `branch`, `stockLevel`, `userBranch`, `userActivityLog`, `promotion`, `promotionTool`, `attribute*`, `storeSettings`, schema `auth`.
 - **Owned-by-ecommerce**: tabelas `client*` (7) — `client`, `clientSession`, `clientAccount`, `clientVerification`, `clientAddress` + LGPD `clientAuditLog`, `clientExportLog`.
 - **Escrita compartilhada** (ciclo de vida do pedido): `order`, `orderItem`, `orderStatusHistory`, `orderNote`, `orderAttachment`, `orderEvent`, `refundRequest`, `stockMovement`, `review`, `consentLog`, `toolAttributeValue`.
+
+`cartEvent`: escrita pela loja (INSERT em `apps/web/src/lib/actions/track-cart-event.ts`); o dashboard lê e expurga (comentário em `schema/cart-events.ts`). Fica fora das três listas acima.
 
 `refundRequest`: o **storefront cria** (cliente solicita devolução); o **dashboard conduz** (revisa/aprova/estorna). `orderEvent`/`orderNote`/`orderAttachment` são majoritariamente escritos pelo dashboard no ciclo de vida.
 
@@ -58,7 +60,7 @@ Em `stockMovement` deste repo: **`actorType='system'`** (nunca `'user'` — `use
 
 ## Queries owned-by-dashboard
 
-`packages/db/src/queries/*.ts` é ferramenta de leitura/regra de negócio consumida aqui (`reviews.ts`, `catalog.ts`).
+`packages/db/src/queries/*.ts` é ferramenta de leitura/regra de negócio consumida aqui (`reviews.ts`, `tools.ts`, `promotions.ts`; `ToolListItem` mora em `catalog-helpers.ts`).
 
 **Regra:** dashboard é fonte de verdade. Sync via CI. **Não editar em isolamento aqui** — mudanças de regra começam no dashboard.
 
@@ -69,6 +71,8 @@ Padrão de assinatura: `db: NodePgDatabase<Record<string, unknown>>` parametriza
 Bucket público `tool-images`. `tool_image.url` armazena URL pública absoluta completa — `<Image src={toolImage.url} />` direto. Upload feito pelo dashboard. Whitelist Supabase host em `apps/web/next.config.ts > images.remotePatterns`.
 
 ## Scripts úteis
+
+Estes scripts existem só em `packages/db/package.json`; a raiz tem apenas `db:push` e `db:studio`. Da raiz, rodar `bun --cwd packages/db <script>`.
 
 ```bash
 bun db:apply-triggers         # idempotente, pós-sync

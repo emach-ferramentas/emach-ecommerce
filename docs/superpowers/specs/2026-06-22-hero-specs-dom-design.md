@@ -2,7 +2,7 @@
 
 **Issue:** #158 (handoff de emach-dashboard#229)
 **Data:** 2026-06-22
-**Status:** design aprovado, pronto para plano
+**Status:** implementado. Evidência: `apps/web/src/components/hero/hero-element-renders.tsx` renderiza `banner.specs` como `<ul>` via `resolveHeroSpecs` (`lib/hero-specs.ts`).
 
 ## Contexto e motivação
 

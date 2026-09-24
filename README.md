@@ -27,17 +27,19 @@ emach-ecommerce/
 └── packages/
     ├── config/              tsconfig base
     ├── env/                 env vars tipadas (T3 Env + Zod)
-    ├── db/                  Drizzle schema + migrations + triggers PL/pgSQL + seeds
+    ├── db/                  Drizzle schema espelhado do dashboard + queries + triggers/RLS SQL + seeds
     ├── auth/                Better Auth (instâncias dashboard + ecommerce isoladas)
     ├── email/               Resend client + templates React Email
-    └── ui/                  shadcn `base-lyra` compartilhado
+    ├── redis/               client Upstash Redis (rate limit + cache de cotação de frete)
+    ├── ui/                  shadcn `base-lyra` compartilhado
+    └── validators/          validação de CPF/CNPJ (`@emach/validators`)
 ```
 
 ## Setup
 
 ```bash
 bun install
-cp apps/web/.env.example apps/web/.env  # se existir, senão criar baseado em packages/env/src/server.ts
+cp apps/web/.env.example apps/web/.env  # schema das envs em packages/env/src/schemas.ts
 bun run db:push                          # sync schema → DB (dev local)
 bun --cwd packages/db db:apply-triggers  # triggers PL/pgSQL (Drizzle Kit não gera)
 bun --cwd packages/db db:seed-categories
@@ -86,7 +88,7 @@ bunx shadcn@latest diff -c packages/ui
 ## Invariantes críticos
 
 1. **Auth isolada por host:** ecommerce usa `authEcommerce` (tabelas `client*`). NUNCA importar `authDashboard` ou schema `auth` aqui — quebra isolamento P0 staff × cliente.
-2. **DB compartilhada com dashboard:** mudanças em tabelas owned-by-dashboard (`tool`, `category`, `promotion`, etc) começam no repo dashboard via PR; este repo sincroniza schema manualmente.
+2. **DB compartilhada com dashboard:** mudanças em tabelas owned-by-dashboard (`tool`, `category`, `promotion`, etc) começam no repo dashboard via PR. O schema chega aqui por PR automático aberto pelo workflow `sync-db-schema.yml` do dashboard.
 3. **Commits:** Conventional Commits em **PT** (`feat:`/`fix:`/`refactor:`/`chore:`). Confirmação explícita do user antes de qualquer `git commit`/`push`.
 4. **Money:** `numeric(10,2)` em preços/custos variant, `numeric(12,2)` em totais order. Nunca `real`/`double`.
 5. **IDs:** `crypto.randomUUID()` no caller (server actions/scripts). Sem nanoid.

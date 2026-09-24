@@ -1,7 +1,7 @@
 # Página de produto (PDP) — redesign com ritmo chiaroscuro
 
 **Data:** 2026-06-11
-**Status:** aprovado (design), pendente implementação
+**Status:** obsoleto. Substituído por `2026-07-03-pdp-redesign-design.md` (placa técnica), implementado em `apps/web/src/app/(shop)/product/[slug]/_components/plate-layout.ts`.
 **Rota afetada:** `/product/[slug]` (`apps/web/src/app/(shop)/product/[slug]/`)
 
 ## Problema

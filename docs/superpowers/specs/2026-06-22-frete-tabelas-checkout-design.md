@@ -2,7 +2,7 @@
 
 **Relacionado:** dashboard#242 (motor de frete) · storefront#160 (coordenação) · roadmap "frete fail-open"
 **Data:** 2026-06-22
-**Status:** design aprovado, pronto para plano
+**Status:** obsoleto. Substituído pela Frenet (`2026-07-02-frenet-cotacao-design.md`, código em `apps/web/src/lib/frenet/`); as tabelas `carrier*` já não existem no banco.
 
 ## Contexto e motivação
 

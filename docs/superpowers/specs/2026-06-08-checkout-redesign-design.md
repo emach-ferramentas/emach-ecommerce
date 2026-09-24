@@ -1,7 +1,7 @@
 # Checkout — modernização e alinhamento ao design system
 
 **Data:** 2026-06-08
-**Status:** aprovado (design), pendente implementação
+**Status:** implementado. Evidência: `apps/web/src/app/checkout/layout.tsx` monta `CheckoutHeader` (logo SVG + "Pagamento Seguro"), `DemoBanner` e `CheckoutFooter`.
 **Rota afetada:** `/checkout` (`apps/web/src/app/checkout/`)
 
 ## Problema

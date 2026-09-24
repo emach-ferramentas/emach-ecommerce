@@ -1,7 +1,7 @@
 # Seção de promoção da home — layout adaptativo por contagem de produtos
 
 **Data:** 2026-06-24
-**Status:** Aprovado (design), pendente de plano de implementação
+**Status:** implementado. Evidência: `apps/web/src/components/promo-highlight.tsx` escolhe o layout por `selectPromoLayout(promotion.tools.length)`.
 **Área:** `apps/web` (storefront) + 1 ajuste de regra em `packages/db` (query de leitura)
 
 ## 1. Problema

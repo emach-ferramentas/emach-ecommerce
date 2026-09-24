@@ -25,7 +25,7 @@ A trilha de transições de **Order Status** — de/para, ator e motivo de cada 
 Uma anotação interna do staff sobre um **Order**. Não é visível ao cliente. Guarda `status_at_creation` (status do pedido no momento da nota) e pode ser fixada (`pinned`).
 
 **Shipping**:
-O frete do **Order**, **cotado no checkout via SuperFrete** (origem = CEP da filial `DEFAULT_BRANCH_ID` via `getOriginBranchCep`). Snapshota `shipping_amount`, `shipping_method` (transportadora escolhida) e, após o envio, `shipping_tracking_code`. A cotação é _fail-open_ — falha da API não bloqueia a compra. (A config de origem/seguro `store_settings`/`getShippingSettings` já chegou sincronizada do dashboard; o swap no storefront é pendente.)
+O frete do **Order**, cotado no checkout via **Frenet**. A origem é o CEP da filial em `store_settings.shipping_origin_branch_id` (`getShippingSettings`), com fallback para a env `FRENET_SELLER_CEP`. Snapshota `shipping_amount`, `shipping_method`, `shipping_service_code` (serviço Frenet escolhido) e, após o envio, `shipping_tracking_code`. A cotação é _fail-open_: falha da Frenet não bloqueia a compra e marca `shipping_unverified = true` para o staff revisar.
 
 **Coupon / Discount**:
 Um **Order** pode ter um **Coupon** aplicado (`coupon_id` → uma **Promotion** do tipo promocode), cujo valor de desconto é gravado em `discount_amount`. ⚠️ Desconto **automático** de promoção (auto-promo) já vem embutido no preço da **Variant** e **não** entra em `discount_amount` — senão contaria em dobro na margem.
@@ -34,7 +34,7 @@ Um **Order** pode ter um **Coupon** aplicado (`coupon_id` → uma **Promotion** 
 A solicitação de **devolução/reembolso** de um **Order**, criada pelo **Client** no portal e conduzida pelo staff. Tem motivo (`refund_reason`: `defeito`/`item_errado`/`avaria_transporte`/`arrependimento`/`outro`) e status próprio (`refund_status`: `requested` → `under_review` → `approved` → `refunded`, ou `rejected`). É uma entidade separada (`refund_request`) — distinta do **Order Status** — com no máximo uma ativa por pedido.
 
 **Order Event**:
-Evento operacional do ciclo de vida (`order_event`, tipos `tracking_set`/`branch_assigned`) — trilha de auditoria complementar ao **Status History**. **Order Attachment** guarda anexos do pedido; campos fiscais (`nfe_number`/`nfe_url`/`nfe_xml_url`/`nfe_status`) e `payment_receipt_url` são preenchidos pelo dashboard.
+Evento operacional do ciclo de vida (`order_event`). Tipos: `tracking_set`, `branch_assigned`, `shipping_reviewed` (staff revisou um frete marcado `shipping_unverified`) e `ship_forced` (envio forçado por `super_admin` sem separação concluída). É a trilha de auditoria complementar ao **Status History**. **Order Attachment** guarda anexos do pedido; campos fiscais (`nfe_number`/`nfe_url`/`nfe_xml_url`/`nfe_status`) e `payment_receipt_url` são preenchidos pelo dashboard.
 
 **Checkout**:
 O processo do storefront que transforma um **Cart** num **Order**.

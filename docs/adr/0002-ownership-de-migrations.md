@@ -1,6 +1,6 @@
 # Ownership de migrations: o repo espelha a DB, não autora migrations
 
-O `emach-ecommerce` (storefront) não autora nem versiona migrations do banco. O schema PostgreSQL é propriedade do repo irmão `emach-dashboard`; aqui, `packages/db/src/schema/*` é uma cópia versionada — um espelho — das tabelas, mantida em sincronia com a DB real e verificada pelo script `db:check-drift` (`packages/db/src/scripts/check-schema-drift.ts`). Migrations geradas por `drizzle-kit generate` são barradas pelo `.gitignore`. A única exceção é `packages/db/src/sql/triggers.sql` — cópia versionada dos triggers PL/pgSQL que o Drizzle Kit não gera, aplicada de forma idempotente via `bun --cwd packages/db db:apply-triggers`.
+O `emach-ecommerce` (storefront) não autora nem versiona migrations do banco. O schema PostgreSQL é propriedade do repo irmão `emach-dashboard`; aqui, `packages/db/src/schema/*` é uma cópia versionada — um espelho — das tabelas, mantida em sincronia com a DB real e verificada pelo script `db:check-drift` (`packages/db/scripts/check-schema-drift.ts`). Migrations geradas por `drizzle-kit generate` são barradas pelo `.gitignore`. A única exceção é `packages/db/src/sql/triggers.sql` — cópia versionada dos triggers PL/pgSQL que o Drizzle Kit não gera, aplicada de forma idempotente via `bun --cwd packages/db db:apply-triggers`.
 
 ## Considered Options
 

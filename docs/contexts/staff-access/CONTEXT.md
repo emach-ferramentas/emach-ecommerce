@@ -9,7 +9,7 @@ Um membro do staff interno. É distinto de **Client** — **Client** é quem com
 _Avoid_: Client, Customer, Staff Member como termo separado, Funcionário
 
 **Role**:
-O nível de privilégio de um **User**: `super_admin`, `admin`, `manager` ou `user`. As regras concretas de autorização de cada **Role** são linguagem do dashboard.
+O nível de privilégio de um **User**: `super_admin`, `admin` ou `user` (enum `user_role`). As regras concretas de autorização de cada **Role** são linguagem do dashboard.
 
 **User Status**:
 A situação de um **User**: `pending` (aguardando ativação), `active` ou `suspended`. Distinto do **Client Status** do contexto Customer Accounts.

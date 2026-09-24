@@ -5,7 +5,7 @@ As filiais, os níveis de estoque por filial e o ledger imutável de movimentos.
 ## Language
 
 **Branch**:
-Uma localização física que mantém estoque. Uma das **Branches** é a padrão.
+Uma localização física que mantém estoque. Não existe filial padrão no schema; a filial de origem do frete é escolhida no dashboard (ver **Shipping Origin Branch**).
 _Avoid_: Warehouse, Loja, Depósito
 
 **Stock Level**:
@@ -17,7 +17,7 @@ Uma entrada imutável no ledger de estoque — um delta aplicado a um **Stock Le
 _Avoid_: Transaction, Adjustment
 
 **Reason**:
-A classificação em texto livre de um **Stock Movement** — em uso: `entrada_compra` (entrada por compra ao fornecedor), `saida_venda` (saída por venda).
+A classificação de um **Stock Movement**. A coluna `stock_movement.reason` é `text` livre, não enum. Valores gravados hoje: `entrada_compra` (entrada por compra ao fornecedor) e `ajuste_inventario` (ajuste de inventário). `saida_venda` (saída por venda) fica reservado para o débito na transição para `paid`.
 
 **Reorder Point**:
 O nível de **Stock Level** em que um novo pedido de compra ao **Supplier** deve ser feito.
@@ -26,8 +26,8 @@ O nível de **Stock Level** em que um novo pedido de compra ao **Supplier** deve
 O piso de estoque de segurança de um **Stock Level** — abaixo dele a situação é de ruptura crítica. É um limiar mais baixo e mais grave que o **Reorder Point**.
 _Avoid_: confundir com **Reorder Point** — são limiares distintos
 
-**Default Branch**:
-A **Branch** definida pela env `DEFAULT_BRANCH_ID`. Hoje serve **só** como **origem do frete**: `getOriginBranchCep()` (`apps/web/src/lib/origin-branch.ts`) busca o `branch.cep` dessa filial para a cotação SuperFrete no checkout. (Não existe `getDefaultBranchId()` nem `default-branch.ts`.) **Não** é mais a filial de leitura/débito de estoque — desde o ADR-0003 o storefront valida o estoque **agregado** (`SUM` em todas as filiais), sem fixar filial. A origem do frete migrará para `storeSettings.shippingOriginBranchId` (singleton admin-configurável): a tabela `store_settings` e a query `getShippingSettings` (origem + política de seguro `none`|`cart_value` + cap) **já chegaram sincronizadas** do dashboard (#119); falta só o swap `getOriginBranchCep → getShippingSettings` no storefront.
+**Shipping Origin Branch**:
+A **Branch** apontada por `store_settings.shipping_origin_branch_id`, escolhida no dashboard. Serve **só** como origem do frete: `getShippingSettings` devolve o `branch.cep` dela para a cotação Frenet no checkout (`apps/web/src/lib/shipping/quote.ts`). Sem filial configurada, ou com CEP inválido, a origem cai na env `FRENET_SELLER_CEP`. Não define de qual filial se lê ou debita estoque: desde o ADR-0003 o storefront valida o estoque **agregado** (`SUM` em todas as filiais).
 
 ## Relationships
 
@@ -45,5 +45,5 @@ A **Branch** definida pela env `DEFAULT_BRANCH_ID`. Hoje serve **só** como **or
 
 ## Flagged ambiguities
 
-- O storefront valida o estoque **agregado** entre todas as filiais (ADR-0003) e ainda não debita; a `DEFAULT_BRANCH_ID` hoje só define a origem do frete. O estoque multi-filial (leitura/débito por filial) é linguagem e responsabilidade do dashboard.
-- `saida_venda` está no enum de **Reason**, mas o storefront ainda **não grava** esse movimento — só passará a gravar no `paid`, com a integração de pagamento (ADR-0003).
+- O storefront valida o estoque **agregado** entre todas as filiais (ADR-0003) e ainda não debita; a **Shipping Origin Branch** só define a origem do frete. O estoque multi-filial (leitura/débito por filial) é linguagem e responsabilidade do dashboard.
+- `saida_venda` é um valor previsto de **Reason**, mas o storefront ainda **não grava** esse movimento — só passará a gravar no `paid`, com a integração de pagamento (ADR-0003).

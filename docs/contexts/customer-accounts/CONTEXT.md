@@ -19,7 +19,7 @@ _Avoid_: CPF/CNPJ como termos separados — o conceito unificado é **Document**
 A situação de um **Client**: `active`, `inactive` ou `blocked`. Distinto do status de um **User** do staff.
 
 **Address**:
-Um endereço de entrega pertencente a um **Client**. Um deles é o padrão. O cliente gerencia seus endereços no portal via server actions (`addAddress`/`updateAddress`/`deleteAddress`/`setDefaultAddress` em `dashboard/dados-pessoais/_actions/addresses.ts`). No checkout, um **Address** é snapshotado dentro do **Order** — o pedido não acompanha edições posteriores.
+Um endereço de entrega pertencente a um **Client**. Um deles é o padrão. O cliente gerencia seus endereços no portal via server actions (`createAddressAction`/`updateAddressAction`/`deleteAddressAction`/`setDefaultAddressAction` em `dashboard/dados-pessoais/_actions/addresses.ts`). No checkout, um **Address** é snapshotado dentro do **Order** — o pedido não acompanha edições posteriores.
 _Avoid_: Endereço, Location
 
 **Customer Portal**:

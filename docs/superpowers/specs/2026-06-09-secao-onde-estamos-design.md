@@ -1,7 +1,7 @@
 # Seção "Onde estamos" — mapa de filiais georreferenciado
 
 **Data:** 2026-06-09
-**Status:** aprovado (design), pendente implementação
+**Status:** implementado. Evidência: `apps/web/src/lib/branch-map/` + `apps/web/src/components/branch-map-section.tsx`, usado em `app/(shop)/page.tsx`.
 **Arquivo-alvo:** `apps/web/src/app/(shop)/page.tsx` (home)
 
 ## Problema

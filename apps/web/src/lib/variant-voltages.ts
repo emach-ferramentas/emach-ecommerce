@@ -9,7 +9,7 @@ const VOLTAGE_ORDER: Voltage[] = ["127V", "220V", "380V", "Bivolt"];
 /**
  * Voltagens das variantes por produto, para os selos do ProductCard.
  *
- * Leitura própria do storefront: o `ToolListItem` (catalog.ts, owned-by-dashboard)
+ * Leitura própria do storefront: o `ToolListItem` (catalog-helpers.ts, owned-by-dashboard)
  * só traz a voltagem da variante default + `hasOtherVariants`. Para listar TODAS
  * as voltagens sem editar a query dashboard-owned, agregamos aqui.
  *
