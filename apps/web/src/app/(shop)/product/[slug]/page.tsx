@@ -14,7 +14,10 @@ import { ProductInfo } from "./_components/product-info";
 import { BreadcrumbJsonLd, ProductJsonLd } from "./_components/product-json-ld";
 import { ProductReviewsSection } from "./_components/product-reviews-section";
 import { ProductSpecs } from "./_components/product-specs";
-import { RelatedProducts } from "./_components/related-products";
+import {
+	RelatedProducts,
+	RelatedProductsSkeleton,
+} from "./_components/related-products";
 
 interface ProductPageProps {
 	params: Promise<{ slug: string }>;
@@ -41,25 +44,29 @@ export async function generateMetadata({
 
 	const title = detail.tool.name;
 	const description = detail.tool.description ?? detail.tool.name;
-	const ogImage = detail.images[0]?.url;
+	const ogImage = detail.images[0]?.url ?? "/images/og-default.png";
 	const path = `/product/${detail.tool.slug ?? detail.tool.id}`;
+	// `openGraph`/`twitter` no filho SUBSTITUEM o do root (não há merge
+	// profundo): repetir imagem, locale e sufixo do título aqui é obrigatório.
+	const ogTitle = `${title} · EMACH`;
 	return {
 		title,
 		description,
 		alternates: canonicalFor(path),
 		openGraph: {
-			title,
+			title: ogTitle,
 			description,
 			type: "website",
 			url: path,
 			siteName: "EMACH",
-			...(ogImage ? { images: [ogImage] } : {}),
+			locale: "pt_BR",
+			images: [ogImage],
 		},
 		twitter: {
 			card: "summary_large_image",
-			title,
+			title: ogTitle,
 			description,
-			...(ogImage ? { images: [ogImage] } : {}),
+			images: [ogImage],
 		},
 	};
 }
@@ -143,10 +150,12 @@ export default async function ProductPage({
 					/>
 				</Suspense>
 
-				<RelatedProducts
-					categoryPath={detail.primaryCategory?.path ?? null}
-					toolId={detail.tool.id}
-				/>
+				<Suspense fallback={<RelatedProductsSkeleton />}>
+					<RelatedProducts
+						categoryPath={detail.primaryCategory?.path ?? null}
+						toolId={detail.tool.id}
+					/>
+				</Suspense>
 			</main>
 		</>
 	);

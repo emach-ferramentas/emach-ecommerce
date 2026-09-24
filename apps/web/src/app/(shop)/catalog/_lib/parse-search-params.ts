@@ -67,7 +67,12 @@ function parseVoltages(value: string | undefined): VoltageKey[] {
 		);
 }
 
-function parsePositiveInt(value: string | undefined): number | undefined {
+// A página vira OFFSET bigint no Postgres: fração ou notação exponencial
+// derruba a query. O teto também limita as chaves distintas do "use cache".
+const MAX_PAGE = 1000;
+const MAX_QUERY_LENGTH = 100;
+
+function parseNonNegative(value: string | undefined): number | undefined {
 	if (!value) {
 		return;
 	}
@@ -75,16 +80,24 @@ function parsePositiveInt(value: string | undefined): number | undefined {
 	return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
+function parsePage(value: string | undefined): number {
+	const n = parseNonNegative(value);
+	if (n === undefined) {
+		return 1;
+	}
+	return Math.min(MAX_PAGE, Math.max(1, Math.floor(n)));
+}
+
 export function parseCatalogSearchParams(
 	params: CatalogSearchParams
 ): ParsedCatalogParams {
-	const q = first(params.q) ?? "";
+	const q = (first(params.q) ?? "").slice(0, MAX_QUERY_LENGTH);
 	const trimmed = q.trim();
 	return {
 		onlyPromo: first(params.promo) === "1",
-		page: Math.max(1, parsePositiveInt(first(params.page)) ?? 1),
-		priceMax: parsePositiveInt(first(params.pmax)),
-		priceMin: parsePositiveInt(first(params.pmin)),
+		page: parsePage(first(params.page)),
+		priceMax: parseNonNegative(first(params.pmax)),
+		priceMin: parseNonNegative(first(params.pmin)),
 		q,
 		search: trimmed ? trimmed : undefined,
 		sort: parseSort(first(params.sort)),

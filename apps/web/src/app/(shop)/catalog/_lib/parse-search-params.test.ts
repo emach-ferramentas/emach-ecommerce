@@ -37,6 +37,18 @@ describe("parseCatalogSearchParams", () => {
 			priceMin: 100,
 		});
 	});
+	it("page vira inteiro >= 1 com teto (offset válido no Postgres)", () => {
+		expect(parseCatalogSearchParams({ page: "2.5" }).page).toBe(2);
+		expect(parseCatalogSearchParams({ page: "-1" }).page).toBe(1);
+		expect(parseCatalogSearchParams({ page: "abc" }).page).toBe(1);
+		expect(parseCatalogSearchParams({ page: "999999" }).page).toBe(1000);
+		expect(parseCatalogSearchParams({ page: "1e20" }).page).toBe(1000);
+	});
+	it("q e search são cortados em 100 caracteres", () => {
+		const out = parseCatalogSearchParams({ q: "a".repeat(250) });
+		expect(out.q).toHaveLength(100);
+		expect(out.search).toHaveLength(100);
+	});
 	it("q vazio ou só espaços não vira search", () => {
 		expect(parseCatalogSearchParams({ q: "   " })).toMatchObject({
 			q: "   ",

@@ -8,8 +8,8 @@ import { Grid3x3, List, SlidersHorizontal } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { EmachButton } from "@/components/emach-button";
+import { type ReactNode, useState, useTransition } from "react";
+import { emachButtonVariants } from "@/components/emach-button";
 import { PageContainer } from "@/components/page-container";
 import { ProductCard } from "@/components/product-card";
 import { ProductImage } from "@/components/product-image";
@@ -24,6 +24,7 @@ import {
 	type VoltageKey,
 } from "../_lib/catalog-filters";
 import type { FacetCounts } from "../_lib/facet-counts";
+import { isModifiedClick } from "../_lib/is-modified-click";
 import { ActiveFilters } from "./active-filters";
 import { FilterDrawer } from "./filter-drawer";
 import { FilterPanel } from "./filter-panel";
@@ -45,6 +46,48 @@ interface CatalogContentProps {
 	total: number;
 	voltages: VoltageKey[];
 	voltagesByTool?: Map<string, Voltage[]>;
+}
+
+const PAGE_LINK_CLASS = emachButtonVariants({ variant: "ghost", size: "sm" });
+
+// `<a>` real para o crawler seguir a paginação; o clique simples continua na
+// navegação client-side do `navigatePage` (transition + scroll ao topo).
+function PageLink({
+	children,
+	disabled,
+	href,
+	onNavigate,
+	rel,
+}: {
+	children: ReactNode;
+	disabled: boolean;
+	href: Route;
+	onNavigate: () => void;
+	rel: "prev" | "next";
+}) {
+	if (disabled) {
+		return (
+			<span aria-disabled="true" className={cn(PAGE_LINK_CLASS, "opacity-60")}>
+				{children}
+			</span>
+		);
+	}
+	return (
+		<Link
+			className={PAGE_LINK_CLASS}
+			href={href}
+			onClick={(e) => {
+				if (isModifiedClick(e)) {
+					return;
+				}
+				e.preventDefault();
+				onNavigate();
+			}}
+			rel={rel}
+		>
+			{children}
+		</Link>
+	);
 }
 
 export function CatalogContent({
@@ -108,8 +151,12 @@ export function CatalogContent({
 		});
 	}
 
+	function pageHrefFor(nextPage: number): Route {
+		return buildHref(current, { page: nextPage }) as Route;
+	}
+
 	function navigatePage(nextPage: number) {
-		const href = buildHref(current, { page: nextPage }) as Route;
+		const href = pageHrefFor(nextPage);
 		startTransition(() => {
 			router.replace(href, { scroll: true });
 		});
@@ -372,25 +419,25 @@ export function CatalogContent({
 
 					{totalPages > 1 && (
 						<div className="mt-8 flex items-center justify-center gap-2">
-							<EmachButton
+							<PageLink
 								disabled={page <= 1}
-								onClick={() => navigatePage(page - 1)}
-								size="sm"
-								variant="ghost"
+								href={pageHrefFor(page - 1)}
+								onNavigate={() => navigatePage(page - 1)}
+								rel="prev"
 							>
 								Anterior
-							</EmachButton>
+							</PageLink>
 							<span className="px-3 text-[13px] tabular-nums">
 								Página <strong>{page}</strong> de {totalPages}
 							</span>
-							<EmachButton
+							<PageLink
 								disabled={page >= totalPages}
-								onClick={() => navigatePage(page + 1)}
-								size="sm"
-								variant="ghost"
+								href={pageHrefFor(page + 1)}
+								onNavigate={() => navigatePage(page + 1)}
+								rel="next"
 							>
 								Próxima
-							</EmachButton>
+							</PageLink>
 						</div>
 					)}
 				</div>

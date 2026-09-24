@@ -1,15 +1,15 @@
 "use client";
 
-import type { ToolSearchResult } from "@emach/db/queries/tools";
 import { cn } from "@emach/ui/lib/utils";
-import { Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProductImage } from "@/components/product-image";
 import { SectionLabel } from "@/components/section-label";
-import { searchToolsAction } from "@/lib/actions/search";
-import { fmtNumericBRL } from "@/lib/format";
+import { type SearchResult, searchToolsAction } from "@/lib/actions/search";
+import { fmtBRL, fmtNumericBRL } from "@/lib/format";
 import { useOverlay } from "@/lib/use-overlay";
 
 interface SearchOverlayProps {
@@ -47,6 +47,12 @@ function saveRecent(list: string[]) {
 	}
 }
 
+const SEARCH_FAILED = "Não foi possível buscar agora.";
+
+function catalogSearchHref(term: string): Route {
+	return `/catalog?q=${encodeURIComponent(term)}` as Route;
+}
+
 function highlightMatch(text: string, query: string) {
 	const q = query.trim();
 	if (!q) {
@@ -72,10 +78,13 @@ function highlightMatch(text: string, query: string) {
 export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 	const router = useRouter();
 	const [query, setQuery] = useState("");
-	const [highlight, setHighlight] = useState(0);
+	// -1 = nada destacado pelas setas: Enter vai para a busca completa.
+	const [highlight, setHighlight] = useState(-1);
 	const [recent, setRecent] = useState<string[]>([]);
-	const [results, setResults] = useState<ToolSearchResult[]>([]);
+	const [results, setResults] = useState<SearchResult[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [retryNonce, setRetryNonce] = useState(0);
 	// Esc, focus-trap, scroll-lock e restauração de foco vêm do hook. O foco
 	// inicial fica com o `<input autoFocus>`, então `autoFocus: false` aqui.
 	const dialogRef = useOverlay(open, onClose, { autoFocus: false });
@@ -107,29 +116,53 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 	useEffect(() => {
 		if (!open) {
 			setQuery("");
-			setHighlight(0);
+			setHighlight(-1);
 		}
 	}, [open]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: retryNonce não é lido no corpo — é gatilho manual do botão "Tentar de novo".
 	useEffect(() => {
 		const trimmed = query.trim();
 		if (trimmed.length < 2) {
 			setResults([]);
+			setError(null);
 			setIsLoading(false);
 			return;
 		}
+		// A resposta de um termo antigo pode chegar depois da do termo atual:
+		// o cleanup marca a requisição como velha e ela é descartada.
+		let stale = false;
 		setIsLoading(true);
+		setError(null);
 		const handle = window.setTimeout(async () => {
-			const data = await searchToolsAction(trimmed);
-			setResults(data);
-			setIsLoading(false);
+			try {
+				const res = await searchToolsAction(trimmed);
+				if (stale) {
+					return;
+				}
+				setResults(res.ok ? res.data : []);
+				setError(res.ok ? null : res.error);
+			} catch {
+				if (!stale) {
+					setResults([]);
+					setError(SEARCH_FAILED);
+				}
+			} finally {
+				if (!stale) {
+					setIsLoading(false);
+				}
+			}
 		}, 300);
-		return () => window.clearTimeout(handle);
-	}, [query]);
+		return () => {
+			stale = true;
+			window.clearTimeout(handle);
+		};
+	}, [query, retryNonce]);
 
-	useEffect(() => {
-		setHighlight(0);
-	}, []);
+	function changeQuery(value: string) {
+		setQuery(value);
+		setHighlight(-1);
+	}
 
 	function handleInputKey(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.key === "ArrowDown" && results.length > 0) {
@@ -137,20 +170,21 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 			setHighlight((h) => (h + 1) % results.length);
 		} else if (e.key === "ArrowUp" && results.length > 0) {
 			e.preventDefault();
-			setHighlight((h) => (h - 1 + results.length) % results.length);
-		} else if (e.key === "Enter" && results.length > 0) {
-			e.preventDefault();
-			const picked = results[highlight];
+			setHighlight((h) => (h <= 0 ? results.length - 1 : h - 1));
+		} else if (e.key === "Enter") {
+			const term = query.trim();
+			const picked = highlight >= 0 ? results[highlight] : undefined;
 			if (picked) {
+				e.preventDefault();
 				addRecent(query);
 				router.push(`/product/${picked.slug}`);
 				onClose();
+			} else if (term) {
+				e.preventDefault();
+				addRecent(query);
+				router.push(catalogSearchHref(term));
+				onClose();
 			}
-		} else if (e.key === "Enter" && query.trim() && results.length === 0) {
-			e.preventDefault();
-			addRecent(query);
-			router.push(`/catalog?q=${encodeURIComponent(query.trim())}`);
-			onClose();
 		}
 	}
 
@@ -163,8 +197,10 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 		return null;
 	}
 
+	const term = query.trim();
 	const showEmpty =
-		query.trim().length >= 2 && !isLoading && results.length === 0;
+		term.length >= 2 && !isLoading && !error && results.length === 0;
+	const showError = term.length >= 2 && !isLoading && error !== null;
 
 	return (
 		<div className="fixed inset-0 z-100 flex items-start justify-center bg-black/60 pt-20">
@@ -187,7 +223,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 						aria-label="Busca"
 						autoFocus
 						className="flex-1 border-none font-normal text-[18px] outline-none"
-						onChange={(e) => setQuery(e.target.value)}
+						onChange={(e) => changeQuery(e.target.value)}
 						onKeyDown={handleInputKey}
 						placeholder="Buscar por produto, categoria ou SKU…"
 						value={query}
@@ -203,10 +239,9 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 
 				<div aria-live="polite" className="mt-4">
 					<span className="sr-only">
-						{!isLoading && query.trim().length >= 2 && results.length === 0
-							? "Nenhum resultado encontrado"
-							: ""}
-						{!isLoading && query.trim().length >= 2 && results.length > 0
+						{showEmpty ? "Nenhum resultado encontrado" : ""}
+						{showError ? error : ""}
+						{!isLoading && term.length >= 2 && results.length > 0
 							? `${results.length} resultado${results.length === 1 ? "" : "s"} encontrado${results.length === 1 ? "" : "s"}`
 							: ""}
 					</span>
@@ -229,7 +264,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 											<button
 												className="emach-chip"
 												key={r}
-												onClick={() => setQuery(r)}
+												onClick={() => changeQuery(r)}
 												type="button"
 											>
 												{r}
@@ -245,7 +280,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 										<button
 											className="emach-chip"
 											key={s}
-											onClick={() => setQuery(s)}
+											onClick={() => changeQuery(s)}
 											type="button"
 										>
 											{s}
@@ -276,19 +311,34 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 						</div>
 					)}
 
+					{showError && (
+						<div className="py-10 text-center">
+							<div className="font-display font-semibold text-[11px] text-emach-red uppercase tracking-[0.14em]">
+								Busca indisponível
+							</div>
+							<div className="mt-2 text-[15px] text-near-black">{error}</div>
+							<button
+								className="emach-ghost-btn mt-3 inline-flex min-h-11 items-center px-3 font-semibold text-[11px] text-near-black uppercase tracking-[0.14em]"
+								onClick={() => setRetryNonce((n) => n + 1)}
+								type="button"
+							>
+								Tentar de novo
+							</button>
+						</div>
+					)}
+
 					{!isLoading &&
 						results.map((r, i) => {
 							const active = i === highlight;
 							return (
 								<Link
 									className={cn(
-										"grid cursor-pointer grid-cols-[60px_1fr_auto] items-center gap-4 rounded-[2px] border-gray-10 border-b px-2 py-3 transition-colors",
+										"grid cursor-pointer grid-cols-[60px_1fr_auto] items-center gap-4 rounded-[2px] border-border border-b px-2 py-3 transition-colors hover:bg-gray-10",
 										active ? "bg-gray-10" : "bg-transparent"
 									)}
 									href={`/product/${r.slug}`}
 									key={r.id}
 									onClick={handleResultClick}
-									onMouseEnter={() => setHighlight(i)}
 								>
 									<div className="relative size-[60px] overflow-hidden rounded-[2px] bg-image-bg">
 										<ProductImage
@@ -304,12 +354,36 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
 											{highlightMatch(r.name, query)}
 										</div>
 									</div>
-									<div className="font-bold tabular-nums">
-										{fmtNumericBRL(r.defaultVariant.priceAmount)}
+									<div className="text-right tabular-nums">
+										<div className="font-bold">
+											{r.discountedCents === null
+												? fmtNumericBRL(r.defaultVariant.priceAmount)
+												: fmtBRL(r.discountedCents)}
+										</div>
+										{r.discountedCents !== null && (
+											<div className="text-[11px] text-gray-60 line-through">
+												<span className="sr-only">Preço original </span>
+												{fmtNumericBRL(r.defaultVariant.priceAmount)}
+											</div>
+										)}
 									</div>
 								</Link>
 							);
 						})}
+
+					{!isLoading && results.length > 0 && (
+						<Link
+							className="mt-2 flex min-h-11 items-center justify-between gap-4 px-2 font-display font-semibold text-[11px] text-near-black uppercase tracking-[0.14em] transition-colors hover:bg-gray-10"
+							href={catalogSearchHref(term)}
+							onClick={handleResultClick}
+						>
+							<span>Ver todos os resultados</span>
+							<span className="inline-flex items-center gap-1.5 text-gray-60">
+								{highlight < 0 && "Enter"}
+								<ArrowRight aria-hidden="true" className="size-3.5" />
+							</span>
+						</Link>
+					)}
 				</div>
 			</div>
 		</div>
