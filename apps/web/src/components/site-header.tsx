@@ -116,7 +116,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
 						<Search className="size-6" />
 					</button>
 					<button
-						aria-label={`Carrinho com ${totalCount} itens`}
+						aria-label={`Carrinho com ${totalCount} ${totalCount === 1 ? "item" : "itens"}`}
 						className="flex cursor-pointer items-center p-2.5 text-white/80 hover:text-white focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
 						onClick={() => {
 							setMenuOpen(false);

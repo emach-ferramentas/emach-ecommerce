@@ -12,7 +12,7 @@ export function DashboardChromeSkeleton() {
 		<main className="grid h-[calc(100vh-3.5rem)] w-full grid-cols-1 md:grid-cols-[260px_1fr]">
 			<aside className="hidden h-full flex-col border-black border-r-2 bg-near-black pt-8 text-white md:flex">
 				<div className="flex items-center gap-3 border-white/10 border-b px-[22px] pb-[22px]">
-					<div className="size-[42px] shrink-0 rounded-full bg-white/10" />
+					<div className="size-[42px] shrink-0 rounded-[2px] bg-white/10" />
 					<div className="min-w-0 flex-1 space-y-2">
 						<div className="h-3.5 w-28 rounded-[2px] bg-white/10" />
 						<div className="h-2.5 w-36 max-w-full rounded-[2px] bg-white/[0.06]" />

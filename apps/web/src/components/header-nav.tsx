@@ -2,7 +2,7 @@
 
 import { cn } from "@emach/ui/lib/utils";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useSectionInView } from "@/lib/use-section-in-view";
 
 const navLinks: {
@@ -14,10 +14,17 @@ const navLinks: {
 	{ href: "/sobre#filiais", label: "Filiais" },
 ];
 
+// Subpágina marca a seção pai (/catalog/eletricas → "Catálogo"). Link com hash
+// só casa exato, pra "Sobre" e "Filiais" não acenderem juntos.
+export function isNavActive(href: string, activeHref: string): boolean {
+	if (href === activeHref) {
+		return true;
+	}
+	return !href.includes("#") && activeHref.startsWith(`${href}/`);
+}
+
 export function HeaderNav() {
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
-	const currentCat = searchParams.get("cat");
 	// Scroll-spy: em /sobre, "Filiais" marca enquanto a seção #filiais está na tela.
 	const filiaisInView = useSectionInView("filiais", pathname === "/sobre");
 	const activeHref =
@@ -29,7 +36,7 @@ export function HeaderNav() {
 			className="flex items-center gap-[22px]"
 		>
 			{navLinks.map((link) => {
-				const active = link.href === activeHref && !currentCat;
+				const active = isNavActive(link.href, activeHref);
 				return (
 					<Link
 						aria-current={active ? "page" : undefined}

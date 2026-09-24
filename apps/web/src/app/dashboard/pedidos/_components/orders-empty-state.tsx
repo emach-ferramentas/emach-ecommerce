@@ -1,6 +1,5 @@
 import { PackageOpen } from "lucide-react";
-import Link from "next/link";
-import { EmachButton } from "@/components/emach-button";
+import { EmachLinkButton } from "@/components/emach-button";
 
 interface OrdersEmptyStateProps {
 	statusLabel: string;
@@ -16,11 +15,9 @@ export function OrdersEmptyState({ statusLabel }: OrdersEmptyStateProps) {
 		<div className="flex flex-col items-center justify-center border border-border bg-gray-10 px-6 py-16 text-center">
 			<PackageOpen className="mb-4 h-12 w-12 text-gray-60" strokeWidth={1.2} />
 			<p className="mb-6 text-[15px] text-gray-60">{text}</p>
-			<Link href="/catalog">
-				<EmachButton size="sm" variant="outline">
-					Ir ao catálogo
-				</EmachButton>
-			</Link>
+			<EmachLinkButton href="/catalog" size="sm" variant="outline">
+				Ir ao catálogo
+			</EmachLinkButton>
 		</div>
 	);
 }

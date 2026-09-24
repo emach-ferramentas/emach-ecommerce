@@ -1,6 +1,8 @@
 import { cn } from "@emach/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 
 // Pressão = afunda 1px + escurece, em 75ms (o release volta nos 180ms do hover).
 // Sem :active o toque não devolve nada — em mobile não existe hover pra suprir.
@@ -73,6 +75,38 @@ export function EmachButton({
 			)}
 			{children}
 		</button>
+	);
+}
+
+interface EmachLinkButtonProps
+	extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">,
+		VariantProps<typeof emachButtonVariants> {
+	href: Route;
+	icon?: React.ReactNode;
+}
+
+// CTA que navega: o próprio <a> recebe o visual do EmachButton. Envolver
+// <EmachButton> num <Link> aninha <button> em <a> (HTML inválido, duas paradas
+// de foco e "link, botão" no leitor de tela).
+export function EmachLinkButton({
+	children,
+	variant,
+	size,
+	full,
+	icon,
+	className,
+	href,
+	...props
+}: EmachLinkButtonProps) {
+	return (
+		<Link
+			{...props}
+			className={cn(emachButtonVariants({ variant, size, full }), className)}
+			href={href}
+		>
+			{icon}
+			{children}
+		</Link>
 	);
 }
 

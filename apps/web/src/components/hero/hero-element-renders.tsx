@@ -12,11 +12,10 @@ import { type MotionValue, m } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
-	EmachButton,
+	EmachLinkButton,
 	type emachButtonVariants,
 } from "@/components/emach-button";
 import type { ElementKey } from "@/lib/composition/composition-schema";
@@ -65,20 +64,16 @@ function HeroCta({
 	const style = CTA_VARIANT_MAP[banner.ctaVariant];
 	return (
 		// ctaHref vem como string do banco; typedRoutes não valida em runtime.
-		<Link
-			className={cn("inline-flex", full && "flex w-full")}
+		<EmachLinkButton
+			className={cn(style.className, full && "flex")}
+			full={full}
 			href={banner.ctaHref as Route}
+			icon={<ArrowRight className="size-4" />}
+			size="lg"
+			variant={style.variant}
 		>
-			<EmachButton
-				className={style.className}
-				full={full}
-				icon={<ArrowRight className="size-4" />}
-				size="lg"
-				variant={style.variant}
-			>
-				{banner.ctaLabel}
-			</EmachButton>
-		</Link>
+			{banner.ctaLabel}
+		</EmachLinkButton>
 	);
 }
 

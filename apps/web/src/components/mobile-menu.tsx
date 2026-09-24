@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { isNavActive } from "@/components/header-nav";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useOverlay } from "@/lib/use-overlay";
 import { useSectionInView } from "@/lib/use-section-in-view";
@@ -68,7 +69,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 		>
 			<nav className="mt-2 flex flex-col">
 				{NAV_LINKS.map((link, i) => {
-					const active = link.href === activeHref;
+					const active = isNavActive(link.href, activeHref);
 					return (
 						<div
 							className="fade-in slide-in-from-bottom-3 animate-in fill-mode-both duration-400 ease-out motion-reduce:animate-none"

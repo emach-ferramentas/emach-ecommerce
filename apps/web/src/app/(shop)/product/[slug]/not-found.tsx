@@ -1,6 +1,4 @@
-import Link from "next/link";
-
-import { EmachButton } from "@/components/emach-button";
+import { EmachLinkButton } from "@/components/emach-button";
 import { PageContainer } from "@/components/page-container";
 import { SiteHeader } from "@/components/site-header";
 
@@ -11,6 +9,7 @@ export default function ProductNotFound() {
 			<PageContainer
 				as="main"
 				className="flex flex-col items-center py-32 text-center"
+				id="main-content"
 			>
 				<div className="font-display font-semibold text-[11px] text-emach-red uppercase tracking-[0.14em]">
 					Produto indisponível
@@ -23,16 +22,12 @@ export default function ProductNotFound() {
 					catálogo completo para encontrar alternativas.
 				</p>
 				<div className="mt-8 flex gap-3">
-					<Link href="/catalog">
-						<EmachButton size="lg" variant="primary">
-							Ver catálogo
-						</EmachButton>
-					</Link>
-					<Link href="/">
-						<EmachButton size="lg" variant="outline">
-							Página inicial
-						</EmachButton>
-					</Link>
+					<EmachLinkButton href="/catalog" size="lg" variant="primary">
+						Ver catálogo
+					</EmachLinkButton>
+					<EmachLinkButton href="/" size="lg" variant="outline">
+						Página inicial
+					</EmachLinkButton>
 				</div>
 			</PageContainer>
 		</>

@@ -1,9 +1,8 @@
 import { CircleCheckBig } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 
-import { EmachButton } from "@/components/emach-button";
+import { EmachLinkButton } from "@/components/emach-button";
 import { PageContainer } from "@/components/page-container";
 import { SiteHeader } from "@/components/site-header";
 
@@ -47,16 +46,12 @@ export default function CheckoutSuccessPage({
 					<OrderNumber searchParams={searchParams} />
 				</Suspense>
 				<div className="mt-8 flex gap-3">
-					<Link href="/catalog">
-						<EmachButton size="lg" variant="primary">
-							Continuar comprando
-						</EmachButton>
-					</Link>
-					<Link href="/">
-						<EmachButton size="lg" variant="outline">
-							Página inicial
-						</EmachButton>
-					</Link>
+					<EmachLinkButton href="/catalog" size="lg" variant="primary">
+						Continuar comprando
+					</EmachLinkButton>
+					<EmachLinkButton href="/" size="lg" variant="outline">
+						Página inicial
+					</EmachLinkButton>
 				</div>
 			</PageContainer>
 		</>

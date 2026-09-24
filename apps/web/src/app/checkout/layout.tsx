@@ -15,7 +15,9 @@ export default function CheckoutLayout({
 		<div className="flex min-h-screen flex-col">
 			<CheckoutHeader />
 			<DemoBanner />
-			<div className="flex-1">{children}</div>
+			<main className="flex-1" id="main-content">
+				{children}
+			</main>
 			<CheckoutFooter />
 		</div>
 	);

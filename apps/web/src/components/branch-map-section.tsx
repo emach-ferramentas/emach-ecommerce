@@ -1,7 +1,6 @@
 import { cacheLife } from "next/cache";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { EmachButton } from "@/components/emach-button";
+import { EmachLinkButton } from "@/components/emach-button";
 import { PageContainer } from "@/components/page-container";
 import { SectionLabel } from "@/components/section-label";
 import { BRAZIL_STATES, BRAZIL_VIEWBOX } from "@/lib/branch-map/brazil-states";
@@ -95,11 +94,9 @@ export async function BranchMapSection() {
 						Sul e Sudeste.
 					</p>
 					<div className="mt-1">
-						<Link href="/sobre">
-							<EmachButton size="lg" variant="outline-light">
-								Ver filiais →
-							</EmachButton>
-						</Link>
+						<EmachLinkButton href="/sobre" size="lg" variant="outline-light">
+							Ver filiais →
+						</EmachLinkButton>
 					</div>
 				</div>
 

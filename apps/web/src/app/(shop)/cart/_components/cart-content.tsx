@@ -2,10 +2,9 @@
 
 import { Separator } from "@emach/ui/components/separator";
 import { Lock, ShoppingBag } from "lucide-react";
-import Link from "next/link";
 
 import { CartItemRow } from "@/components/cart-item-row";
-import { EmachButton } from "@/components/emach-button";
+import { EmachLinkButton } from "@/components/emach-button";
 import { PageContainer } from "@/components/page-container";
 import { SectionLabel } from "@/components/section-label";
 import { useCart } from "@/lib/cart-context";
@@ -39,11 +38,14 @@ export function CartContent() {
 					Explore nosso catálogo e encontre as ferramentas certas para o seu
 					trabalho.
 				</p>
-				<Link className="mt-7 inline-block" href="/catalog">
-					<EmachButton size="lg" variant="primary">
-						Ver catálogo
-					</EmachButton>
-				</Link>
+				<EmachLinkButton
+					className="mt-7"
+					href="/catalog"
+					size="lg"
+					variant="primary"
+				>
+					Ver catálogo
+				</EmachLinkButton>
 			</PageContainer>
 		);
 	}
@@ -109,16 +111,24 @@ export function CartContent() {
 							ou {INSTALLMENTS}× de {fmtBRL(total / INSTALLMENTS)} sem juros
 						</div>
 
-						<Link className="mt-5 block" href="/checkout">
-							<EmachButton full size="lg" variant="primary">
-								Finalizar compra
-							</EmachButton>
-						</Link>
-						<Link className="mt-2 block" href="/catalog">
-							<EmachButton full size="md" variant="ghost-light">
-								Continuar comprando
-							</EmachButton>
-						</Link>
+						<EmachLinkButton
+							className="mt-5 flex"
+							full
+							href="/checkout"
+							size="lg"
+							variant="primary"
+						>
+							Finalizar compra
+						</EmachLinkButton>
+						<EmachLinkButton
+							className="mt-2 flex"
+							full
+							href="/catalog"
+							size="md"
+							variant="ghost-light"
+						>
+							Continuar comprando
+						</EmachLinkButton>
 					</div>
 
 					<div className="mt-5 flex items-center gap-2 text-[12px] text-gray-60">
