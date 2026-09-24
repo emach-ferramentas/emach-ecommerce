@@ -31,7 +31,7 @@ function CheckoutPageSkeleton() {
 // Conteúdo que lê a sessão (headers) — sob Suspense por exigência do
 // cacheComponents. Guarda P0 no topo, antes de qualquer dado sensível.
 async function CheckoutPageContent() {
-	const session = await requireCurrentClient();
+	const session = await requireCurrentClient("/checkout");
 	const [addresses, clientRow] = await Promise.all([
 		db
 			.select()

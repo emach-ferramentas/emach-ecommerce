@@ -3,11 +3,19 @@
 import { cn } from "@emach/ui/lib/utils";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { signOut } from "@/lib/auth-client";
+import { useSignOut } from "@/lib/use-sign-out";
 import { AccountAvatar } from "./account-avatar";
 import { NAV_ITEMS } from "./nav-items";
+
+// "/dashboard" é prefixo de todas as outras rotas da conta, então só casa exato.
+export function isAccountNavActive(pathname: string, href: string): boolean {
+	if (pathname === href) {
+		return true;
+	}
+	return href !== "/dashboard" && pathname.startsWith(`${href}/`);
+}
 
 interface DashboardSidebarProps {
 	userEmail: string;
@@ -21,12 +29,7 @@ export function DashboardSidebar({
 	userName,
 }: DashboardSidebarProps) {
 	const pathname = usePathname();
-	const router = useRouter();
-
-	const handleSignOut = async () => {
-		await signOut();
-		router.push("/");
-	};
+	const handleSignOut = useSignOut();
 
 	return (
 		<aside className="hidden h-full flex-col border-black border-r-2 bg-near-black pt-8 text-white md:flex">
@@ -50,9 +53,10 @@ export function DashboardSidebar({
 			<nav aria-label="Navegação da conta" className="flex flex-1 flex-col">
 				{NAV_ITEMS.map((item) => {
 					if (item.kind === "link") {
-						const active = pathname === item.href;
+						const active = isAccountNavActive(pathname, item.href);
 						return (
 							<Link
+								aria-current={active ? "page" : undefined}
 								className={cn(
 									"block border-transparent border-l-[3px] px-[22px] py-3 font-semibold text-[13px] tracking-[0.04em]",
 									active

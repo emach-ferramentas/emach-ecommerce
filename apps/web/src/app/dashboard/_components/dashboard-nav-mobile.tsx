@@ -4,6 +4,7 @@ import { cn } from "@emach/ui/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
+import { isAccountNavActive } from "./dashboard-sidebar";
 import { NAV_ITEMS } from "./nav-items";
 
 export function DashboardNavMobile() {
@@ -16,9 +17,10 @@ export function DashboardNavMobile() {
 		>
 			{NAV_ITEMS.map((item) => {
 				if (item.kind === "link") {
-					const active = pathname === item.href;
+					const active = isAccountNavActive(pathname, item.href);
 					return (
 						<Link
+							aria-current={active ? "page" : undefined}
 							className={cn(
 								"inline-flex min-h-11 items-center whitespace-nowrap border-transparent border-b-[3px] px-3 font-semibold text-[13px] tracking-[0.04em]",
 								active

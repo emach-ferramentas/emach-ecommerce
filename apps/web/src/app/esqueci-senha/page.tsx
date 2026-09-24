@@ -4,6 +4,7 @@ import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { toast } from "sonner";
 import z from "zod";
+import { AuthHomeLogo } from "@/app/login/_components/auth-home-logo";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { authClient } from "@/lib/auth-client";
 
@@ -37,6 +38,7 @@ export default function ForgotPasswordPage() {
 	return (
 		<main className="flex min-h-svh items-center justify-center bg-gray-10 px-6 py-20">
 			<div className="w-full max-w-[400px]">
+				<AuthHomeLogo className="mb-10 h-8" tone="red" />
 				<h1 className="font-display font-medium text-[32px] text-near-black leading-tight">
 					Esqueci a senha
 				</h1>

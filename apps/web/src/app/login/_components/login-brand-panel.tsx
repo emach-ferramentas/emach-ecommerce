@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useIsDesktop } from "@/lib/use-is-desktop";
+import { AuthHomeLogo } from "./auth-home-logo";
 
 const PRODUCTS = [
 	"/images/hero-imagens/emach_hero_01_product.png",
@@ -174,14 +175,7 @@ export function LoginBrandPanel() {
 				)}
 
 				{/* Logo — top-left (sempre renderizado: SVG leve) */}
-				<Image
-					alt="EMACH"
-					className="relative z-20 h-10 w-auto self-start"
-					height={377}
-					priority
-					src="/emach-logo.svg"
-					width={2041}
-				/>
+				<AuthHomeLogo className="relative z-20 h-10 self-start" tone="white" />
 
 				{/* Impact phrase — bottom-left */}
 				<div className="relative z-20">

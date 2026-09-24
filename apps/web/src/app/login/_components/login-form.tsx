@@ -19,27 +19,38 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
-import Loader from "@/components/loader";
 import { authClient } from "@/lib/auth-client";
+import { safeRedirect } from "@/lib/safe-redirect";
+import { AuthHomeLogo } from "./auth-home-logo";
 import { LoginBrandPanel } from "./login-brand-panel";
+import { LoginFallback } from "./login-fallback";
 import { PasswordInput } from "./password-input";
 
 const TRIGGER_CLASS =
 	"h-auto flex-1 whitespace-nowrap border-none px-0 py-3.5 font-semibold text-[14px] text-gray-60 hover:text-near-black data-active:text-near-black focus-visible:ring-0 focus-visible:border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emach-red";
 
-function sanitizeRedirect(raw: string | null): string {
-	if (!raw?.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) {
-		return "/dashboard";
-	}
-	return raw;
-}
+// Códigos que o Better Auth anexa ao `errorCallbackURL` do login social.
+const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+	access_denied:
+		"Login com Google cancelado. Tente de novo ou entre com e-mail e senha.",
+	account_not_linked:
+		"Este e-mail já tem cadastro com senha e ainda não foi confirmado. Entre com e-mail e senha ou confirme o e-mail antes de usar o Google.",
+};
+const GOOGLE_ERROR_FALLBACK =
+	"Não foi possível entrar com o Google. Tente de novo ou entre com e-mail e senha.";
 
 export function LoginForm() {
-	const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
-	const [isGooglePending, setIsGooglePending] = useState(false);
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const redirectTo = sanitizeRedirect(searchParams.get("redirect"));
+	const [mode, setMode] = useState<"sign-in" | "sign-up">(() =>
+		searchParams.get("modo") === "cadastro" ? "sign-up" : "sign-in"
+	);
+	const [isGooglePending, setIsGooglePending] = useState(false);
+	const redirectTo = safeRedirect(searchParams.get("redirect"), "/dashboard");
+	const googleErrorCode = searchParams.get("error");
+	const googleError = googleErrorCode
+		? (GOOGLE_ERROR_MESSAGES[googleErrorCode] ?? GOOGLE_ERROR_FALLBACK)
+		: null;
 	const { data: session, isPending } = authClient.useSession();
 
 	useEffect(() => {
@@ -53,6 +64,7 @@ export function LoginForm() {
 		try {
 			const result = await authClient.signIn.social({
 				callbackURL: redirectTo,
+				errorCallbackURL: `/login?${new URLSearchParams({ redirect: redirectTo })}`,
 				provider: "google",
 			});
 
@@ -67,10 +79,14 @@ export function LoginForm() {
 	};
 
 	const signInForm = useForm({
-		defaultValues: { email: "", password: "" },
+		defaultValues: { email: "", password: "", rememberMe: true },
 		onSubmit: async ({ value }) => {
 			await authClient.signIn.email(
-				{ email: value.email, password: value.password },
+				{
+					email: value.email,
+					password: value.password,
+					rememberMe: value.rememberMe,
+				},
 				{
 					onSuccess: () => {
 						router.push(redirectTo as Route);
@@ -86,6 +102,7 @@ export function LoginForm() {
 			onSubmit: z.object({
 				email: z.email("E-mail inválido"),
 				password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+				rememberMe: z.boolean(),
 			}),
 		},
 	});
@@ -99,11 +116,14 @@ export function LoginForm() {
 		},
 		onSubmit: async ({ value }) => {
 			const payload: {
+				callbackURL: string;
 				email: string;
 				password: string;
 				name: string;
 				phone?: string;
 			} = {
+				// O link do e-mail de confirmação volta para cá, não para "/".
+				callbackURL: redirectTo,
 				email: value.email,
 				password: value.password,
 				name: value.name,
@@ -135,11 +155,7 @@ export function LoginForm() {
 	});
 
 	if (isPending || session?.user) {
-		return (
-			<main className="flex h-svh items-center justify-center bg-near-black">
-				<Loader />
-			</main>
-		);
+		return <LoginFallback />;
 	}
 
 	return (
@@ -149,14 +165,15 @@ export function LoginForm() {
 			<div className="flex items-center justify-center bg-gray-10 px-6 py-12 sm:px-10 sm:py-16 lg:py-20">
 				<div className="flex w-full flex-col items-center justify-center md:w-2/3">
 					{/* Logo vermelho acima do form — só no mobile (no desktop o logo vive no painel esquerdo) */}
-					<Image
-						alt="EMACH"
-						className="mb-8 h-9 w-auto lg:hidden"
-						height={377}
-						priority
-						src="/emach-logo-red.svg"
-						width={2041}
-					/>
+					<AuthHomeLogo className="mb-8 h-9 lg:hidden" tone="red" />
+					{googleError && (
+						<p
+							className="mb-6 w-full border border-emach-red-hover/30 bg-[#FFF5F5] px-4 py-3 text-[13px] text-emach-red-hover leading-snug"
+							role="alert"
+						>
+							{googleError}
+						</p>
+					)}
 					<Tabs
 						className="w-full gap-0"
 						onValueChange={(v) => setMode(v as "sign-in" | "sign-up")}
@@ -236,13 +253,24 @@ export function LoginForm() {
 								</signInForm.Field>
 
 								<div className="flex items-center justify-between">
-									<label
-										className="flex cursor-pointer items-center gap-2 text-sm"
-										htmlFor="remember-me"
-									>
-										<Checkbox id="remember-me" />
-										Lembrar de mim
-									</label>
+									<signInForm.Field name="rememberMe">
+										{(field) => (
+											<label
+												className="flex cursor-pointer items-center gap-2 text-sm"
+												htmlFor="remember-me"
+											>
+												<Checkbox
+													checked={field.state.value}
+													id="remember-me"
+													name={field.name}
+													onCheckedChange={(checked) =>
+														field.handleChange(checked)
+													}
+												/>
+												Lembrar de mim
+											</label>
+										)}
+									</signInForm.Field>
 									<Link
 										className="emach-ghost-btn font-semibold text-emach-red-hover text-sm"
 										href={{ pathname: "/esqueci-senha" }}

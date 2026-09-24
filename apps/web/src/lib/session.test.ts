@@ -52,6 +52,23 @@ describe("requireCurrentClient", () => {
 		expect(redirect).toHaveBeenCalledWith("/login");
 	});
 
+	it("preserva o caminho de retorno no mesmo parâmetro que o proxy usa", async () => {
+		getSession.mockResolvedValue(null);
+		await expect(
+			requireCurrentClient("/dashboard/pedidos/abc?aba=itens")
+		).rejects.toThrow(
+			"NEXT_REDIRECT:/login?redirect=%2Fdashboard%2Fpedidos%2Fabc%3Faba%3Ditens"
+		);
+	});
+
+	it("ignora caminho de retorno inseguro e cai no /login puro", async () => {
+		getSession.mockResolvedValue(null);
+		await expect(requireCurrentClient("/\t/evil.com")).rejects.toThrow(
+			"NEXT_REDIRECT:/login"
+		);
+		expect(redirect).toHaveBeenCalledWith("/login");
+	});
+
 	it("retorna a sessão e não redireciona quando o cliente está logado", async () => {
 		getSession.mockResolvedValue(fakeSession);
 		const session = await requireCurrentClient();

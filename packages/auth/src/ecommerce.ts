@@ -110,6 +110,9 @@ export const authEcommerce = betterAuth({
 		minPasswordLength: 8,
 		requireEmailVerification: false,
 		autoSignIn: true,
+		// Quem redefine a senha por suspeita de invasão espera derrubar a sessão
+		// do invasor. O default do Better Auth mantém as sessões abertas.
+		revokeSessionsOnPasswordReset: true,
 		sendResetPassword: async ({ user, url }) => {
 			await sendEmail({
 				to: user.email,

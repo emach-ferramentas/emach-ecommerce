@@ -78,7 +78,7 @@ async function OrderConfirmationContent({
 	params: Promise<{ number: string }>;
 }) {
 	const { number } = await params;
-	const session = await requireCurrentClient();
+	const session = await requireCurrentClient(`/pedidos/${number}`);
 
 	const orderRows = await db
 		.select()

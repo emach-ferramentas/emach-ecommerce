@@ -2,13 +2,13 @@
 
 import { cn } from "@emach/ui/lib/utils";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { toast } from "sonner";
 import { isNavActive } from "@/components/header-nav";
-import { signOut, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { useOverlay } from "@/lib/use-overlay";
 import { useSectionInView } from "@/lib/use-section-in-view";
+import { useSignOut } from "@/lib/use-sign-out";
 
 interface MobileMenuProps {
 	onClose: () => void;
@@ -27,7 +27,7 @@ const NAV_LINKS: {
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
 	const { data: session } = useSession();
 	const pathname = usePathname();
-	const router = useRouter();
+	const signOut = useSignOut();
 	// Esc, focus-trap, scroll-lock e restauração de foco vêm do hook.
 	const panelRef = useOverlay(open, onClose);
 	// Scroll-spy: em /sobre, "Filiais" marca enquanto a seção #filiais está na tela.
@@ -50,9 +50,6 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 	async function handleSignOut() {
 		onClose();
 		await signOut();
-		toast.success("Sessão encerrada");
-		router.push("/");
-		router.refresh();
 	}
 
 	const activeHref =
@@ -125,7 +122,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 					<div className="flex items-center gap-4 font-display text-[16px] uppercase tracking-[0.08em]">
 						<Link
 							className="text-white/80 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-							href="/login"
+							href={{ pathname: "/login", query: { redirect: pathname } }}
 							onClick={onClose}
 						>
 							Entrar
@@ -135,7 +132,10 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 						</span>
 						<Link
 							className="text-white/80 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-							href="/login"
+							href={{
+								pathname: "/login",
+								query: { modo: "cadastro", redirect: pathname },
+							}}
 							onClick={onClose}
 						>
 							Criar conta

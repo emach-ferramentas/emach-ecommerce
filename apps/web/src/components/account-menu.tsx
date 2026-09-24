@@ -13,9 +13,9 @@ import {
 } from "@emach/ui/components/dropdown-menu";
 import { LogOut, Package, User, UserCog } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { signOut, useSession } from "@/lib/auth-client";
+import { usePathname } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import { useSignOut } from "@/lib/use-sign-out";
 
 const WHITESPACE_RE = /\s+/;
 
@@ -28,26 +28,20 @@ function getInitials(name: string) {
 
 export function AccountMenu() {
 	const { data: session, isPending } = useSession();
-	const router = useRouter();
+	const pathname = usePathname();
+	const handleSignOut = useSignOut();
 
 	if (isPending || !session?.user) {
 		return (
 			<Link
 				aria-label="Conta"
 				className="flex size-8 items-center justify-center rounded-[2px] border-[1.5px] border-gray-500/50 text-white/80 transition-colors hover:border-white/70 hover:text-white"
-				href="/login"
+				href={{ pathname: "/login", query: { redirect: pathname } }}
 			>
 				<User className="size-4.5" />
 			</Link>
 		);
 	}
-
-	const handleSignOut = async () => {
-		await signOut();
-		toast.success("Sessão encerrada");
-		router.push("/");
-		router.refresh();
-	};
 
 	return (
 		<DropdownMenu>
