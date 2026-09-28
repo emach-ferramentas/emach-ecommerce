@@ -1,5 +1,7 @@
 # Seção "Onde estamos" — Implementation Plan
 
+> **Status em 2026-09-28:** implementado. Todos os arquivos da tabela "File Structure" existem em `apps/web/src/lib/branch-map/`, `apps/web/src/lib/branches.ts` e `apps/web/src/components/branch-map*.tsx`, e `page.tsx:209` monta `BranchMapSection`. Os trechos de código dos passos são o rascunho original: o componente evoluiu depois (mapa como `<img>` com data URI, destaque em ciclo automático, copy nova) e `formatBusinessHours` foi substituída por `getBusinessHoursRows` (spec `2026-07-06-filiais-intervalo-almoco-design.md`).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Substituir a seção mock "Feito para durar" (6 stats inventados) na home por "Onde estamos": mapa do Brasil georreferenciado com um pin por filial na coordenada real, lista navegável com scroll, hover-sync mapa↔lista↔estado e click → Google Maps.
@@ -14,7 +16,7 @@
 
 - Home: `apps/web/src/app/(shop)/page.tsx`. A seção a remover está em `:173-217`; a constante `STATS` em `:22-29`; `cn` é importado em `:7` e usado **apenas** no map de STATS.
 - Filiais: tabela `branch` (`@emach/db/schema/inventory`). `status='active'`. Campos relevantes: `name, city, state, cep, street, streetNumber, neighborhood, phone, businessHours`.
-- Já existe `getBranches()` + formatters (`formatCep`, `formatPhone`, `formatBusinessHours`, `formatBranchAddress`) em `apps/web/src/app/(shop)/sobre/page.tsx:67-204`. Vamos **extrair** isso pra um módulo compartilhado (DRY) e a `/sobre` passa a importar.
+- Já existe `getBranches()` + formatters (`formatCep`, `formatPhone`, `formatBusinessHours`, `formatBranchAddress`) em `apps/web/src/app/(shop)/sobre/page.tsx:67-204`. _Nota 2026-09-28: `formatBusinessHours` não existe mais; foi trocada por `formatBusinessPeriod` e `getBusinessHoursRows` em `lib/branches.ts`._ Vamos **extrair** isso pra um módulo compartilhado (DRY) e a `/sobre` passa a importar.
 - `BranchBusinessHours` é o tipo em `@emach/db/schema/inventory`.
 - Componentes a reusar: `SectionLabel` (`tone="accent"|"light"`), `EmachButton` (`variant="outline-light"`, `size="lg"`), `PageContainer`. Fonte display = classe `font-display` (Barlow Condensed). Token `--emach-red` (#DA291C), `bg-gray-10`.
 - Logging: `import { log } from "@/lib/evlog"` — nunca `console`.
@@ -420,6 +422,8 @@ git commit -m "feat: módulo compartilhado de filiais (query + formatters)"
 
 ## Task 4: `branch-map.tsx` — Client Component interativo
 
+_Nota 2026-09-28: o código real difere do rascunho abaixo em três pontos: base do mapa em `<img>` com data URI (`lib/branch-map/map-svg.ts`), ciclo automático de destaque (`CYCLE_MS = 2200`) e rolagem da lista por `scrollTo`. Ver `apps/web/src/components/branch-map.tsx`._
+
 **Files:**
 - Create: `apps/web/src/components/branch-map.tsx`
 
@@ -578,6 +582,8 @@ git commit -m "feat: client component do mapa de filiais (hover-sync + scroll)"
 ---
 
 ## Task 5: `branch-map-section.tsx` — Server Component
+
+_Nota 2026-09-28: a copy do passo foi trocada em produção (PR #78): headline "Encontre a filial mais perto de você." e parágrafo com a contagem de filiais vinda de `pins.length`._
 
 **Files:**
 - Create: `apps/web/src/components/branch-map-section.tsx`

@@ -1,7 +1,8 @@
 # Checkout — modernização e alinhamento ao design system
 
+> **Status em 2026-09-28:** implementado. `apps/web/src/app/checkout/layout.tsx` monta `CheckoutHeader` (logo SVG + "Pagamento Seguro"), `DemoBanner` e `CheckoutFooter`; `checkout-content.tsx` usa grid `lg:grid-cols-[1fr_380px]`, resumo sticky, `.emach-input`/`.emach-select` e `EmachButton`. O `DemoBanner` continua porque o pagamento real segue pendente.
+
 **Data:** 2026-06-08
-**Status:** implementado. Evidência: `apps/web/src/app/checkout/layout.tsx` monta `CheckoutHeader` (logo SVG + "Pagamento Seguro"), `DemoBanner` e `CheckoutFooter`.
 **Rota afetada:** `/checkout` (`apps/web/src/app/checkout/`)
 
 ## Problema
@@ -67,6 +68,8 @@ app/checkout/
     SiteFooter).
   - Centralizado, padding responsivo.
 
+  _Nota 2026-09-28: o `checkout-footer.tsx` atual mostra o logo vermelho (link para `/`), o CNPJ e "© 2026 EMACH" (com `©` em `text-emach-red-on-dark`), sem o selo "Compra 100% segura" nem a razão social, e alinha em linha a partir de `sm`, não centralizado._
+
 - **`DemoBanner`** (mover de `page.tsx` p/ `layout.tsx` ou manter helper): restiliza
   tracking/cores ao design system; mantém `bg-near-black`, `<AlertTriangle>` amber.
 
@@ -104,6 +107,8 @@ app/checkout/
 - Não tocar em lógica de pedido/frete/cupom/validação.
 - `/checkout/success` (vive em `(shop)`): chrome diferente. **Follow-up sugerido**
   (não nesta entrega): alinhar ao mesmo chrome slim para o fluxo ficar coerente.
+
+  _Nota 2026-09-28: follow-up não feito; `app/(shop)/checkout/success/page.tsx` ainda usa `SiteHeader`._
 
 ## Verificação
 

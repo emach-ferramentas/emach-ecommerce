@@ -1,5 +1,7 @@
 # Estoque multi-filial — Plano de implementação
 
+> **Status em 2026-09-28:** implementado. As tasks 1 a 5 estão no código e nos ADRs: `checkAggregateStock` em `apps/web/src/app/checkout/_lib/place-order.ts:477`, `branchId: null` no insert do pedido, `lib/default-branch.ts` removido (`a096c28`, `0149a44`), `docs/adr/0003-estoque-multi-filial.md` criado e ADR-0001 marcado superseded. O débito na transição `pending_payment → paid` continua fora do código (`confirmPayment` não existe).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Tirar débito de estoque do storefront em `pending_payment` (viola contrato compartilhado). Validação no checkout vira otimista (`SUM(stock_level.quantity) >= total` por variante), `order.branch_id = NULL`, nenhum `stock_movement` criado. Débito real fica para a futura integração de pagamento (issue separado), na transição `pending_payment → paid` — escopo dela, não deste plano.
@@ -834,6 +836,8 @@ Esperado: todos os testes passam (não só os de checkout).
 
 - [ ] **Step 6.3: Auditoria de queries de catálogo (spec exige)**
 
+_Nota 2026-09-28: `packages/db/src/queries/catalog.ts` não existe mais; as funções estão em `queries/tools.ts` (`getTools`, `getToolBySlug`) e `queries/promotions.ts` (`getActivePromotions`). O `grep` acima precisa apontar para esses arquivos._
+
 ```bash
 grep -n "SUM(sl.quantity)\|SUM(\${stockLevel" packages/db/src/queries/catalog.ts
 ```
@@ -899,7 +903,7 @@ Recomendar abrir issue separado para "Integração de pagamento + `confirmPaymen
 
 ## Non-goals (não fazer neste plano)
 
-- **NÃO** mexer em `packages/db/src/queries/catalog.ts` (já agrega corretamente).
+- **NÃO** mexer em `packages/db/src/queries/catalog.ts` (já agrega corretamente). _Nota 2026-09-28: hoje `queries/tools.ts` e `queries/promotions.ts`._
 - **NÃO** mexer em schemas Drizzle (`order.branch_id` e `stock_movement.branch_id` já são nullable).
 - **NÃO** gerar migration nova (sem mudança de schema).
 - **NÃO** criar feature flag — sequenciamento manual (dashboard primeiro) é suficiente.

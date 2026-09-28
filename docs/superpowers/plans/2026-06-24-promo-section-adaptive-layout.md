@@ -1,5 +1,7 @@
 # Layout adaptativo da seção de promoção — Plano de Implementação
 
+> **Status em 2026-09-28:** implementado. Existem `apps/web/src/lib/promo-card-helpers.ts` e o teste ao lado, `promo-product-card.tsx`, o `tone="light"` de `product-rating.tsx:8`, o switch por contagem em `promo-highlight.tsx` e o gate `>= 2` em `apps/web/src/app/(shop)/page.tsx`. Os checkboxes ficam como estavam no plano original.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A seção de promoção da home renderiza layouts editoriais distintos para 2, 3 e 4 produtos (e some com menos de 2), reusando a estética atual e os dados que o produto já carrega.

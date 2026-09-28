@@ -1,5 +1,7 @@
 # Hero specs como DOM — Implementation Plan
 
+> **Status em 2026-09-28:** implementado. `resolveHeroSpecs` está em `apps/web/src/lib/hero-specs.ts` (com `hero-specs.test.ts`) e `HeroSpecs` em `apps/web/src/components/hero/hero-element-renders.tsx`. O plano mira `hero-carousel.tsx` e `HeroContentBlock`, que o #210 substituiu por `hero/` e pela composition.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Renderizar `banner.specs` (ficha técnica) como `<ul>` semântico no hero, em vez de queimado na arte de background.
@@ -119,6 +121,8 @@ git commit -m "feat: helper resolveHeroSpecs do hero (#158)"
 ---
 
 ### Task 2: `HeroSpecs` + integração no `hero-carousel.tsx`
+
+_Nota 2026-09-28: `HeroSpecs` vive em `hero/hero-element-renders.tsx` e é despachado por `renderHeroElement`; `HeroContentBlock` não existe. O gradiente de `hasText` não conta specs (`hero/hero-slide.tsx`)._
 
 **Files:**
 - Modify: `apps/web/src/components/hero-carousel.tsx`

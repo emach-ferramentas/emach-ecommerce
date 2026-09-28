@@ -1,5 +1,7 @@
 # Imagem da categoria na home + placeholder com ícone
 
+> **Status em 2026-09-28:** implementado. `getCategoryImages()` em `apps/web/src/app/(shop)/page.tsx:56` ordena por `t.created_at ASC, t.id ASC, ti.sort_order ASC`, filtra `t.status = 'active'` e não tem mais o fallback cross-categoria. `apps/web/src/components/category-tile.tsx:8` mapeia o ícone por slug raiz (`Drill`, `Wrench`, `Disc3`, `HardHat`, fallback `Wrench`).
+
 **Data:** 2026-06-16
 **Área:** `apps/web` — home (`app/(shop)/page.tsx`) + `components/category-tile.tsx`
 **Branch:** `feat/category-tile-imagem-criterio-placeholder`
@@ -38,7 +40,7 @@ Dois problemas identificados na conversa:
 - `candidates` CTE: `JOIN tool t ON t.id = tc.tool_id`, `WHERE t.status = 'active'`,
   `ORDER BY t.created_at ASC, t.id ASC, ti.sort_order ASC`. (ORDER BY + JOIN já
   aplicados; falta o filtro de status e o comentário.)
-- Remover o bloco `missing`/`fallbacks` inteiro (linhas ~85-105). A função passa a
+- Remover o bloco `missing`/`fallbacks` inteiro (linhas ~85-105; já removido, a função hoje ocupa `app/(shop)/page.tsx:56-93`). A função passa a
   conter só a query `owned` + montagem do `Map`.
 - Comentário curto no SQL explicando o critério.
 

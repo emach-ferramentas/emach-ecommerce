@@ -1,7 +1,8 @@
 # Página de produto (PDP) — redesign com ritmo chiaroscuro
 
+> **Status em 2026-09-28:** substituído. O redesign chegou à `main` (#101, `b4bee5c`) e foi refeito em #105 e #180, que trocaram a ficha escura e os comentários escuros pela placa técnica clara de `2026-07-03-pdp-redesign-design.md`. Hoje a ficha é `apps/web/src/app/(shop)/product/[slug]/_components/product-specs.tsx` (com `plate-layout.ts`), os comentários são a placa clara de `2026-07-03-reviews-placa-design.md`, e o helper numérico ficou como `fmtSpecNumber` e `fmtSpecRange` em `apps/web/src/lib/format.ts`. O texto abaixo é o registro da decisão de junho.
+
 **Data:** 2026-06-11
-**Status:** obsoleto. Substituído por `2026-07-03-pdp-redesign-design.md` (placa técnica), implementado em `apps/web/src/app/(shop)/product/[slug]/_components/plate-layout.ts`.
 **Rota afetada:** `/product/[slug]` (`apps/web/src/app/(shop)/product/[slug]/`)
 
 ## Problema
@@ -9,7 +10,7 @@
 A PDP é funcional mas pré-alinhamento ao ritmo claro/escuro do home. Pontos levantados
 pelo usuário + confirmados em código e screenshot na app viva (`:3008`):
 
-- **Breadcrumb no topo** ocupa a primeira faixa da página (`page.tsx:114-140`).
+- **Breadcrumb no topo** ocupa a primeira faixa da página (`page.tsx:114-140` à época).
 - **Ficha técnica clara e enorme** (`product-tabs.tsx`): layout de abas com sidebar
   (`min-h-[520px]`, `grid-cols-[280px_1fr]`) que fica **vazio** quando o produto tem
   poucas specs — e o banco hoje tem **1 a 4 specs por produto** (furadeira = 4, vários
@@ -35,6 +36,8 @@ Confirmada com o usuário. Hoje: Breadcrumb → Detalhes → Ficha → Comentár
 | 2 | **Ficha técnica** | **escura** (cinema) | `ProductTabs` → vira `ProductSpecs` |
 | 3 | **Você também pode gostar** | claro | `RelatedProducts` |
 | 4 | **Comentários** | **escura** (cinema) | `ProductReviews` |
+
+_Nota 2026-09-28: a ordem de hoje é Breadcrumb → Detalhes → Ficha → Avaliações → Relacionados (spec `2026-07-03-pdp-redesign-design.md`, §3)._
 
 Mudanças de ordem vs. hoje: **breadcrumb removido**; **Relacionados sobe** para antes dos
 Comentários (claro→escuro→claro→escuro). Editar a composição em `page.tsx`.
@@ -133,6 +136,8 @@ app/(shop)/product/[slug]/
     product-gallery.tsx       (no-op previsto)
 lib/format.ts                 (EDIT) helper fmtSpecValue (numeric PT-BR sem zeros) + reuso para range
 ```
+
+_Nota 2026-09-28: `product-tabs.tsx` não existe mais; `ProductSpecs` foi reescrito em #180 como placa técnica clara, e o breadcrumb voltou (`_components/breadcrumb.tsx`). O helper `fmtSpecValue` virou `fmtSpecNumber` e `fmtSpecRange` em `lib/format.ts`._
 
 - Renomear `ProductTabs` → `ProductSpecs` (não há mais abas; nome reflete o conteúdo).
   Atualizar import em `page.tsx`. Remover dep de `@emach/ui/components/tabs` se não usada

@@ -1,12 +1,14 @@
 # Hero: honrar `background_mobile_mode` (fundo opcional no mobile)
 
+> **Status em 2026-09-28:** implementado. `resolveMobileBg` em `apps/web/src/components/hero/hero-slide.tsx` resolve `none`, `custom` e `inherit`, e `HeroBackground` renderiza uma única `<Image>` quando desktop e mobile compartilham a URL. O código saiu de `hero-carousel.tsx` no #210 e ganhou zoom e ponto focal por composition.
+
 **Issue:** #142 · **Data:** 2026-06-17 · **Branch:** `feat/142-hero-background-mobile-mode`
 
 ## Contexto
 
 Handoff do dashboard (`emach-dashboard`, commit `b9fd44a4` — `feat(banners): fundo opcional no mobile`). O dashboard ganhou controle de como o fundo do banner se comporta no mobile, via nova coluna na tabela compartilhada `banner`:
 
-- **`background_mobile_mode`** — enum `banner_background_mobile_mode`: `inherit` | `custom` | `none` (`NOT NULL`, default `inherit`).
+- **`background_mobile_mode`** — enum `banner_background_mobile_mode`: `inherit` | `custom` | `none` (`NOT NULL`, default `inherit`). _Nota 2026-09-28: o default virou `none` no sync #159 (`9085bd1`, `packages/db/src/schema/banner.ts:44-46`). Só os `FALLBACK_BANNERS` ainda fixam `inherit`._
 
 A coluna **já chegou** ao schema TS deste repo via PR de sync (`sync-db-schema.yml`, ADR-0009) — confirmado em `packages/db/src/schema/banner.ts`:
 
@@ -18,7 +20,7 @@ export const bannerBackgroundMobileMode = pgEnum(
 // ...
 backgroundMobileMode: bannerBackgroundMobileMode("background_mobile_mode")
   .notNull()
-  .default("inherit"),
+  .default("inherit"), // hoje: .default("none")
 ```
 
 No banco compartilhado a coluna existe como `USER-DEFINED` (`banner_background_mobile_mode`), `NOT NULL default 'inherit'`. Os 2 banners atuais estão em `inherit`.
@@ -39,7 +41,7 @@ No banco compartilhado a coluna existe como `USER-DEFINED` (`banner_background_m
 
 ## Escopo
 
-Mudança em **um arquivo**: `apps/web/src/components/hero-carousel.tsx`. Owned-by-ecommerce. Schema (owned-by-dashboard) já sincronizado — não tocar.
+Mudança em **um arquivo**: `apps/web/src/components/hero-carousel.tsx` (_Nota 2026-09-28: hoje `hero/hero-slide.tsx` e `hero/hero-fallbacks.ts`_). Owned-by-ecommerce. Schema (owned-by-dashboard) já sincronizado — não tocar.
 
 Fora de escopo: desktop, glow, produto, CTA, countdown, gradiente de legibilidade — intactos. Doc do contrato (`docs/integration/admin-ecommerce.md`) vive no dashboard, não neste repo.
 

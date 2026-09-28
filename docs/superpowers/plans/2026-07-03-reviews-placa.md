@@ -1,5 +1,7 @@
 # Placa de Avaliações (PDP) — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (#195, `e479535`, com o ajuste #196). `product-reviews.tsx`, `review-layout.ts`, `review-list.tsx`, `review-card.tsx` e `verified-badge.tsx` estão em `apps/web/src/app/(shop)/product/[slug]/_components/`. Os checkboxes abaixo ficaram sem marcar e não refletem o que foi feito.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** migrar a seção de reviews da PDP do bloco `bg-near-black` para uma placa clara com a gramática da placa técnica, com anatomia adaptativa por N.
@@ -16,7 +18,7 @@
 - Tipografia: Barlow (corpo) + Barlow Condensed via `font-display` (labels uppercase + tracking) — não misturar no mesmo bloco.
 - Conventional Commits em PT, subject ≤50 chars.
 - Antes de cada commit: `bun check-types` (na raiz do monorepo — CWD é a raiz, paths absolutos).
-- Empty state n=0 (`product-reviews-section.tsx` linhas 53–75) é **intocável** neste plano.
+- Empty state n=0 (`product-reviews-section.tsx` linhas 53–75 _(nota 2026-09-28: hoje começam em 58)_) é **intocável** neste plano.
 - Testes novos são unit (sem DB) — NÃO adicionar à lista `INTEGRATION` de `apps/web/vitest.config.ts`.
 
 ---

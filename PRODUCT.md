@@ -10,7 +10,7 @@ Compradores brasileiros de ferramentas profissionais: eletricistas, pedreiros, m
 
 ## Product Purpose
 
-Storefront BR de ferramentas (furadeiras, serras, compressores, EPIs) que compartilha banco Supabase com o `emach-dashboard` (admin staff, repo irmão). Vende elétricas/manuais, medição e EPIs. Sucesso = conversão ao longo do funil (descobrir → comparar → checkout) com confiança técnica e logística: estoque validado em agregado multi-filial (ADR-0003), frete via SuperFrete, pagamento Asaas (keystone pendente). Auth de cliente isolada (Better Auth `ecommerce`).
+Storefront BR de ferramentas (furadeiras, serras, compressores, EPIs) que compartilha banco Supabase com o `emach-dashboard` (admin staff, repo irmão). Vende elétricas/manuais, medição e EPIs. Sucesso = conversão ao longo do funil (descobrir → comparar → checkout) com confiança técnica e logística: estoque validado em agregado multi-filial (ADR-0003), frete via Frenet (cotação por CEP, cache Redis de 30 min), pagamento Asaas (keystone pendente). Auth de cliente isolada (Better Auth `ecommerce`).
 
 ## Brand Personality
 
@@ -29,9 +29,9 @@ Ferrari-inspired: preciso, performático, confiante. Chiaroscuro intencional —
 
 1. **Vermelho é verbo.** Uma vez por tela, no CTA de maior prioridade; o resto vive em preto/branco/cinza.
 2. **Precisão acima de ornamento.** Cantos retos, hairlines, sem sombra mole; cada elemento justifica sua presença.
-3. **Chiaroscuro com propósito.** Preto cinematográfico carrega marca e imersão (home, login, hero, vinhetas); superfície clara carrega tarefa e leitura (catálogo, produto, checkout, conta).
+3. **Chiaroscuro com propósito.** Preto cinematográfico carrega marca e imersão (home, login, hero, vinhetas, cabeçalhos e cards da conta, drawer e resumo do carrinho); superfície clara carrega tarefa e leitura (catálogo, produto, checkout, corpo das telas).
 4. **Confiança técnica visível.** Especificação (voltagem/potência), preço parcelado, frete por CEP e garantia precisam estar legíveis e a um toque, não escondidos.
-5. **No fluxo de compra, a ferramenta some na tarefa.** Familiaridade e densidade de produto vencem o drama nas telas de tarefa; o drama editorial mora na home e no login.
+5. **No fluxo de compra, a ferramenta some na tarefa.** Familiaridade e densidade de produto vencem o drama nas telas de tarefa; o drama editorial mora na home, no login e nos cabeçalhos escuros; nas telas de tarefa a densidade de produto vence.
 
 ## Accessibility & Inclusion
 

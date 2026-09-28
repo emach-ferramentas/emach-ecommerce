@@ -1,5 +1,7 @@
 # Plan 009: Neutralizar os scripts legacy `db:generate` / `db:migrate`
 
+> **Status em 2026-09-28:** implementado. `db:generate` e `db:migrate` viram `echo ... && exit 1` em `package.json:34-35` e em `packages/db/package.json:14,16`. As tasks saíram do `turbo.json`, que hoje mantém `db:push` e `db:studio`. O CLAUDE.md da raiz e o `packages/db/CLAUDE.md` seguem descrevendo os scripts como legacy.
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP =
 > pare e reporte. Ao terminar, atualize `plans/README.md`.
 >
@@ -25,6 +27,7 @@ para uma pasta inexistente). O fluxo real é `db:push` + `db:apply-triggers` (de
 ou sync via CI PR do dashboard.
 
 ## Current state
+_Nota 2026-09-28: os trechos desta seção são o estado de 2026-06-17, antes da neutralização._
 
 - `package.json` (raiz) scripts relevantes:
   ```json

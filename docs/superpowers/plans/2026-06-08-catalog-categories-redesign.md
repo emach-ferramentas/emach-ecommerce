@@ -1,5 +1,7 @@
 # Redesign do catálogo (árvore, filtros ativos, toolbar) — Implementation Plan
 
+> **Status em 2026-09-28:** substituído em parte. Os módulos `_lib/catalog-filters.ts` (Task 1) e `_components/active-filters.tsx` (Task 4) existem e seguem em uso; `_lib/category-tree.ts` e `_components/category-tree.tsx` (Tasks 2 e 3) foram removidos no #205 e trocados por `category-drilldown.tsx` e `_lib/drilldown-level.ts`, conforme `plans/2026-07-10-filtros-catalogo.md`. Os checkboxes abaixo ficam como estavam no plano original.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Transformar a sidebar de categorias do `/catalog` num accordion por raiz (com faixa lateral vermelha no ramo ativo), adicionar chips de filtros ativos e polir a toolbar/cards — tudo dentro do DESIGN.md (desktop).
@@ -9,6 +11,8 @@
 **Tech Stack:** Next 16 (App Router, RSC), React 19 (Compiler ativo — sem `useMemo`/`useCallback`), Tailwind v4, lucide-react, vitest 2.
 
 **Spec:** `docs/superpowers/specs/2026-06-08-catalog-categories-redesign-design.md`
+
+_Nota 2026-09-28: as Tasks 2 e 3 (`_lib/category-tree.ts` e `_components/category-tree.tsx`) foram desfeitas no #205; o desenho vigente da árvore está em `plans/2026-07-10-filtros-catalogo.md`. As Tasks 1 e 4 (`catalog-filters.ts`, `active-filters.tsx`) continuam no código._
 
 ---
 

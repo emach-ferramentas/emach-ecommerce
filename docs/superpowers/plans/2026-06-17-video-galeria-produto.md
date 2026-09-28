@@ -1,5 +1,7 @@
 # Vídeo de destaque na galeria do produto — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (#140, `d82e407`): `gallery-slots.ts`, `product-gallery.tsx`, o wiring em `page.tsx` e o `remotePattern` de `tool-videos` em `apps/web/next.config.ts:57`. O SELECT de `getToolBySlug` já traz `video_url` e `video_poster_url` desde o sync #141 (`d9c26bf`), hoje em `packages/db/src/queries/tools.ts:282`. `catalog.ts` foi dividido (#157). Os checkboxes abaixo ficaram sem marcar e não refletem o que foi feito.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Renderizar o vídeo de destaque da ferramenta (`tool.video_url`/`video_poster_url`) como um slot na galeria do produto, estilo Mercado Livre, sem quebrar produtos sem vídeo.
@@ -501,6 +503,8 @@ git commit -m "feat: passa video de destaque a ProductGallery (#137)"
 ---
 
 ### Task 5: Issue no dashboard para o SELECT de `getToolBySlug`
+
+_Nota 2026-09-28: o SELECT já chegou por sync (#141) e `catalog.ts` não existe mais; `getToolBySlug` está em `packages/db/src/queries/tools.ts`. Se a issue foi aberta no dashboard: não verificado._
 
 Destrava a leitura do `video_url`/`video_poster_url` pela query. `catalog.ts` é dashboard-owned (ADR-0009) — a mudança começa no dashboard e chega via sync. Não é código neste repo.
 

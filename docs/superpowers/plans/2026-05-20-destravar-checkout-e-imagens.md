@@ -1,5 +1,7 @@
 # Destravar checkout e imagens — Plano de implementação
 
+> **Status em 2026-09-28:** implementado na parte de código; a Task 2 não foi verificada. A Task 1 entrou no merge `293d409` (traz o PR #29) e `branch.is_default` não existe mais em `packages/db/src/schema/inventory.ts`. O `DELETE FROM tool_image` não deixa rastro no repositório (não verificado). `apps/web/src/lib/default-branch.ts`, citado nos passos, foi removido em `a096c28` pelo plano `2026-05-20-estoque-multi-filial.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Destravar o checkout (sincronizando com `main` que tem o hotfix PR #29) e zerar `tool_image` (URLs apontam para arquivos inexistentes no bucket).
@@ -82,6 +84,8 @@ git commit
 ```
 
 - [ ] **Step 1.2: Verificar que o hotfix está presente**
+
+_Nota 2026-09-28: o segundo `grep` não funciona mais, porque `default-branch.ts` foi removido (`a096c28`)._
 
 ```bash
 grep -n "isDefault\|is_default" packages/db/src/schema/inventory.ts

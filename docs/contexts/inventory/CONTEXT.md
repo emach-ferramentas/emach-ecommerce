@@ -17,7 +17,7 @@ Uma entrada imutável no ledger de estoque — um delta aplicado a um **Stock Le
 _Avoid_: Transaction, Adjustment
 
 **Reason**:
-A classificação de um **Stock Movement**. A coluna `stock_movement.reason` é `text` livre, não enum. Valores gravados hoje: `entrada_compra` (entrada por compra ao fornecedor) e `ajuste_inventario` (ajuste de inventário). `saida_venda` (saída por venda) fica reservado para o débito na transição para `paid`.
+A classificação de um **Stock Movement**. A coluna `stock_movement.reason` é `text` livre, não enum. O espelho tipa seis valores: `entrada_compra` (exige `supplier_id`), `ajuste_inventario` (recontagem física), `devolucao_retorno` (crédito na devolução, idempotente por `order_item_id`), `perda`, `outro` e `saida_venda` (débito de venda, também idempotente por `order_item_id`). O storefront não grava nenhum deles hoje; `saida_venda` fica reservado para o débito na transição para `paid`.
 
 **Reorder Point**:
 O nível de **Stock Level** em que um novo pedido de compra ao **Supplier** deve ser feito.

@@ -1,5 +1,7 @@
 # Promoção em destaque no home — design
 
+> **Status em 2026-09-28:** implementado. A coluna `featured` existe na cópia de schema (`packages/db/src/schema/promotions.ts:36`, índice `:61`, check `:83`), `getFeaturedPromotion` vive em `packages/db/src/queries/promotions.ts:162`, e a home renderiza `PromoHighlight` (`apps/web/src/components/promo-highlight.tsx`) com `PromoCountdown` (`promo-countdown.tsx`) em `apps/web/src/app/(shop)/page.tsx`. O layout dos produtos passou a variar por contagem (spec `2026-06-24-promo-section-adaptive-layout-design.md`) e a seção "Marca" foi trocada pelo mapa "Onde estamos". A Parte A (dashboard) não foi verificada: este repo não lê o `emach-dashboard`.
+
 > Data: 2026-06-08 · Escopo: cross-repo (`emach-dashboard` + `emach-ecommerce`)
 > Brainstorming + impeccable (companion visual). Identidade Ferrari preservada (DESIGN.md).
 
@@ -113,7 +115,7 @@ Replicar A1 à mão (coluna + índice + check). **Comentar no topo da mudança**
 antecipada de uma alteração owned-by-dashboard e que o PR de sync (`sync-db-schema.yml`)
 concilia. Não rodar `db:push` aqui (o dashboard já aplicou no banco compartilhado).
 
-### B2. Query — `packages/db/src/queries/catalog.ts`
+### B2. Query — `packages/db/src/queries/promotions.ts`
 
 Nova `getFeaturedPromotion(db): Promise<PromotionWithTools | null>`:
 
@@ -128,19 +130,21 @@ Nova `getFeaturedPromotion(db): Promise<PromotionWithTools | null>`:
 > Owned-by-dashboard: a query vive em `packages/db/src/queries` (cópia versionada). Replicar a
 > assinatura/estilo de `getActivePromotions` e marcar como cópia antecipada igual a B1.
 
+_Nota 2026-09-28: o `catalog.ts` foi dividido (PR #157). A função mora hoje em `promotions.ts`, reusa o helper privado `fetchPromoTools` e ordena por `ends_at ASC NULLS LAST` antes do `LIMIT 1`. O sync do dashboard já a incorporou._
+
 ### B3. Componente `<PromoHighlight>` (server) — `apps/web/src/components/promo-highlight.tsx`
 
 Seção preta (`bg-black text-white`), full-bleed com `PageContainer`:
 
 - Header em 2 colunas: à esquerda kicker `SectionLabel` "OFERTAS" + `<h2>` `promotion.title`
   (Barlow Condensed, 44px, weight 500, branco); à direita `<PromoCountdown>`.
-- Corpo: `ProductCarousel`/grid com os produtos da promoção (ProductCard inalterado).
-- CTA "Ver todas as ofertas" → `/catalog?promo=1` (`EmachButton variant="outline-light"`).
+- Corpo: `ProductCarousel`/grid com os produtos da promoção (ProductCard inalterado). _Nota 2026-09-28: o corpo hoje escolhe o arranjo por `selectPromoLayout` (2, 3 ou 4 produtos; menos de 2 não renderiza), ver spec `2026-06-24-promo-section-adaptive-layout-design.md`._
+- CTA "Ver todas as ofertas" → `/catalog?promo=1` (`Link` com `emachButtonVariants({ variant: "outline-light" })`; o parâmetro `promo=1` é lido em `catalog/_lib/parse-search-params.ts`).
 - Sem `ends_at` → renderiza sem o bloco de countdown.
 
 ### B4. Componente `<PromoCountdown>` (client) — `apps/web/src/components/promo-countdown.tsx`
 
-- Props: `endsAt: Date`.
+- Props: `endsAt: string` (ISO; o server passa `endsAt.toISOString()`). A conta mora em `apps/web/src/lib/countdown.ts` (`formatCountdown`).
 - Conta `dd : hh : mm : ss`. Tick de 1s via `setInterval` em `useEffect`.
 - **SSR-safe:** primeiro paint estático (ex.: rótulo "Termina em" + placeholder ou os valores
   calculados só após mount) para evitar hydration mismatch entre relógio do server e do client.
@@ -154,6 +158,7 @@ Seção preta (`bg-black text-white`), full-bleed com `PageContainer`:
 
 - Trocar `getActivePromotions(db, 8)` + `flattenPromoTools` por `getFeaturedPromotion(db)`.
   Remover o helper `flattenPromoTools` (e o import de `getActivePromotions` se ficar órfão).
+  _Nota 2026-09-28: feito. `getActivePromotions` segue exportada, mas só o teste `packages/db/src/queries/__tests__/catalog-promotions.test.ts` a chama; nenhum código de `apps/web` a usa._
 - Remover os números dos kickers: "OFERTAS", "NOVIDADES", "CATEGORIAS".
 - Renderizar `<PromoHighlight promotion={featured} />` só se `featured != null`.
 - **Reordenar (chiaroscuro)** — separável, ver abaixo:
@@ -184,6 +189,8 @@ Proposta (ritmo preto↔claro do DESIGN.md):
 | 5 | Marca "Feito para durar" | preto |
 
 Pode ser entregue junto ou adiada sem bloquear a seção de promoções.
+
+_Nota 2026-09-28: a reordenação entrou (Hero, Categorias, Promoção, Novidades). A seção 5 "Marca" foi substituída por `BranchMapSection` ("Onde estamos"), ver spec `2026-06-09-secao-onde-estamos-design.md`._
 
 ## Riscos e mitigação
 

@@ -1,5 +1,7 @@
 # Plan 004: Validar `NEXT_PUBLIC_SITE_URL` via `@emach/env/web`
 
+> **Status em 2026-09-28:** implementado. `NEXT_PUBLIC_SITE_URL: z.url()` está em `clientSchema` (`packages/env/src/schemas.ts:44`) e `packages/env/src/web.ts` o repassa no `runtimeEnv`. Os call sites usam `env.NEXT_PUBLIC_SITE_URL` sem fallback: `app/robots.ts:4`, `app/sitemap.ts:8`, `app/layout.tsx:25`, `product-json-ld.tsx:9`, `lib/seo/canonical.ts:12` e `components/seo/site-json-ld.tsx:20`.
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP
 > conditions = pare e reporte. Ao terminar, atualize a linha em `plans/README.md`.
 >
@@ -27,6 +29,8 @@ erro de build explícito.
 ## Current state
 
 - `packages/env/src/web.ts` (atual, completo):
+
+_Nota 2026-09-28: o `web.ts` deste passo é o estado de 2026-06-17. Hoje ele usa `client: clientSchema`, definido em `packages/env/src/schemas.ts`. Além dos 4 call sites, há mais dois (`canonical.ts`, `site-json-ld.tsx`), criados depois pelo trabalho de SEO (#218)._
   ```ts
   import { createEnv } from "@t3-oss/env-core";
   import { z } from "zod";

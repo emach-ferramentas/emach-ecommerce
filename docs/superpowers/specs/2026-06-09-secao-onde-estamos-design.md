@@ -1,7 +1,8 @@
 # Seção "Onde estamos" — mapa de filiais georreferenciado
 
+> **Status em 2026-09-28:** implementado, com divergências de detalhe. A seção existe em `apps/web/src/components/branch-map-section.tsx` (Server, `use cache` 600 s) e `branch-map.tsx` (Client), montada em `apps/web/src/app/(shop)/page.tsx:209`; os assets estão em `apps/web/src/lib/branch-map/`. Diferem do texto abaixo: a projeção é offline (não há `projection.ts` nem `maps-url.ts`), o mapa é um `<img>` com data URI (`map-svg.ts`), o destaque alterna sozinho entre filiais e a copy mudou.
+
 **Data:** 2026-06-09
-**Status:** implementado. Evidência: `apps/web/src/lib/branch-map/` + `apps/web/src/components/branch-map-section.tsx`, usado em `app/(shop)/page.tsx`.
 **Arquivo-alvo:** `apps/web/src/app/(shop)/page.tsx` (home)
 
 ## Problema
@@ -83,31 +84,32 @@ GeoJSON IBGE + `municipios.csv`, simplificado via `mapshaper -simplify`):
 - **`apps/web/src/lib/branch-map/brazil-states.ts`** — constante `BRAZIL_STATES: {uf, path}[]`
   (27 estados, paths SVG simplificados ~15-20KB total) + `BRAZIL_VIEWBOX`. Mesma projeção dos
   pins.
-- **`apps/web/src/lib/branch-map/municipios.json`** — `{ "<cidade-normalizada>|<uf>": [lng,lat] }`
+- **`apps/web/src/lib/branch-map/municipios.json`** — `{ "<cidade-normalizada>|<uf>": [x,y] }`
   derivado da base IBGE (5570 municípios, ~200KB, **server-only**) + centroides das 27 UFs para
-  fallback.
-- **`apps/web/src/lib/branch-map/projection.ts`** — params fixos da `geoMercator`
-  (`scale`, `translate`) que casam com `brazil-states.ts`, e `project([lng,lat]) → [x,y]` como
-  função pura (Mercator reimplementada, **zero dep em runtime**).
+  fallback (chave `_uf|<UF>`).
+  _Nota 2026-09-28: os valores são coordenadas já projetadas no viewBox, não `[lng,lat]`._
+- ~~`apps/web/src/lib/branch-map/projection.ts`~~ — _Nota 2026-09-28: nunca existiu. A projeção roda só em `scripts/gen-brazil-map.mjs` (ponto a ponto, sem `geoPath`, ver CLAUDE.md), e o runtime lê `[x,y]` pronto do JSON._
 
 ### Runtime
 
-- **`apps/web/src/lib/branch-map/geocode.ts`** (server) — `cityToLngLat(city, uf): [lng,lat]`.
+- **`apps/web/src/lib/branch-map/geocode.ts`** (server) — `cityToXY(city, uf): [x,y] | null`.
   Lookup normalizado (sem acento, lowercase) em `municipios.json`; fallback para o centroide da
-  UF (toda filial tem UF → nunca falha). Retorna também `{ exact: boolean }` para log.
-- **`apps/web/src/lib/branch-map/maps-url.ts`** — `branchMapsUrl(branch)`:
-  `https://www.google.com/maps/search/?api=1&query=` + endereço encodado.
+  UF. Não devolve `exact`: quem chama (`branch-map-section.tsx`) grava `log.warn` quando o retorno é `null`.
+  _Nota 2026-09-28: o nome original `cityToLngLat` foi trocado por `cityToXY`._
+- ~~`apps/web/src/lib/branch-map/maps-url.ts`~~ — _Nota 2026-09-28: `branchMapsUrl(branch)` vive em `apps/web/src/lib/branches.ts`, com o mesmo formato de URL._
 - **`apps/web/src/components/branch-map-section.tsx`** (Server) — orquestra: query de filiais,
   geocode+projeção, monta `BranchPin[]`, renderiza copy (esquerda) + `<BranchMap/>` (direita).
   Reusa `SectionLabel` (tone accent), `EmachButton` (`variant="outline-light"` → `/sobre`),
   `PageContainer`.
-- **`apps/web/src/components/branch-map.tsx`** (Client) — SVG + lista interativa.
+- **`apps/web/src/components/branch-map.tsx`** (Client) — mapa + lista interativa.
+  _Nota 2026-09-28: o mapa base é um `<img>` com data URI gerado por `map-svg.ts` (imune ao force-dark do Chromium), com os pins como links HTML sobrepostos. O componente é carregado por `next/dynamic` na seção._
 
 ### Query de filiais
 
 Extrair a lógica de `getBranches()` (hoje em `sobre/page.tsx:164`) para um helper compartilhado
 em `apps/web/src/lib/branch-map/` ou `packages/db/queries` (a /sobre e o footer já consultam
-`branch`; evitar 3ª cópia). Campos: `name, city, state, cep, street, streetNumber,
+`branch`; evitar 3ª cópia).
+_Nota 2026-09-28: virou `getActiveBranches()` em `apps/web/src/lib/branches.ts`._ Campos: `name, city, state, cep, street, streetNumber,
 neighborhood, phone, businessHours, status`. Filtro `status='active'`, ordenar por `created_at`
 ou nome.
 
@@ -118,6 +120,7 @@ ou nome.
 3. UFs com filial → set de destaque para os paths de estado.
 4. Props pro client: `{ pins: BranchPin[], states: {uf, path, highlighted}[], viewBox }`.
    `BranchPin = { id, city, uf, addr, phone?, hours?, x, y, mapsUrl }`.
+   _Nota 2026-09-28: hoje o client recebe `mapUri`, `mapMaskUri`, `mapWidth`, `mapHeight` e `pins`; `BranchPin` (`lib/branch-map/types.ts`) tem `name` e `address` e não tem `hours`. Os estados destacados vão embutidos no data URI._
 5. Client renderiza; hidrata só os handlers de hover/focus/scroll.
 
 ## Layout e responsividade
@@ -136,6 +139,8 @@ ou nome.
 - Headline: **Perto de quem coloca a mão na massa.**
 - Parágrafo: *Três lojas físicas no Sul e Sudeste. Você passa, vê a ferramenta na bancada, tira
   dúvida com quem usa e leva com nota fiscal.*
+
+_Nota 2026-09-28: a copy em produção é outra (PR #78). Headline "Encontre a filial mais perto de você." e parágrafo "Atendimento especializado e pronta entrega em N filiais no Sul e Sudeste.", com N vindo de `pins.length`. A copy abaixo é o registro da aprovação original._
 - CTA: **Ver filiais →** (`EmachButton outline-light` → `/sobre`)
 - Sem em dash, sem buzzword (regra `impeccable`).
 
@@ -148,10 +153,13 @@ Telefone e horário aparecem **só onde a filial tem cadastro**: hoje SP tem hor
 telefone, Joinville mostra só endereço. Renderização condicional por campo; nada de placeholder
 inventado.
 
+_Nota 2026-09-28: a lista da home mostra nome, UF, endereço, telefone (se houver) e "Como chegar". Horário só aparece em `/sobre` (ver spec `2026-07-06-filiais-intervalo-almoco-design.md`). Os dados de filiais citados acima são de junho e não foram reverificados._
+
 ## Interação (detalhe)
 
 - **Hover/focus em pin ou item** → `setHovered(uf)`: aplica classe ativa no pin, no item e no
   `<path>` do estado (fill vermelho translúcido); `scrollIntoView({block:'nearest'})` no item.
+  _Nota 2026-09-28: o estado (`hovered`) guarda o id da filial. O destaque do estado não reage ao hover, porque o path faz parte do data URI. A lista rola com `scrollTo` centralizando a linha, e o destaque alterna sozinho a cada 2,2 s, pausado no hover e desligado com `prefers-reduced-motion`._
 - **Click no pin/item** → `<a href=mapsUrl target="_blank" rel="noopener">` (CLAUDE.md: blank
   sempre com noopener). Funciona sem JS (progressive enhancement).
 - **Teclado:** pins são links focáveis; `:focus-visible` dispara o mesmo destaque.
@@ -185,6 +193,8 @@ inventado.
 - `projection.test.ts`: `project([lng,lat])` de coordenadas conhecidas (ex.: SP capital) cai
   dentro do bounding box esperado do viewBox; ordem lng/lat correta.
 - `maps-url.test.ts`: encoda endereço corretamente.
+
+_Nota 2026-09-28: existem `lib/branch-map/geocode.test.ts` e `lib/branches.test.ts` (cobre `branchMapsUrl`, `:89`). `projection.test.ts` e `maps-url.test.ts` não existem, porque os módulos não existem._
 - Smoke runtime (CLAUDE.md): `bun dev:web` + visitar `/` — `check-types` não pega SQL/SSR;
   confirmar mapa, pins, hover, scroll e link na rota.
 
@@ -199,3 +209,5 @@ inventado.
 
 - Remover `STATS` (`page.tsx:22-29`) e o markup da seção atual (`page.tsx:173-217`).
 - Verificar se `.emach-bg-stats` (`globals.css`) fica órfã; remover se sim.
+
+_Nota 2026-09-28: feito. `STATS` não existe em `page.tsx` e `.emach-bg-stats` não aparece mais em `packages/ui/src/styles/globals.css`._

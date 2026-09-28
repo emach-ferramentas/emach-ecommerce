@@ -1,5 +1,7 @@
 # Plan 007: Não vazar internals em erros de action e logs
 
+> **Status em 2026-09-28:** implementado. As três actions de endereço retornam mensagem fixa no catch e mantêm `error: message` só no `log.error` (`apps/web/src/app/dashboard/dados-pessoais/_actions/addresses.ts:140`, `203`, `255`). `apply-coupon.ts` não loga mais `code` no catch (`apps/web/src/app/checkout/_actions/apply-coupon.ts:92`).
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP =
 > pare e reporte. Ao terminar, atualize `plans/README.md`.
 >
@@ -32,6 +34,8 @@ Duas frentes de data minimization:
 ## Current state
 
 - `addresses.ts` — os três catch blocks (linhas 137-146, 200-209, 252-261)
+
+_Nota 2026-09-28: as linhas citadas derivaram para 132-140, 195-203 e 247-255. O estado descrito abaixo é o anterior ao fix._
   seguem este shape (exemplo `updateAddressAction`):
   ```ts
   } catch (err) {

@@ -1,5 +1,7 @@
 # Validação server-side do `phone` (#100) — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #104). `isValidPhone` e seus testes estão em `packages/validators/src/`, e `normalizePhoneForWrite`/`normalizeUserForWrite` em `packages/auth/src/ecommerce.ts`. Os checkboxes abaixo não foram marcados.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Validar e normalizar o campo `phone` server-side no hook do Better Auth ecommerce, fechando o bypass de requests diretos a sign-up/updateUser.
@@ -16,7 +18,7 @@
 - Test: `packages/validators/src/cpf-cnpj.test.ts` (criar)
 - Modify: `packages/validators/src/cpf-cnpj.ts` (adicionar export após `isValidCpfCnpj`, ~linha 73)
 
-Regra BR: 10 dígitos (fixo) ou 11 (celular); DDD na faixa 11–99; no celular o 3º dígito é `9` (ANATEL); rejeita `allSame`. `index.ts` já é `export *` — não precisa editar.
+Regra BR: 10 dígitos (fixo) ou 11 (celular); DDD na faixa 11–99; no celular o 3º dígito é `9` (ANATEL); rejeita `allSame`. `index.ts` já é `export *` — não precisa editar. _Nota 2026-09-28: não há `index.ts`; o `exports` do pacote aponta para `./src/cpf-cnpj.ts`._
 
 - [ ] **Step 1: Escrever o teste que falha**
 

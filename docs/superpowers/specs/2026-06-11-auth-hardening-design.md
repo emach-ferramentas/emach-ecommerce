@@ -1,5 +1,7 @@
 # Auth hardening — rate limit, validação server-side e higiene de cookies/logs
 
+> **Status em 2026-09-28:** implementado (PR #99). `packages/redis/src/index.ts`, `packages/validators/src/cpf-cnpj.ts`, `packages/auth/src/rate-limit-storage.ts` e `packages/auth/src/ecommerce.ts` têm rate limit, `minPasswordLength: 8`, validação de `document` e `phone` nos hooks e cookies sem `domain`. `packages/email/src/send.ts` usa `log` do evlog.
+
 **Issues:** #91 (rate limit), #92 (validação server-side senha + CPF/CNPJ), #96 (evlog em email + cookie flags)
 **Data:** 2026-06-11
 **Escopo:** 1 PR único — os três issues convergem em `packages/auth/src/ecommerce.ts` (mais `packages/email/src/send.ts`).
@@ -36,14 +38,14 @@ Invariantes P0 respeitadas: a instância dashboard **não** é tocada; nenhum `d
 
 ### 3. `@emach/validators` (novo package)
 - Move `apps/web/src/lib/validators/cpf-cnpj.ts` → `packages/validators/src/cpf-cnpj.ts` (idêntico, puro).
-- Exporta `isValidCpf/isValidCnpj/isValidCpfCnpj/onlyDigits/onlyLetters/maskCpfCnpj/maskPhone`.
-- Atualizar ~8 imports em `apps/web` de `@/lib/validators/cpf-cnpj` → `@emach/validators`.
+- Exporta `isValidCpf/isValidCnpj/isValidCpfCnpj/onlyDigits/onlyLetters/maskCpfCnpj/maskPhone` e, desde o #100, `isValidPhone`. O `exports` do pacote aponta direto para `./src/cpf-cnpj.ts` (não há `index.ts`).
+- Atualizar ~8 imports em `apps/web` de `@/lib/validators/cpf-cnpj` → `@emach/validators`. _Nota 2026-09-28: feito; `apps/web/src/lib/validators/` hoje só guarda `address`._
 
 ### 4. `packages/auth/src/ecommerce.ts` (o grosso)
 - **Rate limit (#91):** helper local `rate-limit-storage.ts` com `customStorage` híbrido (Upstash via `getRedis()` ou `Map`; chaves prefixadas `auth:`; TTL = window). Config:
-  - `rateLimit: { enabled: true, window: 60, max: 100, customStorage, customRules: { "/sign-in/email": {window:60,max:5}, "/sign-up/email": {window:60,max:5}, "/forget-password": {window:60,max:3} } }`
+  - `rateLimit: { enabled: true, window: 60, max: 100, customStorage, customRules: { "/sign-in/email": {window:60,max:5}, "/sign-up/email": {window:60,max:5}, "/forget-password": {window:60,max:3} } }` _(Nota 2026-09-28: no código a regra é `"/request-password-reset"` (max 3), porque `/forget-password` é do plugin email-OTP, que não é usado; há também `"/reset-password"` (max 5))_
   - `advanced.ipAddress.ipAddressHeaders: ["x-forwarded-for"]` (Vercel).
-- **Senha + document (#92):** `minPasswordLength: 8`; `databaseHooks.user.create.before` e `update.before` — se `document` presente → `onlyDigits` → `isValidCpfCnpj`; inválido → `throw new APIError("BAD_REQUEST", { message })`; válido → `return { data: { ...user, document: normalized } }`.
+- **Senha + document (#92):** `minPasswordLength: 8`; `databaseHooks.user.create.before` e `update.before` (hoje via `normalizeUserForWrite`, que também trata `phone`) — se `document` presente → `onlyDigits` → `isValidCpfCnpj`; inválido → `throw new APIError("BAD_REQUEST", { message })`; válido → `return { data: { ...user, document: normalized } }`.
 - **Cookie (#96B):** `advanced.defaultCookieAttributes: { httpOnly: true, sameSite: "lax", secure: isProd }`. Sem `domain`. Mantém `cookiePrefix`.
 
 ### 5. `packages/email/src/send.ts` (#96A)
@@ -78,4 +80,4 @@ request /api/auth/sign-in/email
 ## Fora de escopo (YAGNI)
 - `secondaryStorage` global (mover sessões pro Redis) — outro projeto.
 - Drain externo do evlog (Axiom/Sentry) — roadmap #5.
-- Frete fail-open hardening — depende de coluna nova (dashboard).
+- Frete fail-open hardening — depende de coluna nova (dashboard). _Nota 2026-09-28: entregue depois, no #97 (PR #110); ver `CLAUDE.md` do repo._

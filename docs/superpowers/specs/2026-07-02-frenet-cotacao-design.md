@@ -1,5 +1,7 @@
 # Frenet como motor de cotação de frete
 
+> **Status em 2026-09-28:** implementado (PR #178, `cb13578`). Existem `apps/web/src/lib/frenet/{client,map,cache,types}.ts`, o adapter `apps/web/src/lib/shipping/quote.ts` e a persistência do par serviço+preço em `apps/web/src/app/checkout/_lib/place-order.ts`. Depois do design, o código ganhou origem e seguro vindos do dashboard, autofill de CEP e a coluna `order.shipping_service_code`; a calculadora da PDP saiu (ver notas abaixo).
+
 **Data:** 2026-07-02
 **Status:** aprovado (brainstorming com o Otávio)
 **Substitui em produção:** motor de tabelas próprias (`2026-06-22-frete-tabelas-checkout-design.md`), que por sua vez substituiu o SuperFrete (`2026-06-03-frete-superfrete-design.md`).
@@ -18,6 +20,8 @@ Cotação de frete no checkout e na calculadora da PDP servida pela Frenet, com 
 ## Não-objetivos
 
 - Rastreamento (`/tracking/trackinginfo`) e lookup de CEP (`/CEP/Address/{cep}`) — bônus futuros (ver Observações).
+
+_Nota 2026-09-28: o lookup de CEP virou `fetchFrenetAddress` em `apps/web/src/lib/frenet/client.ts` (autofill de endereço, PR #192). O rastreamento continua não implementado._
 - Campos opcionais `isFragile`, `Category`, `SKU`, `Coupom` do request (ver Observações).
 - Remoção física das tabelas do motor antigo — mudança de schema começa no dashboard (ADR-0009).
 - Onboarding via API da Frenet — o token já foi obtido no painel.
@@ -57,6 +61,8 @@ apps/web/src/lib/frenet/map.ts       (NOVO — resposta Frenet → ShippingOptio
 | Campo Frenet | Fonte |
 |---|---|
 | `SellerCEP` | `env.FRENET_SELLER_CEP` (v1; ver Config) |
+
+_Nota 2026-09-28: `SellerCEP` hoje vem primeiro de `getShippingSettings(db).originCep` (filial de origem configurada no dashboard), com `FRENET_SELLER_CEP` como fallback quando o CEP falta ou não tem 8 dígitos (`apps/web/src/lib/shipping/quote.ts:107-117`). `ShipmentInvoiceValue` segue a política de seguro do dashboard: `none` envia 0, `cart_value` envia o subtotal limitado ao cap (`quote.ts:32-44`)._
 | `RecipientCEP` | `destinationCep` já normalizado (8 dígitos) |
 | `ShipmentInvoiceValue` | `declaredValueCents / 100` (subtotal do carrinho, semântica atual) |
 | `RecipientCountry` | `"BR"` fixo |
@@ -88,6 +94,8 @@ Absorve as pegadinhas do contrato Frenet:
 
 ## Persistência da escolha do serviço
 
+_Nota 2026-09-28: `CreateOrderInput.shippingServiceCode` é opcional (`place-order.ts:88`) e `assertShippingQuoted` valida o par (`place-order.ts:459-464`). A coluna `order.shipping_service_code` que este trecho dava como fora de escopo já existe (`packages/db/src/schema/orders.ts:147`) e é gravada no pedido._
+
 Hoje `selectedCarrierId` morre na UI e `order.shippingMethod` fica sempre `null`. Correção, sem mudança de schema:
 
 1. `CreateOrderInput` ganha `shippingServiceCode: string` **opcional**.
@@ -111,6 +119,8 @@ O `ServiceCode` cru (necessário pro rastreamento futuro) exigiria coluna nova e
 - Gotcha de dev: editar `apps/web/.env` mid-sessão não reflete no `next dev` rodando (precedência de `process.env` do shell) — relançar o shell/servidor.
 
 ## UI
+
+_Nota 2026-09-28: a calculadora da PDP citada abaixo (`freight-calculator.tsx`) foi removida em `1ae3d0c`, e `quoteShippingAction` agora exige sessão (`requireCurrentClient`). O checkout é o único chamador._
 
 - `ShippingOptions` (radio) já renderiza lista de opções — passa a exibir os serviços da Frenet ordenados por preço; sem redesign.
 - Calculadora da PDP (`freight-calculator.tsx`) funciona sem mudança (mesma action, 1 item → 1 caixa).
@@ -143,6 +153,9 @@ Campos e endpoints da Frenet deixados fora da v1, com recomendação de quando r
 - **`SKU` (por item)** — nossa linha de cotação é uma **caixa consolidada**, não um SKU; enviar SKU de caixa sintética seria enganoso. **Recomendo: omitir** (decisão coerente com o empacotamento local). Se um dia a cotação virar por-item, aí sim enviar `toolVariant.sku`.
 - **`Coupom`** — vincula a cotação a regra avançada de cupom no painel Frenet (ex.: cupom de frete grátis). Hoje cupom/promocode é resolvido no nosso checkout (`order.discountAmount`). **Recomendo: manter fora**; se quiserem campanha "FRETEGRATIS" gerida pela Frenet, este é o campo.
 - **`Diameter`** — só para volumes cilíndricos; nosso schema é retangular (L×A×C). Irrelevante.
+_Nota 2026-09-28: `scripts/check-frenet.ts` não existe; a sugestão não foi adotada._
+
+
 - **`GET /shipping/info`** — lista os serviços habilitados na conta. **Sugestão de baixo custo:** usar num script `scripts/check-frenet.ts` (smoke de credencial: valida token e lista serviços ativos) — útil no onboarding de env nova e pra diagnosticar "por que sumiu o Sedex da cotação" sem abrir o painel.
 - **`GET /CEP/Address/{cep}`** — lookup de endereço. O checkout já pede CEP; autofill de rua/bairro/cidade melhoraria o form de endereço novo. **Recomendo considerar** como melhoria de UX separada (também daria pra usar ViaCEP, gratuito, sem gastar quota Frenet).
 - **`/tracking/trackinginfo`** — rastreamento com eventos (postado → em trânsito → entregue). Depende do ciclo de vida pós-pago (pagamento real, roadmap #4) e da coluna `shippingServiceCode`. **Recomendo: planejar junto com a integração de pagamento**, é o próximo passo natural depois desta.

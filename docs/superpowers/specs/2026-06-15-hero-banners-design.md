@@ -1,5 +1,7 @@
 # Hero / Banners componível — Design
 
+> **Status em 2026-09-28:** parcial. Os slots (badge, countdown, CTA, título, descrição), as variantes de CTA e o fallback estão no código (`apps/web/src/components/hero/hero-element-renders.tsx`, `hero/hero-fallbacks.ts`). A disposição por enum `layout` foi substituída pela composição por elemento (`banner.composition`), ver `2026-07-30-hero-composition-design.md`; a ficha técnica deixou de ser só arte e virou DOM (`2026-06-22-hero-specs-dom-design.md`). Presets, builder e validações vivem no dashboard (não verificado aqui).
+
 > Data: 2026-06-15 · Issue de consumo (ecommerce): #122 · Schema: `packages/db/src/schema/banner.ts` (owned-by-dashboard)
 > Mockups da sessão: `.superpowers/brainstorm/1378197-1781544186/content/` (presets, cta, anchors, title-treatment, mobile, consistency)
 
@@ -25,9 +27,11 @@ Os presets só pré-marcam; qualquer combinação é válida.
 | **Countdown** | `countdownTarget` presente/nulo | Contador ao vivo até a data-alvo; cria urgência |
 | **CTA** | `ctaLabel`+`ctaHref` presentes/nulos | Botão único; cor via `ctaVariant` |
 
-Ficha técnica **não é slot de código** — fica embutida na arte de fundo (decisão da arte). Dots do carrossel são automáticos (aparecem se >1 banner ativo), sempre centralizados embaixo.
+Ficha técnica **não é slot de código** — fica embutida na arte de fundo (decisão da arte). _Nota 2026-09-28: decisão revertida. `banner.specs` (jsonb) é renderizada como DOM por `HeroSpecs` em `hero/hero-element-renders.tsx` (#158)._ Dots do carrossel são automáticos (aparecem se >1 banner ativo), sempre centralizados embaixo.
 
 ## Disposição — enum `layout` (4 valores, todos)
+
+_Nota 2026-09-28: o enum `banner_layout` hoje tem 8 valores (`packages/db/src/schema/banner.ts:14`) e o hero não lê mais `layout` para posicionar. A posição vem de `banner.composition`; o `layout` só alimenta a conversão legada de banners sem composition (`apps/web/src/lib/composition/legacy-composition.ts`)._
 
 Define a posição do bloco de conteúdo. Dots sempre no meio embaixo.
 
@@ -59,7 +63,7 @@ Pontos de partida no dashboard; o staff ajusta depois:
 ## Mobile
 
 - Disposição mobile colapsa pra vertical: produto no topo, conteúdo embaixo, **CTA full-width na base** (M1), dots no meio. Alvo de toque grande (≥44px), segue DESIGN.md.
-- Usa `backgroundImageMobileUrl` (portrait) e `productImageMobileUrl`, com fallbacks → desktop. Ficha técnica no mobile é resolvida na arte mobile.
+- Usa `backgroundImageMobileUrl` (portrait) e `productImageMobileUrl`, com fallbacks → desktop. _Nota 2026-09-28: o fundo mobile agora obedece `backgroundMobileMode` (`inherit`, `custom`, `none`), em `resolveMobileBg` de `hero/hero-slide.tsx`._ Ficha técnica no mobile é resolvida na arte mobile.
 
 ## Schema — delta vs o `banner` já sincronizado (owned-by-dashboard, ADR-0009)
 

@@ -1,5 +1,7 @@
 # Plan 001: Rodar a suíte de testes unit no CI
 
+> **Status em 2026-09-28:** implementado. O CI roda `bun run --filter=web test:ci` (`.github/workflows/ci.yml:19`) com `VITEST_UNIT_ONLY=1` e a lista `INTEGRATION` de `apps/web/vitest.config.ts:8`. O job também roda `bun check` e os testes de `@emach/validators`, `@emach/db` e `@emach/auth` (#221).
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving on. If
 > anything in "STOP conditions" occurs, stop and report — do not improvise.
@@ -46,6 +48,8 @@ concorrência — ver `CLAUDE.md`) ficam fora do CI por ora, rodando só localme
         - run: bun check-types
   ```
 - `apps/web/vitest.config.ts` (atual, completo):
+
+_Nota 2026-09-28: os trechos abaixo são o estado de 2026-06-17. Hoje o `ci.yml` também roda `bun check` e o `test:ci`, e o `vitest.config.ts` tem `setupFiles` e outra lista `INTEGRATION`._
   ```ts
   import { resolve } from "node:path";
   import { defineConfig } from "vitest/config";
@@ -65,7 +69,9 @@ concorrência — ver `CLAUDE.md`) ficam fora do CI por ora, rodando só localme
   });
   ```
 - `apps/web/package.json` script atual: `"test": "vitest run"`.
-- **Os 8 testes de integração** (importam `@emach/db`/usam `withRollback`, batem no
+- **Os 8 testes de integração**
+
+_Nota 2026-09-28: a lista abaixo está desatualizada. `src/lib/superfrete/quote.test.ts` e `src/lib/origin-branch.test.ts` não existem mais (o frete migrou para Frenet, #178). A lista vigente em `apps/web/vitest.config.ts:8` é: `auto-promo.integration`, `tool-images.integration`, `place-order`, `revalidate-cart`, `validate-coupon`, `facet-counts` e `catalog-data`._ (importam `@emach/db`/usam `withRollback`, batem no
   banco real) que devem ficar FORA do CI:
   - `src/app/checkout/_lib/place-order.test.ts`
   - `src/app/checkout/_lib/place-order.shipping.test.ts`

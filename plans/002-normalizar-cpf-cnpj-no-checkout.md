@@ -1,5 +1,7 @@
 # Plan 002: Normalizar CPF/CNPJ antes de persistir no checkout + testar o validador
 
+> **Status em 2026-09-28:** implementado. `inputSchema.document` usa `.transform(onlyDigits).refine(isValidCpfCnpj)` em `apps/web/src/app/checkout/_lib/place-order.ts:64`. O pacote `@emach/validators` tem o script `"test": "bun test"` e `packages/validators/src/cpf-cnpj.test.ts` cobre CPF, CNPJ e telefone.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving on. If
 > anything in "STOP conditions" occurs, stop and report — do not improvise.
@@ -44,6 +46,8 @@ fraude sem rede de segurança.
   	// ...
   ```
 - `apps/web/src/app/checkout/_lib/place-order.ts:490-498` — write cru:
+
+_Nota 2026-09-28: as linhas citadas neste plano derivaram. O `document` do schema está em `place-order.ts:64` e o write em `place-order.ts:613`. O campo `phone` (fora do escopo original) também passou a normalizar com `onlyDigits` e validar com `isValidPhone` (`place-order.ts:60-63`)._
   ```ts
   await tx
   	.update(client)

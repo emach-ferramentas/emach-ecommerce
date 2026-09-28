@@ -1,5 +1,7 @@
 # Redesign da conta do cliente — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #74). Os componentes, a Overview, os helpers de fase (`lib/orders/status.ts`, `lib/refunds/status.ts`), o token `--amber` e a nav mobile existem no código. Os checkboxes abaixo não foram marcados.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Trazer a linguagem visual da home (chiaroscuro Ferrari) às 4 telas da conta do cliente — Overview (nova), Pedidos, Reembolso, Dados Pessoais — e ativar a verificação de e-mail leve.
@@ -9,7 +11,7 @@
 **Tech Stack:** Next 16 (App Router, RSC), Tailwind v4 (tokens em `globals.css`), Barlow/Barlow Condensed, lucide-react, Better Auth (client), vitest.
 
 **Spec:** `docs/superpowers/specs/2026-06-09-redesign-conta-cliente-design.md`
-**Mockups de referência:** `.superpowers/brainstorm/162081-1781008315/content/*.html` (pedidos-b-refino-v2, telas-conjunto, overview-dados-v2, dados-v3).
+**Mockups de referência:** `.superpowers/brainstorm/162081-1781008315/content/*.html` _(Nota 2026-09-28: pasta não versionada, não existe no repo)_ (pedidos-b-refino-v2, telas-conjunto, overview-dados-v2, dados-v3).
 
 **Convenções do projeto (CLAUDE.md):** sem `console.*` (usar `log` do evlog); sem `: any`/`as any`; sem barrel files em `apps/web/src`; `next/image`; sem `forwardRef` (React 19); sem `useMemo`/`useCallback` (React Compiler); IDs estáveis em `.map()`; superfície clara só `--gray-10`. Ler cada arquivo antes de editar. Rodar `bun check-types` antes de cada commit.
 
@@ -517,7 +519,7 @@ git commit -m "feat: stepper de fases do reembolso (refundStepDisplayState)"
 ## Task 7: Ativar verificação de e-mail leve (auth)
 
 **Files:**
-- Modify: `packages/auth/src/ecommerce.ts:50-75`
+- Modify: `packages/auth/src/ecommerce.ts:50-75` _(Nota 2026-09-28: os números de linha mudaram; hoje `databaseHooks` existe de novo, mas para normalizar `document` e `phone` (#92, #100), não para forçar `emailVerified`.)_
 
 - [ ] **Step 1: Remover o hook que força emailVerified e ligar sendOnSignUp**
 
@@ -1198,6 +1200,8 @@ git commit -m "feat: Overview /dashboard (hero, destaque do pedido, atalhos)"
 **Files:**
 - Modify: `apps/web/src/app/dashboard/layout.tsx`
 - Modify: `apps/web/src/app/dashboard/_components/dashboard-sidebar.tsx`
+
+_Nota 2026-09-28: o shell foi movido para `dashboard/_components/dashboard-chrome.tsx` (guarda P0 sob Suspense, #98), e o `layout.tsx` só monta `SiteHeader` e o chrome._
 
 - [ ] **Step 1: Tirar o padding do container do layout**
 

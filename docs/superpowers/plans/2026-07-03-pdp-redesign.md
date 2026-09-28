@@ -1,5 +1,7 @@
 # PDP Redesign (placa técnica) — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (#180, `622c03f`). `plate-layout.ts`, `breadcrumb.tsx`, a galeria com thumbs em overlay, o card branco de compra e o empty state de avaliações estão em `apps/web/src/app/(shop)/product/[slug]/`. Divergências posteriores: o `FreightCalculator` saiu da PDP (`1ae3d0c`) e a seção de avaliações virou a placa clara do #195. Os checkboxes abaixo ficaram sem marcar e não refletem o que foi feito.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implementar o redesign aprovado da PDP (`/product/[slug]`): breadcrumb, galeria com thumbs em overlay, card branco de compra, ficha técnica em "placa" com algoritmo de spans testado, empty state de avaliações e reordenação de seções.
@@ -956,6 +958,8 @@ git commit -m "feat: thumbs em overlay na galeria da PDP"
 - Produces: mesma API externa.
 
 O bloco transacional (preço → parcelas → voltagem → quantidade → CTAs) entra num card `bg-white border border-border`; frete, trust strip e compartilhar ficam fora, abaixo. `buyActionsRef` continua no wrapper dos CTAs (dentro do card — o IntersectionObserver da sticky bar não muda).
+
+_Nota 2026-09-28: o `FreightCalculator` citado neste passo foi removido da PDP em `1ae3d0c`; `apps/web/src/components/freight-calculator.tsx` não existe mais._
 
 - [ ] **Step 1: Reestruturar o JSX**
 

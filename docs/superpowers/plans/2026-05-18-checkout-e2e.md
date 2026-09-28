@@ -1,5 +1,7 @@
 # Verificação do checkout end-to-end — Implementation Plan
 
+> **Status em 2026-09-28:** implementado, com o trecho de estoque substituído pelo ADR-0003. As tasks 1 e 2 estão no código: `apps/web/vitest.config.ts`, `apps/web/src/app/checkout/_lib/place-order.ts` e `place-order.test.ts` (commits `c032642`, `10f4b32`). Os trechos de código abaixo são o estado de 2026-05-18: `placeOrder` deixou de receber `branchId` e de debitar estoque em `0149a44`, e o action foi ampliado (e-mail verificado, rate limit, anti-fraude de frete).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Extrair a lógica de criação de pedido do `createOrderAction` para uma função `placeOrder` testável, cobri-la com um teste de integração (transação revertida), e verificar o fluxo no browser.
@@ -9,6 +11,8 @@
 **Tech Stack:** TypeScript, Next.js 16 server actions, Drizzle ORM, vitest, PostgreSQL (Supabase).
 
 **Spec:** `docs/superpowers/specs/2026-05-18-checkout-e2e-design.md` · **Issue:** #17
+
+_Nota 2026-09-28: o código dos passos abaixo não reflete o estado atual. Débito de `stock_level`, `stock_movement` e `getDefaultBranchId` saíram; ver `2026-05-20-estoque-multi-filial.md` e `docs/adr/0003-estoque-multi-filial.md`. A página do pedido do passo 3 está em `apps/web/src/app/(shop)/pedidos/[number]/page.tsx`._
 
 ---
 

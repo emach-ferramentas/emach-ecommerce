@@ -1,5 +1,7 @@
 # Plan 011: Remover `useCallback` manual do `cart-context`
 
+> **Status em 2026-09-28:** implementado. `apps/web/src/lib/cart-context.tsx` não usa `useCallback` (import na linha 3 sem ele) e `apps/web/next.config.ts:7` mantém `reactCompiler: true`.
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP =
 > pare e reporte. Ao terminar, atualize `plans/README.md`.
 >
@@ -22,6 +24,7 @@ O React Compiler está ativo (`reactCompiler: true` no `next.config.ts`) e o
 atrapalhar a análise do compiler. Fix mecânico, risco baixo.
 
 ## Current state
+_Nota 2026-09-28: o bloco de `useCallback` abaixo é o estado de 2026-06-17, anterior à remoção._
 
 - `apps/web/src/lib/cart-context.tsx` (relevante) — 5 `useCallback` (linhas 54-73):
   ```tsx

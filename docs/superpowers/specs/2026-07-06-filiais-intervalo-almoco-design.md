@@ -1,8 +1,10 @@
 # Filiais: intervalo de almoço no horário de funcionamento (issue #198)
 
+> **Status em 2026-09-28:** implementado. `formatBusinessPeriod` e `getBusinessHoursRows` estão em `apps/web/src/lib/branches.ts:68` e `:87`, `formatBusinessHours` foi removida, e o `BranchCard` de `apps/web/src/app/(shop)/sobre/page.tsx` renderiza a grade rotulada (`hoursRows`, linhas 63, 113 e 313). Os testes estão em `apps/web/src/lib/branches.test.ts`. A afirmação sobre os dados das 4 filiais no banco não foi verificada (sem acesso ao banco).
+
 **Data:** 2026-07-06
 **Issue:** [#198](https://github.com/othavi0/emach-ecommerce/issues/198)
-**Status:** aprovado (layout B validado via visual companion)
+**Decisão de layout:** layout B validado via visual companion
 
 ## Contexto
 

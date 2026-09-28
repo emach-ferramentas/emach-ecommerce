@@ -1,8 +1,11 @@
 # Performance baseline — 2026-06-17 (pré Fase 1)
 
+> **Status em 2026-09-28:** implementado. É a medição anterior à Fase 1 (#145) e ficou como referência histórica; os números vieram de um build local e não foram reproduzidos hoje (não verificado). Os resultados comparáveis estão em `perf-fase1-results.md` e `perf-fase2-results.md`.
+
 Build: Next 16.2.6 Turbopack, prod build servido em `next start`. Lighthouse 13.4.0, chromium headless, preset mobile (throttled). Números de localhost (mesma máquina) — válidos como comparação relativa antes/depois.
 
 ## Route types (pré-cacheComponents)
+_Nota 2026-09-28: `/catalog` hoje tem também `/catalog/[cat]` (rota própria por categoria), e `/checkout` mora em `apps/web/src/app/checkout/`, fora de `(shop)`._
 `/` e `/cart` → `○ Static`; `/catalog`, `/product/[slug]`, `/checkout`, `/checkout/success`, `/pedidos/[number]`, `/dashboard/*` → `ƒ Dynamic`.
 
 ## Bundle (static/chunks)

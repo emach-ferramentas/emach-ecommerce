@@ -1,6 +1,6 @@
 # Data Governance
 
-O tratamento lícito dos dados pessoais do cliente sob a LGPD: consentimento, auditoria de mudanças, exportação e anonimização. Escrito por ambos os apps, com papéis distintos: o **storefront** grava **Consent** (no checkout) e dispara a **Anonymization** (via CLI `db:anonymize-client`); **Audit Trail** e **Data Export** são operados pelo **dashboard** (staff).
+O tratamento lícito dos dados pessoais do cliente sob a LGPD: consentimento, auditoria de mudanças, exportação e anonimização. Escrito por ambos os apps, com papéis distintos: o **storefront** grava **Consent** (no checkout) e um operador roda a **Anonymization** pela CLI (`db:anonymize-client`); **Audit Trail** e **Data Export** são operados pelo **dashboard** (staff).
 
 ## Language
 
@@ -25,7 +25,7 @@ O tipo de mudança capturada numa entrada do **Audit Trail**: `profile_updated`,
 O registro de uma exportação em massa de dados de **Clients** feita por um **User** do staff — os filtros aplicados, a contagem de linhas, os bytes escritos e se o resultado foi truncado.
 
 **Anonymization**:
-A operação de direito ao esquecimento da LGPD que remove os dados pessoais de um **Client** (`db:anonymize-client`).
+A operação de direito ao esquecimento da LGPD, rodada manualmente por operador (`bun --cwd packages/db db:anonymize-client <client-id>`; nenhuma tela ou action a dispara). Numa transação, a linha do **Client** fica, com nome `[anonymized]`, e-mail `deleted-<hash>@anonymized.local`, sem telefone, **Document** nem imagem; endereços, sessões e contas de login são apagados; e um **Consent** `privacy` revogado (versão `anonymization-<data>`) é registrado. O script não limpa o endereço snapshotado em `order.shipping_address`, `client.internal_notes`, os **Consent** antigos (IP e user-agent) nem o **Audit Trail**.
 _Avoid_: Deletion, Removal — o registro do **Client** permanece; os dados pessoais é que são apagados
 
 ## Relationships

@@ -1,5 +1,7 @@
 # Destravar checkout e imagens — design
 
+> **Status em 2026-09-28:** implementado na parte de código; a limpeza de `tool_image` não foi verificada. O merge de `origin/main` entrou em `293d409` e `branch.is_default` não existe mais em `packages/db/src/schema/inventory.ts`. O `DELETE FROM tool_image` é operação de banco sem rastro no repositório (não verificado). `lib/default-branch.ts` foi removido depois, em `a096c28`, pelo `2026-05-20-estoque-multi-filial-design.md`.
+
 **Data:** 2026-05-20
 **Branch:** `feat/melhorias-pages-2`
 **Issues relacionados:** [#28](https://github.com/othavioquiliao/emach-ecommerce/issues/28) (parcial), PR [#29](https://github.com/othavioquiliao/emach-ecommerce/pull/29) (já em `main`)
@@ -18,7 +20,7 @@ Dois incidentes P0 simultâneos no storefront:
 
    Causa raiz: alguém rodou um seed em `tool_image` que escreveu URLs mas **não fez upload dos arquivos correspondentes**.
 
-O bug funcional do estoque multi-filial descrito no issue #28 (storefront roteia tudo para uma filial em vez de somar todas) **fica adiado** — será spec separado posteriormente. O hotfix da PR #29 já preserva o comportamento atual (filial única via env / fallback "mais antiga"), o que basta para destravar produção.
+O bug funcional do estoque multi-filial descrito no issue #28 (storefront roteia tudo para uma filial em vez de somar todas) **fica adiado** — será spec separado posteriormente. _Nota 2026-09-28: o spec separado é `2026-05-20-estoque-multi-filial-design.md` (issue #30, ADR-0003), já implementado._ O hotfix da PR #29 já preserva o comportamento atual (filial única via env / fallback "mais antiga"), o que basta para destravar produção.
 
 ## Arquitetura — duas etapas independentes
 
@@ -45,7 +47,7 @@ Os 17 registros são todos URLs quebradas. Não há valor em manter. Após o del
 | Arquivo | Mudança |
 |---|---|
 | `packages/db/src/schema/inventory.ts` | Receberá da merge: remoção de `isDefault: boolean(...)` e do `uniqueIndex("branch_is_default_unique")` |
-| `apps/web/src/lib/default-branch.ts` | Receberá da merge: passa a ler `process.env.ECOMMERCE_DEFAULT_BRANCH_ID` com fallback `ORDER BY created_at ASC LIMIT 1` |
+| `apps/web/src/lib/default-branch.ts` | _(removido em `a096c28`, ADR-0003)_ Receberia do merge: passa a ler `process.env.ECOMMERCE_DEFAULT_BRANCH_ID` com fallback `ORDER BY created_at ASC LIMIT 1` |
 | Banco (via MCP Supabase) | `DELETE FROM tool_image` |
 
 Nenhum código novo é escrito neste spec — é puramente merge + comando SQL.
@@ -62,6 +64,7 @@ Storefront (checkout):
     → process.env.ECOMMERCE_DEFAULT_BRANCH_ID (se setado)
     → senão: branch.created_at ASC LIMIT 1
     → place-order debita estoque dessa filial (como antes)
+    (_Nota 2026-09-28: fluxo substituído. `getDefaultBranchId` foi removido e `placeOrder` não debita mais estoque nem escolhe filial; ver ADR-0003._)
 
 Dashboard (re-upload de imagens, manual):
   admin abre produto → upload → bucket UUID + INSERT em tool_image
@@ -73,7 +76,7 @@ Dashboard (re-upload de imagens, manual):
 - **Conflito de merge inesperado:** se aparecer (improvável), resolver preservando o estado de `main` para `inventory.ts` e `default-branch.ts` — são a fonte de verdade do hotfix.
 - **`ECOMMERCE_DEFAULT_BRANCH_ID` não setada:** fallback "mais antiga" funciona, mas pode escolher filial diferente da que era `is_default = true`. Após o merge, conferir qual filial está sendo usada e setar a env explícita em produção se necessário (não bloqueia este spec).
 - **Componentes que não tratam `primary_image_url = null`:** se quebrarem visualmente após o `DELETE`, abrir issue de UI separado. O spec assume tratamento gracioso (a ser verificado em smoke).
-- **Cache stale:** home tem `revalidate = 600`, PDP `revalidate = 3600`. Pode demorar até 1h pra propagar. Sem invalidação manual (não vale a pena para imagens que estavam quebradas).
+- **Cache stale:** home tem `revalidate = 600`, PDP `revalidate = 3600`. _Nota 2026-09-28: a home segue com `cacheLife({ revalidate: 600 })` em `apps/web/src/app/(shop)/page.tsx`; o PDP hoje usa `use cache` (valor não verificado)._ Pode demorar até 1h pra propagar. Sem invalidação manual (não vale a pena para imagens que estavam quebradas).
 
 ## Testes / verificação
 

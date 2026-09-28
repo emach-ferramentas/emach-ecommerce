@@ -1,5 +1,7 @@
 # Storefront Navigation Performance Implementation Plan
 
+> **Status em 2026-09-28:** parcial. Entraram em #145 (e #146 para o `srcSet` da imagem do PDP): `cacheComponents` em `apps/web/next.config.ts`, guarda sob Suspense (`app/dashboard/_components/dashboard-chrome.tsx`, `app/checkout/page.tsx`, `app/(shop)/pedidos/[number]/page.tsx`), home e `/sobre` com `use cache`, PDP com shell cacheado (`lib/product-detail.ts`) e reviews dinâmicas, grids em CSS, `LazyMotion`, `BranchMap` lazy e fontes enxutas. Não entraram: a Task 10 (`SiteHeader` segue importado página a página) e o `lib/catalog-cache.ts` da Task 6, que não existe.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make storefront navigation faster — cacheable product pages, lighter client bundle on the hottest routes, smoother page transitions — by adopting Next 16 Cache Components and trimming JS, without breaking the P0 auth guard.
@@ -13,6 +15,8 @@
 ## Global Constraints
 
 - **Auth P0 invariants (CLAUDE.md):** `apps/web` uses only the `ecommerce` Better Auth instance. The `/dashboard` guard is 2-layer: `proxy.ts` checks cookie existence at the edge; the area `layout.tsx` validates the real session via `requireCurrentClient()`. Both layers stay. Any authenticated area outside `/dashboard` needs its own `requireCurrentClient()`. Routes that read session but live outside `/dashboard` (`/checkout`, `/pedidos/[number]`) already guard inline — keep that.
+
+_Nota 2026-09-28: a validação da sessão hoje mora no `DashboardChrome` sob Suspense, não no `layout.tsx` (ver Task 2); `app/dashboard/layout.guard.test.ts` checa essa chamada._
 - **Guard tests must stay green AND be hardened:** `app/dashboard/layout.guard.test.ts` currently reads `layout.tsx` source and asserts `.toContain("requireCurrentClient")`; `lib/session.test.ts` unit-tests the function. **Do not modify `lib/session.ts`.** When the guard call moves into a child component, the guard test MUST be updated to assert the real `await requireCurrentClient()` call in that child (not a string in a comment) — this is mandatory, not optional (F4).
 - **Schema/query ownership (CLAUDE.md, ADR-0009):** `packages/db/src/{schema,queries,sql/triggers.sql}` is **owned-by-dashboard and synced into this repo via CI PR**. **Do NOT edit `packages/db/src/queries/catalog.ts` here** — any edit is overwritten on the next sync. The `getToolBySlug` dedup (#2) lives in a NEW local wrapper under `apps/web/src/lib`, not in the query module (R2).
 - **No banned anti-patterns (CLAUDE.md):** no `console.*` (use `log` from `@/lib/evlog`), no `: any`/`as any`/`@ts-ignore`/`@ts-expect-error`, no `key={index}`, no `<img>` (use `next/image`), no `useMemo`/`useCallback` (React Compiler on), no barrel files, no `React.forwardRef`.
@@ -176,6 +180,8 @@ Keep the existing `session.ts` assertions. The first test (layout `.toContain`) 
 
 ### Task 3: Remaining runtime-API routes — `/pedidos/[number]` + `/checkout/success`
 
+_Nota 2026-09-28: `/pedidos/[number]` não recebeu `generateStaticParams`. A página lê `params` e a sessão só dentro de `OrderConfirmationContent`, sob Suspense, e usa metadata estática (`app/(shop)/pedidos/[number]/page.tsx`). O `checkout` mora em `app/checkout/`, fora de `(shop)`._
+
 **Files:** Modify `(shop)/pedidos/[number]/page.tsx`, `(shop)/checkout/success/page.tsx`.
 
 > Confirmed by review: `pedidos/[number]/page.tsx` reads BOTH `await params` AND `await requireCurrentClient()` at top-level (double violation: dynamic params + headers); `checkout/success/page.tsx` reads `await searchParams` at top-level. Both break the build after Task 1.
@@ -316,6 +322,8 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
 
 ### Task 6: Catalog → cached category tree + Suspense list (realistic about metadata)
 
+_Nota 2026-09-28: `lib/catalog-cache.ts` não existe. O cache ficou em `getCatalogData` (`app/(shop)/catalog/_lib/catalog-data.ts`, `use cache` de 600 s), que também busca a árvore de categorias; a lista streama por `CatalogResults` sob Suspense. A metadata de `/catalog` ficou estática (a opção da F7). Categoria ganhou rota própria em `/catalog/[cat]` (spec de SEO de 2026-09-01)._
+
 **Files:** Modify `(shop)/catalog/page.tsx`, `lib/catalog-cache.ts`.
 
 > F7: `generateMetadata` reads `searchParams` (cat, q). Under cacheComponents this keeps metadata dynamic and may keep `/catalog` as `ƒ`. That's acceptable — the catalog is inherently dynamic (filters). The win here is the cached category tree + a streamed list, not a fully static catalog.
@@ -371,6 +379,8 @@ export default async function ProductPage({ params, searchParams }: ProductPageP
 - [ ] **Step 4: Commit** — `perf: framer-motion via LazyMotion no hero/login`
 
 ### Task 10: Move SiteHeader into the shop layout
+
+_Nota 2026-09-28: abandonada. `perf-fase2-results.md` registra o motivo (o `overlay` da home dependeria de `usePathname` e o header inteiro viraria fallback de Suspense, saindo do HTML inicial). `SiteHeader` continua importado em cada página._
 
 **Files:** Modify `(shop)/layout.tsx`; remove per-page `<SiteHeader>` from the `(shop)` pages.
 

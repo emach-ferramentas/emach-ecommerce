@@ -1,5 +1,7 @@
 # Cupom no checkout + correção do sync de promoções
 
+> **Status em 2026-09-28:** implementado. O cupom vive em `apps/web/src/lib/coupons/validate-coupon.ts`, o preview em `apps/web/src/app/checkout/_actions/apply-coupon.ts`, o campo em `apps/web/src/app/checkout/_components/coupon-field.tsx` e a integração em `apps/web/src/app/checkout/_lib/place-order.ts` (`FOR UPDATE` e `redemption_count + 1` na criação do pedido). `order.coupon_id` existe em `packages/db/src/schema/orders.ts`. Ajustes posteriores: o schema do item do carrinho foi para `_lib/coupon-schema.ts` e a mensagem de cupom inexistente, inativo ou esgotado é colapsada em "Cupom inválido ou indisponível" (`publicCouponError`); ver `2026-06-07-followups-cupom-checkout-design.md`.
+
 > Design aprovado em 2026-06-05. Origem: issue #55 (redesenho de promoções/cupons,
 > PR `othavioquiliao/emach-dashboard#120`). Contrato de integração:
 > `emach-dashboard/docs/integration/admin-ecommerce.md` (seção "Aplicação de cupom no checkout").
@@ -42,6 +44,8 @@ apps/web/src/
     _lib/place-order.ts       # integração: re-valida + incrementa + grava (na transação)
     _lib/place-order.test.ts
 ```
+
+> _Nota 2026-09-28: `validate-coupon.ts` hoje recebe `(tx, code, lines, autoPromoToolIds?)` e o auto-desconto vem de `apps/web/src/lib/auto-promo.ts` (`fetchAutoPromosByToolId`); `fetchAutoDiscountByToolId` não existe mais._
 
 > A lógica de cupom vive no **app** (não em `packages/db/queries`, que é synced do dashboard) —
 > o contrato é explícito: "o enforcement do cupom vive no checkout (aqui)".
@@ -104,7 +108,8 @@ Guard de sessão → **re-busca preços no servidor** (nunca confia no client) �
   4. Gravar `order.couponId` + `order.discountAmount`.
   5. `total = subtotal − desconto + frete` (clamp ≥ 0).
 - Write em tabela dashboard-owned/shared: `actor_type='system'` onde aplicável.
-- Cupom inválido no momento do pedido → `OrderError("Cupom não disponível")`; o client limpa.
+- Cupom inválido no momento do pedido → `OrderError`; o client limpa.
+  _Nota 2026-09-28: a mensagem passa por `publicCouponError` (`lib/coupons/validate-coupon.ts:48`), que colapsa reasons enumeráveis em "Cupom inválido ou indisponível" (anti-enumeração). "Cupom não disponível" só aparece no caso de promoção removida entre a validação e o `FOR UPDATE`, e também passa por esse colapso._
 
 ## Parte 4 — UI
 
@@ -117,6 +122,8 @@ Guard de sessão → **re-busca preços no servidor** (nunca confia no client) �
   CTA de alta prioridade).
 
 ## Parte 5 — Erros (mensagens user-safe via `OrderError`)
+
+_Nota 2026-09-28: para o cliente, as mensagens de código inexistente, expirado e esgotado são genéricas ("Cupom inválido ou indisponível"); só "Pedido mínimo de R$ X" e "Cupom não cobre nenhum item do carrinho" mantêm o texto detalhado._
 
 "Cupom inválido" · "Cupom expirado" · "Cupom esgotado" · "Pedido mínimo de R$ X" · "Cupom não
 cobre nenhum item do carrinho". Sempre `log.error({ action, ...context })` antes de retornar.
@@ -131,7 +138,7 @@ cobre nenhum item do carrinho". Sempre `log.error({ action, ...context })` antes
 
 ## Fora de escopo (YAGNI / follow-up)
 
-- Fluxo de pagamento real (Asaas) e transição `→ paid` — quando entrar, mover incremento de cupom +
+- Fluxo de pagamento real (Asaas) e transição `→ paid` (ainda pendente em 2026-09-28: `payment-methods.tsx` segue com dados mock) — quando entrar, mover incremento de cupom +
   débito de estoque para o webhook de `paid`.
 - Campo de cupom na página `/cart` (decidido: só no checkout).
 - Soma de cupom + promoção automática (contrato: nunca somam).

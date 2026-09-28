@@ -1,12 +1,14 @@
 # Hero por composition (banner builder por elemento) — design
 
+> **Status em 2026-09-28:** implementado (PR #212, `8fc6417`). O hero renderiza por `banner.composition` com `lib/composition/{composition-schema,placement-css,legacy-composition}.ts` e `components/hero/{hero-slide,hero-element-renders,hero-safe-stack}.tsx` e `components/hero/hero-fallbacks.ts`; `LAYOUT_CONFIG` não existe mais. A remoção do dual-write no dashboard e a paridade em produção não foram verificadas.
+
 > Status: **aprovado** (brainstorming 2026-07-30) · Issue: #210 (+ adendo nos comentários) · Contraparte: emach-dashboard#361 (mergeado; backfill executado — 100% dos banners de produção têm `composition` v1)
 
 ## Contexto
 
 O dashboard trocou o modelo de composição do hero: em vez do enum `layout` (8 opções) + escalas, cada elemento (badge, título, descrição, specs, countdown, produto, CTA) tem posição própria — âncora 3×3 + offset % + escala — numa coluna `banner.composition` (jsonb, **já sincronizada** via #211). O contrato completo (tipos, fórmulas de âncora→CSS, área segura, pilha segura, gradiente, armadilhas de render) vive na **issue #210 e em `docs/integration/admin-ecommerce.md` do repo do dashboard** — esta spec não o repete; define como a loja o implementa.
 
-Hoje o `hero-carousel.tsx` renderiza pelos campos legados (`layout` + `LAYOUT_CONFIG`), que o dashboard mantém por dual-write (aproximação). Este trabalho faz a loja ler `composition` e **mata o `LAYOUT_CONFIG` de vez** — fim do ciclo de paridade manual (#130).
+_Nota 2026-09-28: o parágrafo abaixo descreve o estado antes do #212._ Hoje o `hero-carousel.tsx` renderiza pelos campos legados (`layout` + `LAYOUT_CONFIG`), que o dashboard mantém por dual-write (aproximação). Este trabalho faz a loja ler `composition` e **mata o `LAYOUT_CONFIG` de vez** — fim do ciclo de paridade manual (#130).
 
 ## Decisões (brainstorming 2026-07-30)
 

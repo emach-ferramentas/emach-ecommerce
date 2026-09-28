@@ -1,5 +1,7 @@
 # Dashboard de Pedidos — Ações (Plano 2) Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #36, commit `a3d62d2`), com o pagamento como stub por desenho. Cancelar, comprar novamente e avaliar vivem em `apps/web/src/app/dashboard/pedidos/_actions/{orders,reviews}.ts`; `/pagar` e o download de NF-e existem em `pedidos/[id]/pagar/` e `pedidos/[id]/_components/order-documents.tsx`. Não há integração Asaas: `payment-methods.tsx` ainda usa dados mock (`TODO(asaas)`).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Tornar as ações do pedido funcionais — cancelar, comprar novamente, avaliar (por item) — e desenhar o stub do fluxo de pagamento Asaas + download de NF-e, reintroduzindo os botões por status (hoje ocultos pelo Plano 1).
@@ -25,6 +27,12 @@
 - `star-rating.tsx` é **read-only** (exibição). A sheet de avaliação precisa de um seletor de estrelas **interativo** próprio (Task 3 inclui um `StarInput`).
 - `order.nfeUrl` (string|null) → botão "Baixar nota fiscal".
 - Bans (CLAUDE.md): `console.*`, `: any`/`as any`, `key={index}`, raw `<img>`, `forwardRef`, manual memo, barrel files, `target="_blank"` sem `rel="noopener"`.
+
+_Nota 2026-09-28: divergências do código atual em relação a estes fatos._
+- _O hook é `useCartActions()` de `@/lib/cart-context` (o `rebuy-button.tsx` usa `add` dele), não `useCart()`._
+- _`product-info.tsx` e `star-rating.tsx` estão em `apps/web/src/app/(shop)/product/[slug]/_components/`, e o carrinho é `apps/web/src/app/(shop)/cart`._
+- _`cancelOrderAction` mudou no #227: transação, `status` no `WHERE` do `UPDATE` e devolução do uso do cupom. O trecho do Task 1 abaixo é o original._
+- _`requestRefundAction` vive em `app/dashboard/pedidos/_actions/refunds.ts` e importa o `ActionResult` sem `data` de `lib/actions/types.ts`; `orders.ts` ainda declara o próprio `ActionResult<T>`._
 
 ---
 

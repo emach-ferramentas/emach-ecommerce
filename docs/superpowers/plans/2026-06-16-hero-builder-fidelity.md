@@ -1,5 +1,7 @@
 # Hero Builder Fidelity Implementation Plan
 
+> **Status em 2026-09-28:** parcial. As Tasks 2 e 3 (countdown e badge) estão implementadas, hoje em `apps/web/src/components/hero/hero-element-renders.tsx`. A Task 1 foi abandonada como escrita: `apps/web/src/lib/countdown.ts` já existia (#62) com a assinatura `formatCountdown(remainingMs): CountdownParts`. A Task 4 foi substituída pelo #210, que removeu `LAYOUT_CONFIG` (`2026-07-30-hero-composition.md`). A Task 5 (issue no dashboard) não foi verificada.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fazer o hero do storefront honrar tudo que o builder do dashboard promete — badge, countdown e as posições dos 8 layouts batendo com os mockups aprovados.
@@ -21,6 +23,8 @@
 ---
 
 ### Task 1: Função pura `formatCountdown`
+
+_Nota 2026-09-28: abandonada. O util já existia com outra assinatura (`formatCountdown(remainingMs): CountdownParts`, `apps/web/src/lib/countdown.ts`); o código e o teste abaixo não foram criados._
 
 **Files:**
 - Create: `apps/web/src/lib/countdown.ts`
@@ -274,6 +278,8 @@ git commit -m "feat: badge (pílula clara) no hero"
 ---
 
 ### Task 4: Calibrar os 8 layouts (`LAYOUT_CONFIG`) — visual
+
+_Nota 2026-09-28: substituída. `LAYOUT_CONFIG` foi removido no #210; a posição vem de `banner.composition` e os 8 layouts são só o mapa legado em `apps/web/src/lib/composition/legacy-composition.ts`._
 
 **Files:**
 - Modify: `apps/web/src/components/hero-carousel.tsx` (const `LAYOUT_CONFIG`, e `CTA_CORNER_*`/`CTA_CENTER` se preciso)

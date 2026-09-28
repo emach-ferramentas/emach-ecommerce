@@ -1,11 +1,13 @@
 # PDP redesign — editorial claro + placa técnica
 
-**Data:** 2026-07-03 · **Status:** aprovado em brainstorming (visual companion, 6 telas de mockup)
+> **Status em 2026-09-28:** implementado (#180, `622c03f`), com três desvios posteriores. A cotação de frete saiu da PDP (`1ae3d0c`, o `FreightCalculator` não existe mais), a seção de avaliações trocou o bloco preto pela placa clara (#195, `2026-07-03-reviews-placa-design.md`) e a descrição ganhou parágrafos e o rótulo próprio "Descrição" (#213). Código em `apps/web/src/app/(shop)/product/[slug]/` (`page.tsx`, `_components/product-specs.tsx`, `plate-layout.ts`, `breadcrumb.tsx`, `product-info.tsx`, `product-gallery.tsx`).
+
+**Data:** 2026-07-03 · **Aprovação:** em brainstorming (visual companion, 6 telas de mockup)
 **Rota:** `apps/web/src/app/(shop)/product/[slug]`
 
 ## 1. Problema
 
-A PDP é a única superfície grande fora do sistema visual da marca: abre num campo claro uniforme sem nenhum momento de contraste, o produto fica num tile pequeno com ar morto ao redor, o buy box é uma pilha de widgets com peso igual, e produto raso (poucas specs, 0 avaliações) deixa a página oca — a ficha rendia 2 cards pretos soltos e a seção de avaliações sumia (`return null`). Sem breadcrumb. Diagnóstico completo validado com o dono ("estranho", "sem graça").
+A PDP é a única superfície grande fora do sistema visual da marca: abre num campo claro uniforme sem nenhum momento de contraste, o produto fica num tile pequeno com ar morto ao redor, o buy box é uma pilha de widgets com peso igual, e produto raso (poucas specs, 0 avaliações) deixa a página oca — a ficha rendia 2 cards pretos soltos e a seção de avaliações sumia (`return null`); hoje a seção mostra a faixa escura de empty state. Sem breadcrumb. Diagnóstico completo validado com o dono ("estranho", "sem graça").
 
 ## 2. Decisões tomadas (trilha do brainstorming)
 
@@ -38,6 +40,8 @@ Todas as seções abaixo do topo mantêm o alinhamento existente `mx-auto w-[cal
 - Mobile: colapsa para `‹ {categoria}` (link para a categoria raiz).
 - Componente novo `breadcrumb.tsx` em `_components/` (ou compartilhado se o catálogo quiser depois). Emitir JSON-LD `BreadcrumbList` junto do `ProductJsonLd`.
 
+_Nota 2026-09-28: o breadcrumb usa a categoria primária do produto (`detail.primaryCategory`) e o JSON-LD saiu em `BreadcrumbJsonLd` (`_components/product-json-ld.tsx`, #218)._
+
 ### 3.2 Galeria
 
 - Painel único `bg-image-bg` (#ECECEC) ocupando a largura toda da metade esquerda (a coluna vertical de thumbs morre; a imagem ganha a largura que ela ocupava). Proporção `aspect-square` mantida.
@@ -58,12 +62,14 @@ Coluna direita `lg:w-[480px]` (inalterada). De cima pra baixo:
    - Voltagem (fieldset atual de chips; estados ativo/esgotado inalterados).
    - Linha `QuantityPicker` + `EmachButton variant="dark"` "Adicionar ao carrinho".
    - `EmachButton variant="primary"` "Comprar agora" full-width (único vermelho da tela, regra mantida).
-3. **Fora do card**: `FreightCalculator` (input CEP + Calcular), trust strip (3 células hairline: Frete Brasil / Garantia 2 anos / Compra segura — a garantia vive aqui, não na ficha), link Compartilhar.
+3. **Fora do card**: ~~`FreightCalculator` (input CEP + Calcular)~~, trust strip (3 células hairline: Frete Brasil / Garantia 2 anos / Compra segura — a garantia vive aqui, não na ficha), link Compartilhar.
+_Nota 2026-09-28: o `FreightCalculator` foi removido da PDP em `1ae3d0c` (a cotação de frete só roda no checkout). Depois do card ficam a trust strip e o link Compartilhar._
+
 4. `StickyBuyBar` mantida sem mudanças (aparece ao rolar além dos CTAs; borda vermelha superior).
 
 ### 3.4 Ficha técnica (placa) — a seção nova
 
-Header da seção: kicker `SectionLabel tone="accent"` "Ficha técnica" à esquerda + categoria (`font-display` uppercase `gray-60`) à direita. Abaixo, a **descrição** do produto (15px, `max-w-[70ch]`, `near-black/80`) quando existir. Depois, a **placa**: grade de células com bordas hairline compartilhadas (`border-border`), moldura externa 1px, radius 2px, fundo `gray-10` (mesma superfície da página — separação só por borda).
+Header da seção: kicker `SectionLabel tone="accent"` "Ficha técnica" à esquerda + categoria (`font-display` uppercase `gray-60`) à direita. Abaixo, a **descrição** do produto (15px, `near-black/80`) quando existir. _Nota 2026-09-28: desde o #213 o topo da seção chama "Descrição" quando há texto, a placa ganha o próprio rótulo "Ficha técnica", a descrição é quebrada em parágrafos (`description-paragraphs.ts`) e o `max-w-[70ch]` saiu._ Depois, a **placa**: grade de células com bordas hairline compartilhadas (`border-border`), moldura externa 1px, radius 2px, fundo `gray-10` (mesma superfície da página — separação só por borda).
 
 **Célula de spec:**
 - Label: Barlow Condensed 600, 10–11px, uppercase, tracking .12em, `gray-60`.
@@ -80,13 +86,13 @@ Header da seção: kicker `SectionLabel tone="accent"` "Ficha técnica" à esque
 - **Mobile (2 colunas base):** mídia (quando houver) full-width no topo; specs 2 por linha; sobra 1 → horizontal full-width.
 - **N=0:** renderiza só descrição + mídia (mídia como bloco solto 16:9); sem descrição e sem mídia, a seção não renderiza.
 
-**Implementação:** função pura `buildPlateLayout(specs, media, cols)` → lista de células com `{colSpan, rowSpan, kind}`, com **unit test** cobrindo N=0..12 × com/sem mídia (mesmo espírito de `gallery-slots.test.ts`). O grid usa `grid-column: span X` calculado no server (Server Component — N é conhecido no render).
+**Implementação:** função pura `buildPlateLayout(specs, media, cols)` → lista de células com `{colSpan, rowSpan, kind}`, _(nota 2026-09-28: a assinatura real é `buildPlateLayout(specCount, hasMedia, cols)` e devolve `{ anchor, fullRows, leftoverRow }`, em `plate-layout.ts`)_ com **unit test** cobrindo N=0..12 × com/sem mídia (mesmo espírito de `gallery-slots.test.ts`). O grid usa `grid-column: span X` calculado no server (Server Component — N é conhecido no render).
 
 **Morre nesta seção:** hero-cards `bg-near-black`, painel preto "Especificações completas", linhas institucionais (marca/garantia/SKU/nota fiscal — não aparecem na ficha; garantia/NF já vivem na trust strip do buy box, SKU já vive sob o título).
 
 ### 3.5 Avaliações
 
-- **Com reviews:** bloco preto único atual (resumo + lista + paginação) mantido como está.
+- **Com reviews:** bloco preto único atual (resumo + lista + paginação) mantido como está. _Nota 2026-09-28: substituído pela placa clara de avaliações (#195, `2026-07-03-reviews-placa-design.md`); só o empty state continua escuro._
 - **Sem reviews (novo):** em vez de `return null`, uma **faixa escura fina** (`bg-near-black`, padding ~16px): kicker "Avaliações" + texto "Este produto ainda não recebeu avaliações. Avaliações vêm de compradores verificados, com nota fiscal." à esquerda; 5 estrelas outline (`white/35`) à direita. Sem CTA (avaliação exige compra).
 - `ProductReviewsSection` continua sob Suspense; o skeleton atual serve.
 

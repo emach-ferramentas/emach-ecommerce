@@ -1,5 +1,7 @@
 # Frete por tabelas no checkout — substituir SuperFrete
 
+> **Status em 2026-09-28:** substituído. O PR #164 implementou o motor de tabelas e removeu o SuperFrete, mas o PR #178 o trocou pela Frenet (`2026-07-02-frenet-cotacao-design.md`). Hoje `packages/db/src/queries/` só tem `getActiveBoxes` e `packItems` (`shipping.ts`, `shipping-quote.ts`); o schema não tem mais `carrier*`, e o adapter `apps/web/src/lib/shipping/quote.ts` chama `apps/web/src/lib/frenet/`.
+
 **Relacionado:** dashboard#242 (motor de frete) · storefront#160 (coordenação) · roadmap "frete fail-open"
 **Data:** 2026-06-22
 **Status:** obsoleto. Substituído pela Frenet (`2026-07-02-frenet-cotacao-design.md`, código em `apps/web/src/lib/frenet/`); as tabelas `carrier*` já não existem no banco.
@@ -18,6 +20,8 @@ Hoje o checkout cota via **SuperFrete** (API externa). Esta mudança **substitui
 1. **Substituição total.** O motor de tabelas vira a única fonte. Sem cobertura → "Frete a combinar". SuperFrete removido.
 2. **`out_of_catalog` → sempre "a combinar".** Item que não cabe em nenhuma caixa cadastrada vira "Frete a combinar", **ignorando** `tool.overweightShippingAmount` (simplifica o adapter; aceita-se a perda do frete fixo por item).
 3. **Política de seguro da loja obsoleta.** `store_settings.shipping_insurance_policy` (`none`/`cart_value`/cap) era específica do SuperFrete. No motor de tabelas, GRIS/ad valorem são sobretaxas do **carrier**. Mantém-se a coluna (dashboard-owned), mas o fluxo de tabelas não a consome — passa o subtotal do carrinho como `declaredValue`.
+
+_Nota 2026-09-28: o adapter manteve a assinatura descrita aqui, mas o miolo hoje empacota em caixas (`packItems`) e cota na Frenet; `getActiveCarriersWithTables` e o `quoteShipping` de zonas não existem mais em `@emach/db`. A `declaredValue` passa pela política de seguro do dashboard (`effectiveInsuranceCents`), não é mais o subtotal cru, e a política de seguro deixou de ser obsoleta (decisão 3)._
 
 ## Arquitetura — adapter drop-in
 
@@ -42,6 +46,8 @@ Fluxo:
 
 **Nota:** colisão de nome — ambos os módulos exportam `quoteShipping`. O adapter (`lib/shipping/quote.ts`) consome o motor (`@emach/db/queries/shipping-quote`) com import qualificado/aliased para evitar confusão.
 
+_Nota 2026-09-28: a `ShippingOption` atual (`apps/web/src/lib/shipping/types.ts`) tem `carrierId`, `name`, `priceCents` e `deliveryDays`, sem `company`. O `carrierId` é composto (`CarrierCode-ServiceCode`)._
+
 ## Tipo `ShippingOption`
 
 Move de `lib/superfrete/types.ts` para `lib/shipping/types.ts`:
@@ -57,6 +63,8 @@ export interface ShippingOption {
 ```
 
 Validação no place-order é **por preço** (tolerância), não por id — trocar `serviceId`→`carrierId` é seguro.
+
+_Nota 2026-09-28: `components/freight-calculator.tsx` foi removido em `1ae3d0c`; o checkout é o único chamador da cotação._
 
 ## Consumidores (trocam import + `serviceId`→`carrierId`)
 

@@ -1,5 +1,7 @@
 # Filtros do catálogo (acordeões + drill-down + facet counts) — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (#205). Os arquivos das Tasks 1 a 6 existem em `apps/web/src/app/(shop)/catalog/` e `packages/ui/src/components/switch.tsx`. A fiação dos facet counts (Task 6, Step 3) mudou de lugar: hoje está em `_lib/catalog-data.ts`, chamado por `_components/catalog-results.tsx`. Os checkboxes abaixo ficam como no plano original.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reescrever o sidebar de filtros do catálogo conforme o spec `docs/superpowers/specs/2026-07-10-filtros-catalogo-design.md`: categoria em drill-down por nível, grupos em acordeão, faixas de preço prontas, selos de voltagem, switch de promoção e contagens por faceta.
@@ -962,6 +964,8 @@ git commit -m "feat: drill-down de categorias no filtro"
 - Modify: `apps/web/src/app/(shop)/catalog/_components/filter-panel.tsx` (reescrita completa)
 - Modify: `apps/web/src/app/(shop)/catalog/_components/catalog-content.tsx` (prop `facetCounts`, handler de faixa de preço, repasse aos dois `FilterPanel`)
 - Modify: `apps/web/src/app/(shop)/catalog/page.tsx` (calcular `getFacetCounts` no `Promise.all`, passar `facetCounts`)
+
+_Nota 2026-09-28: o `Promise.all` com `getFacetCounts` vive hoje em `_lib/catalog-data.ts` (`getCatalogData`), depois do #217; `page.tsx` só monta `CatalogResults`._
 
 **Interfaces:**
 - Consumes: `Accordion/AccordionContent/AccordionItem/AccordionTrigger` de `@emach/ui/components/accordion`; `RadioGroup/RadioGroupItem` de `@emach/ui/components/radio-group`; `Switch` (Task 4); `CategoryDrilldown` (Task 5); `PRICE_RANGES`, `matchPriceRange` (Task 1); `getFacetCounts`, `FacetCounts` (Task 3).

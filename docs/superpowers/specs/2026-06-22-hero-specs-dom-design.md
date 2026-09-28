@@ -1,8 +1,9 @@
 # Hero: renderizar `banner.specs` como DOM no carousel
 
+> **Status em 2026-09-28:** implementado. `HeroSpecs` em `apps/web/src/components/hero/hero-element-renders.tsx` renderiza `banner.specs` como `<ul aria-label="Ficha técnica">` via `resolveHeroSpecs` (`apps/web/src/lib/hero-specs.ts`). Desde o #210 a posição vem de `banner.composition` e o gradiente só conta título e subtítulo.
+
 **Issue:** #158 (handoff de emach-dashboard#229)
 **Data:** 2026-06-22
-**Status:** implementado. Evidência: `apps/web/src/components/hero/hero-element-renders.tsx` renderiza `banner.specs` como `<ul>` via `resolveHeroSpecs` (`lib/hero-specs.ts`).
 
 ## Contexto e motivação
 
@@ -20,7 +21,7 @@ header **"FICHA TÉCNICA" é label fixo de rendering** (não vem no dado).
 
 ## Escopo
 
-**Um único arquivo:** `apps/web/src/components/hero-carousel.tsx`.
+**Um único arquivo:** `apps/web/src/components/hero-carousel.tsx`. _Nota 2026-09-28: `HeroSpecs` mora hoje em `hero/hero-element-renders.tsx`; `hero-carousel.tsx` é só o orquestrador._
 
 Nada muda no data flow: `getActiveBanners()` em `apps/web/src/app/(shop)/page.tsx`
 usa `.select()` puro (sem projeção), então a coluna `specs` **já chega** no
@@ -65,7 +66,7 @@ próprios). Mantém o `HeroContentBlock` legível e isola guard + a11y.
      imagem (mesmo padrão do subtítulo/countdown).
    - `key={spec}` nos `<li>` (valores são distintos por natureza; evita o
      `key={index}` banido pelo CLAUDE.md).
-4. **Posição:** renderizar em `HeroContentBlock` **entre a régua vermelha e o
+4. _Nota 2026-09-28: `HeroContentBlock` não existe mais; a ordem badge, título, specs, subtítulo, countdown, produto, CTA é `SAFE_STACK_ORDER` em `lib/composition/composition-schema.ts` e cada elemento é posicionado pela composition._ **Posição:** renderizar em `HeroContentBlock` **entre a régua vermelha e o
    subtítulo** (badge → título → régua → **specs** → subtítulo → countdown → CTA).
    Como fica dentro do bloco, herda o alinhamento por layout (`cfg.content`) nos 8
    presets automaticamente.
@@ -74,7 +75,7 @@ próprios). Mantém o `HeroContentBlock` legível e isola guard + a11y.
    `HeroSlideContent`) liga o scrim/gradiente que protege o texto overlay. Um
    banner com **specs mas sem título/subtítulo** ficaria sem proteção de
    contraste. Incluir specs no cálculo → o gradiente liga quando há qualquer
-   conteúdo overlay. Banner "imagem pura" (sem título, sem subtítulo, sem specs)
+   conteúdo overlay. _Nota 2026-09-28: regra mudada no #210. `hasText` em `hero/hero-slide.tsx` conta só título e subtítulo com elemento ligado na composition; specs não ligam o gradiente._ Banner "imagem pura" (sem título, sem subtítulo, sem specs)
    continua com a arte intacta — mantém a regra existente do CLAUDE.md.
 
 ### Esboço de referência (não-normativo)

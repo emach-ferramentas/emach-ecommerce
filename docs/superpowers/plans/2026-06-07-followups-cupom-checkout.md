@@ -1,10 +1,12 @@
 # Follow-ups do cupom no checkout — Implementation Plan
 
+> **Status em 2026-09-28:** implementado. Unidade A, B e C estão no código: `apps/web/src/lib/auto-promo.ts`, `validateCoupon(tx, code, lines, autoPromoToolIds?)` em `lib/coupons/validate-coupon.ts`, `reconcilePrices` em `lib/cart-store.ts` e `apps/web/src/app/checkout/_actions/revalidate-cart.ts`. A Task 10 (issue de handoff no `emach-dashboard`) não foi verificada por este repo. O código dos passos divergiu em detalhes (ver as notas abaixo); os checkboxes ficam como estavam.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Resolver os follow-ups ecommerce-owned da issue #57 (itens 2, 3, 5, 6) — consolidar utils, deduplicar a regra de auto-promo com set injetável, e revalidar preços do carrinho no checkout — e abrir um issue de handoff no dashboard para os itens cross-repo (1, 4).
 
-**Architecture:** Três unidades em ordem de dependência. **A** consolida conversores/format em `lib/format.ts` (refactor puro). **B** centraliza a regra de elegibilidade de auto-promo em `lib/promotions.ts` e injeta o set já computado no `validateCoupon` (elimina queries redundantes). **C** adiciona um server action que revalida preços ao montar o checkout, reconciliando display + snapshot do `localStorage` silenciosamente, com clamp no total.
+**Architecture:** Três unidades em ordem de dependência. **A** consolida conversores/format em `lib/format.ts` (refactor puro). **B** centraliza a regra de elegibilidade de auto-promo em `lib/promotions.ts` _(nota 2026-09-28: ficou em `lib/auto-promo.ts`, como a tabela e a Task 3 abaixo já dizem)_ e injeta o set já computado no `validateCoupon` (elimina queries redundantes). **C** adiciona um server action que revalida preços ao montar o checkout, reconciliando display + snapshot do `localStorage` silenciosamente, com clamp no total.
 
 **Tech Stack:** Next.js 16 (Turbopack), React 19, Drizzle ORM, Zod, Vitest (ambiente `node`, testes de integração com DB real via `withRollback`), TanStack Form.
 
@@ -604,6 +606,8 @@ git commit -m "feat: reconcilePrices no cart-store e contexto (#57)"
 ---
 
 ## Task 7 (Unidade C.2): Server action `revalidate-cart`
+
+_Nota 2026-09-28: o schema real recebe só `toolId` e `variantId` (sem `quantity`) e o retorno de sucesso inclui `unavailable: string[]`; o mount em `checkout-content.tsx` remove do carrinho as variantes indisponíveis antes de reconciliar os preços._
 
 **Files:**
 - Create: `apps/web/src/app/checkout/_actions/revalidate-cart.ts`

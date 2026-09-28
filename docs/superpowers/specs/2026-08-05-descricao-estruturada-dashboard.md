@@ -1,5 +1,7 @@
 # Issue para o `emach-dashboard`: descrição estruturada e specs como atributo
 
+> **Status em 2026-09-28:** parcial. A parte do storefront saiu no #213 (`19251d5`): `apps/web/src/app/(shop)/product/[slug]/_components/description-paragraphs.ts` quebra a descrição em parágrafos e `product-specs.tsx` rotula "Descrição" e "Ficha técnica". A parte do dashboard não chegou à cópia do schema: `highlights` e `boxContents` não existem em `packages/db/src/schema/` nem nas queries. Se a issue foi aberta no `emach-dashboard`: não verificado (repo fora do alcance desta revisão). Os números de catálogo do texto (1.890 caracteres, 2 produtos com descrição) também não foram verificados, por falta de acesso ao banco. O conserto do rótulo de opção select existe só na branch `origin/ajustes-descricao-produtos` (`a0d911e`), fora da `main`.
+
 > Redigida a partir do storefront (PR #213). **Abrir no `emach-dashboard`** — schema e
 > cadastro de produto nascem lá (ADR-0009). Este arquivo é só o rascunho pronto para colar.
 
@@ -72,6 +74,7 @@ descarta. Sem isso o campo volta a virar depósito na primeira semana.
 - Layout do storefront — já resolvido no PR #213.
 - Tradução de opção de select: era **bug do storefront** (renderizava o `value` no lugar do
   `label`), já corrigido no mesmo PR. O dado do dashboard estava certo.
+  _Nota 2026-09-28: o #213 não corrigiu isso. `fmtAttr` em `product-specs.tsx` ainda renderiza `value.valueText` cru para `select`; o conserto (`a0d911e`) está só na branch `origin/ajustes-descricao-produtos`, fora da `main`._
 
 ### Impacto no `emach-ecommerce`
 

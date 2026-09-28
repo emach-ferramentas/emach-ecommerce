@@ -4,8 +4,10 @@ Gerado pelo skill `improve` em 2026-06-17, contra o commit `feafcfa` (branch
 `loja-improve`). Cada executor: leia o plano inteiro antes de começar, honre as
 STOP conditions e atualize sua linha ao terminar.
 
+> **Status em 2026-09-28:** os 11 planos estão implementados no código da `main` (integrados pelo #148, `0a15063`). Três deles divergem do texto original: o 003 trocou as variáveis `SUPERFRETE_*` por `FRENET_*` (#178), o 006 mudou o retorno de `searchToolsAction` para `ActionResultWith` (#226) e o 001 ganhou outra lista de testes de integração. A coluna Status abaixo mostra DONE (2026-06-17); as notas em cada plano dizem o que mudou depois.
+
 **Status (2026-06-17):** todos os 11 planos foram executados via 4 executores em
-worktrees isolados e integrados na `loja-improve` (working changes não commitadas).
+worktrees isolados e integrados na `loja-improve` (na época sem commit; entraram na `main` pelo #148).
 Verificação integrada: `check-types` ✅, validador 23 testes ✅, suite unit 84
 testes ✅, lint dos arquivos tocados ✅. Um bug de re-export (`export type {} from`
 não vincula localmente) foi pego na verificação central e corrigido; o Plano 010
@@ -49,6 +51,8 @@ Status: TODO | IN PROGRESS | DONE | BLOCKED (motivo em 1 linha) | REJECTED (moti
 `packages/db/src/queries/catalog.ts` é sincronizado do repo `emach-dashboard` via
 CI PR (ADR-0009). Estes achados de perf de query são reais mas **devem ser
 corrigidos no dashboard**, não aqui (edição local seria sobrescrita):
+
+_Nota 2026-09-28: `catalog.ts` foi dividido no #157, e as referências de linha abaixo apontam para o arquivo antigo. Na cópia atual de `packages/db/src/queries` os três achados já estão resolvidos: `getReviewStats` roda dentro do `Promise.all` de `getToolBySlug` (`tools.ts:308-431`); `getActivePromotions` e `getFeaturedPromotion` batcheiam a busca de ferramentas e o comentário em `promotions.ts:137` fala em custo `1 + 1 + N`; a lateral de promoção só entra no count com `onlyPromo === true` (`tools.ts:220-222`). Não verificado: o estado das issues no dashboard._
 
 - **getToolBySlug — 7ª query serial**: `catalog.ts:591` faz `getReviewStats`
   sequencialmente após um `Promise.all` de 6 queries; cabe no mesmo `Promise.all`.

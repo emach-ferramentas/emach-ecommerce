@@ -1,5 +1,7 @@
 # Frenet na Cotação de Frete — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #178, `cb13578`). Os arquivos de `apps/web/src/lib/frenet/` e o adapter `apps/web/src/lib/shipping/quote.ts` existem com os testes `client`, `map`, `cache` e `quote`. O código passou a divergir dos passos em origem e seguro (`getShippingSettings`), na coluna `order.shipping_service_code` e na calculadora da PDP, removida em `1ae3d0c`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Trocar o motor de cotação de frete (tabelas próprias) pela API da Frenet, preservando o contrato `{negotiate, options}` do adapter, o anti-fraude do checkout e o empacotamento local, e passando a persistir o serviço escolhido no pedido.
@@ -712,6 +714,8 @@ git commit -m "feat: cache de cotação Frenet (Redis/memória)"
 
 ### Task 5: Adapter quote.ts passa a cotar via Frenet
 
+_Nota 2026-09-28: o adapter atual (`apps/web/src/lib/shipping/quote.ts`) também lê `getShippingSettings(db)`: usa `originCep` como `SellerCEP` (com `FRENET_SELLER_CEP` de fallback) e aplica a política de seguro ao valor declarado. Os trechos de código abaixo não refletem isso._
+
 **Files:**
 - Modify: `apps/web/src/lib/shipping/quote.ts` (reescrever o miolo, assinatura preservada)
 - Delete: `apps/web/src/lib/shipping/map.ts` e `apps/web/src/lib/shipping/map.test.ts` (morrem junto com o motor de zonas — `quote.ts` era o único consumidor)
@@ -991,6 +995,8 @@ git commit -m "feat: cotação de frete via Frenet no adapter"
 ---
 
 ### Task 6: Persistir o serviço escolhido (anti-fraude valida o par)
+
+_Nota 2026-09-28: `order.shipping_service_code` existe hoje (`packages/db/src/schema/orders.ts:147`) e `placeOrder` grava `shippingServiceCode` além de `shippingMethod`._
 
 **Files:**
 - Modify: `apps/web/src/app/checkout/_lib/place-order.ts` (inputSchema, `assertShippingQuoted`, `placeOrder`)
@@ -1325,6 +1331,8 @@ git commit -m "feat: envia serviço de frete no submit do checkout"
 ---
 
 ### Task 8: Docs, envs na Vercel e gate final
+
+_Nota 2026-09-28: o bullet de frete do CLAUDE.md já foi atualizado e as tabelas `carrier*` já saíram do schema (o texto "drop físico pendente" no Step 1 ficou velho). A calculadora da PDP citada no Step 4 foi removida em `1ae3d0c`; o smoke da cotação fica só no `/checkout`._
 
 **Files:**
 - Modify: `CLAUDE.md` (raiz — bullet de frete nos Gotchas)

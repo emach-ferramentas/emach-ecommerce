@@ -1,5 +1,7 @@
 # Placa de avaliações — redesign da seção de reviews da PDP
 
+> **Status em 2026-09-28:** implementado (#195, `e479535`). `apps/web/src/app/(shop)/product/[slug]/_components/product-reviews.tsx` monta o trilho, os modos e as barras, `review-layout.ts` decide `single`, `duo` ou `grid` (`reviewLayoutMode`, `stretchLast`) e `product-reviews-section.tsx:58` mantém a faixa escura do empty state. O #196 (`ad4e237`) fez as estatísticas saírem de uma query live, não do shell cacheado da PDP.
+
 **Data:** 2026-07-03 · **Status:** aprovado (brainstorm visual, 4 telas no companion)
 **Contexto:** a seção de reviews ficou de fora do redesign da PDP (#180). O bloco
 `bg-near-black` contínuo destoa da rota, que pós-#180 é editorial clara (placa técnica

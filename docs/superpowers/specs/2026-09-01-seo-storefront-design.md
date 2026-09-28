@@ -1,5 +1,7 @@
 # SEO do storefront — canonical, dados estruturados, rotas de categoria e páginas institucionais
 
+> **Status em 2026-09-28:** implementado. Os três tracks entraram em #218, #219 e #220: `apps/web/src/lib/seo/` (canonical, JSON-LD de site, redirect legado), `apps/web/src/app/(shop)/catalog/[cat]/page.tsx`, `privacidade/` e `entrega/`. Onde o código diverge do texto abaixo, a nota em itálico aponta o caminho real.
+
 Data: 2026-09-01 · Status: aprovado em brainstorming (3 tracks, URL plana de categoria, sem troca/garantia)
 
 ## Problema
@@ -31,6 +33,7 @@ Três PRs sobre `apps/web`. **Fora de escopo**: qualquer escrita em banco, colun
 ### Canonical
 
 - Helper puro `apps/web/src/lib/seo/canonical.ts`: `canonicalFor(path: string): Metadata["alternates"]`, absoluto sobre `NEXT_PUBLIC_SITE_URL`.
+  _Nota 2026-09-28: a assinatura real é `canonicalFor(path, baseUrl?)` e devolve `{ canonical: string }`._
 - Aplicado em toda rota indexável: home, `/catalog`, `/product/[slug]`, `/sobre` (e, nos tracks seguintes, `/catalog/[slug]`, `/privacidade`, `/entrega`).
 - `/catalog` canonicaliza **estático** em `/catalog`, ignorando todos os query params. Não lê `searchParams` (preserva o prerender do shell).
 - PDP canonicaliza em `/product/[slug]`, ignorando o param de variante.
@@ -45,6 +48,8 @@ Componente `apps/web/src/components/seo/site-json-ld.tsx` (Server Component), mo
 
 Builders puros em `apps/web/src/lib/seo/site-json-ld.ts` (recebem dados, devolvem objeto), testados sem DB. Escape de `<` como já feito em `product-json-ld.tsx`.
 
+_Nota 2026-09-28: o escape de `<` foi centralizado em `lib/seo/serialize-json-ld.ts` e o único `<script>` com `dangerouslySetInnerHTML` é `components/seo/json-ld-script.tsx` (`JsonLdScript`). O `SiteJsonLd` monta o grafo com `use cache`._
+
 ### `Product` JSON-LD enriquecido
 
 Em `product-json-ld.tsx`:
@@ -52,6 +57,7 @@ Em `product-json-ld.tsx`:
 - `itemCondition: "https://schema.org/NewCondition"` em cada `Offer`.
 - `priceValidUntil`: `activePromotion.endsAt` (ISO date) quando houver promoção com fim; senão hoje + 1 ano.
 - `@id` estável na oferta (`${url}#offer-${sku}`).
+  _Nota 2026-09-28: o builder agora vive em `app/(shop)/product/[slug]/_lib/product-json-ld.ts` (`product-json-ld.tsx` é um wrapper fino) e usa `#offer-${encodeURIComponent(sku)}`. Além do previsto, cada `Offer` leva `gtin` quando o `barcode` da variante tem 8, 12, 13 ou 14 dígitos. O `gtin`/`mpn` decidido como fora de escopo é a coluna nova em `tool`, que continua não existindo._
 - Fora, decidido: `hasMerchantReturnPolicy`, `gtin`/`mpn`, `shippingDetails` (frete é cotado por CEP na Frenet; valor fixo seria promessa falsa).
 
 ### Testes
@@ -68,9 +74,11 @@ Em `product-json-ld.tsx`:
 
 - `generateStaticParams` sobre `getAllCategorySlugs(db)`.
 - `generateMetadata`: `title` = nome da categoria; `description` = `category.description` quando existir, senão frase padrão com o nome; `alternates.canonical` = `/catalog/${slug}`; OG com o mesmo título.
-- Corpo reaproveita `CatalogContent` / `getCatalogData` passando `cat` vindo de `params` e os demais filtros de `searchParams` (mesmo parse de `catalog/page.tsx`, extraído para `_lib/parse-search-params.ts` para não duplicar).
+- Corpo reaproveita `CatalogContent` / `getCatalogData` (via `CatalogResults`, em `_components/catalog-results.tsx`) passando `cat` vindo de `params` e os demais filtros de `searchParams` (mesmo parse de `catalog/page.tsx`, extraído para `_lib/parse-search-params.ts` para não duplicar).
 - H1 real com o nome da categoria (hoje `CatalogContent` já renderiza um H1; passa a receber o nome).
 - Slug inexistente ou inativo → `notFound()`.
+
+_Nota 2026-09-28: `generateMetadata` e a página leem a categoria por `getCategoryShell` (`_lib/category-shell.ts`, `use cache` de 600 s), que deduplica a query. `defaultCategoryDescription` gera a frase padrão. O nome da categoria chega ao H1 dentro de `CatalogContent`._
 
 ### Migração dos links
 
@@ -79,9 +87,13 @@ Os 5 call-sites de `?cat=` passam a `/catalog/${slug}`:
 
 O drill-down de categoria dentro do sidebar (`category-tree`/acordeão) continua navegando por `?cat=` **ou** passa a `/catalog/[slug]`: decidir na implementação pelo custo; se ficar em `?cat=`, o redirect abaixo resolve.
 
+_Nota 2026-09-28: decidido migrar. `buildHref` em `catalog/_lib/catalog-filters.ts` devolve o path completo e `category-drilldown.tsx` navega por ele; não sobrou `?cat=` gerado por link no app._
+
 ### Redirect permanente (308)
 
 No `proxy.ts`: request a `/catalog` com `cat` na query → `NextResponse.redirect(308)` para `/catalog/${cat}` preservando os demais params. Só quando `cat` é não vazio. Testado em `proxy.test.ts` (unit: monta `NextRequest`, verifica status e `Location`).
+
+_Nota 2026-09-28: a regra vive na função pura `legacyCategoryRedirect` (`lib/seo/catalog-redirect.ts`), que também recusa `cat=..` e `cat=.` (o setter de `pathname` mandaria o 308 para a raiz). O `proxy.ts` só chama a função; `catalog-redirect.test.ts` cobre a regra e `proxy.test.ts` cobre o 308._
 
 ### Sitemap
 
@@ -124,6 +136,7 @@ Nunca cita prazo fixo: quem dá prazo é a cotação.
 
 - Links no `site-footer.tsx` (grupo institucional).
 - Entradas no `sitemap.ts` (prioridade 0.4) e canonical em cada uma.
+  _Nota 2026-09-28: no `sitemap.ts` atual `/entrega` tem prioridade 0.4 e `/privacidade` 0.3._
 - Metadata própria (título, description, OG).
 
 ### Copy humanizada
@@ -141,6 +154,7 @@ Texto com afirmação verificável (o que o sistema faz com dados, como o frete 
 ### Testes
 
 - Render test das duas páginas (unit, sem DB para `/privacidade`; `/entrega` com `getActiveBranches` mockado).
+  _Nota 2026-09-28: existem `components/institutional-page.test.tsx` (layout compartilhado) e `lib/seo/institutional-content.test.ts` (regra sem troca/garantia); não há teste de render por página._
 - Smoke visual das duas rotas e do footer.
 
 ## Riscos e mitigações

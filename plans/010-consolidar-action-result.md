@@ -1,5 +1,7 @@
 # Plan 010: Consolidar o tipo `ActionResult` num módulo único
 
+> **Status em 2026-09-28:** implementado. `apps/web/src/lib/actions/types.ts` define `ActionResult` e `ActionResultWith<T>`. `reviews.ts`, `refunds.ts` e `addresses.ts` importam de `@/lib/actions/types`, e `search.ts` também usa `ActionResultWith`. `orders.ts:14` mantém sua variante `ActionResult<T = undefined>`, como o plano previa.
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP =
 > pare e reporte. Ao terminar, atualize `plans/README.md`.
 >
@@ -45,7 +47,9 @@ Quatro declarações:
   	| { ok: false; error: string };
   ```
 
-Há, portanto, **duas formas**: sem-data (`ActionResult` em reviews/refunds/addresses)
+Há, portanto, **duas formas**
+
+_Nota 2026-09-28: os arquivos `reviews.ts`, `refunds.ts` e `addresses.ts` hoje só importam os tipos; o `export type { ... }` do Step 2 não está mais neles, porque nenhum consumidor externo o usava._: sem-data (`ActionResult` em reviews/refunds/addresses)
 e com-data (`ActionResultWith<T>` em addresses; `ActionResult<T=undefined>` em orders).
 
 Diretório `apps/web/src/lib/actions/` já existe (contém `search.ts`).

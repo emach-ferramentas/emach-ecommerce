@@ -1,5 +1,7 @@
 # Validação server-side do campo `phone` (issue #100)
 
+> **Status em 2026-09-28:** implementado (PR #104). `isValidPhone` está em `packages/validators/src/cpf-cnpj.ts` com testes em `cpf-cnpj.test.ts`; `normalizePhoneForWrite` e `normalizeUserForWrite` estão em `packages/auth/src/ecommerce.ts` e alimentam `create.before` e `update.before`.
+
 > Follow-up de #92 (validação server-side de senha e CPF/CNPJ). Estende o mesmo
 > hardening ao campo `phone` da instância **ecommerce** do Better Auth.
 
@@ -47,8 +49,7 @@ export const isValidPhone = (raw: string): boolean => {
 };
 ```
 
-Reusa `onlyDigits` e `allSame` (já existentes). `index.ts` é `export *`, então o
-novo símbolo propaga sem edição extra.
+Reusa `onlyDigits` e `allSame` (já existentes). _Nota 2026-09-28: o pacote não tem `index.ts`; o `exports` de `packages/validators/package.json` aponta direto para `./src/cpf-cnpj.ts`, então o símbolo novo propaga sem edição extra._
 
 ### `packages/auth/src/ecommerce.ts`
 

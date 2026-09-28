@@ -1,5 +1,7 @@
 # Design — Hero Builder Fidelity (preview ↔ storefront)
 
+> **Status em 2026-09-28:** parcial. F2 (badge e countdown) está implementada em `apps/web/src/components/hero/hero-element-renders.tsx`, reusando `formatCountdown` de `lib/countdown.ts`. F1 (calibrar `LAYOUT_CONFIG`) foi substituída: o #210 removeu `LAYOUT_CONFIG` e o hero posiciona por `banner.composition` (`2026-07-30-hero-composition-design.md`); os 8 layouts sobrevivem só como mapa de conversão em `lib/composition/legacy-composition.ts`. F3 (return-issue no dashboard) não foi verificada.
+
 > Status: **aprovado** (brainstorming 2026-06-16). Sucessor do Hero Builder v2 (`2026-06-16-hero-builder-v2-design.md`, dashboard) e do #123 (badge/countdown no storefront).
 > Escopo: spec único, **3 fatias** (F2 → F1 → F3). Cross-repo (storefront `emach-ecommerce` + preview/builder `emach-dashboard`).
 
@@ -35,7 +37,7 @@ Notas de design (DESIGN.md):
 
 ## Fatia F2 — Badge + Countdown no hero (storefront, este repo)
 
-`hero-carousel.tsx`:
+`hero-carousel.tsx` (_Nota 2026-09-28: badge e countdown hoje vivem em `hero/hero-element-renders.tsx`; a posição vem da composition, não mais "acima do título" ou "abaixo do subtítulo" fixos_):
 
 - Adicionar `badgeText` e `countdownTarget` ao `HeroBanner` Pick. A query (`getActiveBanners`, `(shop)/page.tsx`) já faz `select()` de todas as colunas — só parar de descartar. `FALLBACK_BANNERS` recebem ambos como `null`.
 - **Badge:** renderizado no topo do `HeroContentBlock`, **acima do título**. Pílula clara: `bg-white text-near-black`, Barlow Condensed uppercase, tracking ~.06em, radius 2px. Só quando `badgeText` presente. (Não compete com o CTA vermelho.)
@@ -48,6 +50,8 @@ Notas de design (DESIGN.md):
 > **As-built:** descoberto durante a execução que `lib/countdown.ts` (+ `CountdownParts`) já existia (PR #62, consumido por `promo-countdown.tsx`). O plano original criava um `formatCountdown(target, now)` duplicado — descartado. O hero reusa o util existente; não há função/teste novos.
 
 ## Fatia F1 — Alinhar os 8 layouts (storefront)
+
+_Nota 2026-09-28: `LAYOUT_CONFIG`, `GRADIENT_BY_SIDE` e `textSide` de `hero-carousel.tsx` não existem mais; ver o status acima. O texto abaixo é o registro da calibração da época._
 
 Atualizar `LAYOUT_CONFIG` em `hero-carousel.tsx` para casar com o conjunto canônico. **Diff por layout** (atual → alvo):
 

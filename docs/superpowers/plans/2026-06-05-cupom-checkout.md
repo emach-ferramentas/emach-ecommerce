@@ -1,5 +1,7 @@
 # Cupom no checkout + correção do sync de promoções — Implementation Plan
 
+> **Status em 2026-09-28:** implementado. Os dez passos estão no código: `apps/web/src/lib/promotions.ts`, `apps/web/src/lib/coupons/validate-coupon.ts`, `apps/web/src/app/checkout/_actions/apply-coupon.ts`, `_components/coupon-field.tsx`, integração em `_lib/place-order.ts` e `order.coupon_id` em `packages/db/src/schema/orders.ts`. O código dos passos foi alterado depois (ver `2026-06-07-followups-cupom-checkout.md`); os checkboxes abaixo ficam como estavam.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Corrigir o breakage do sync de promoções (`discount_pct` removido) e implementar aplicação de cupom (`type='promocode'`) no checkout do storefront.
@@ -168,6 +170,8 @@ git commit -m "fix: PDP usa discountType/discountValue no lugar de discountPct r
 ---
 
 ## Task 3: Fix breakage do checkout (`place-order.ts` auto-desconto)
+
+_Nota 2026-09-28: `fetchAutoDiscountByToolId` foi substituída por `fetchAutoPromosByToolId` em `apps/web/src/lib/auto-promo.ts` (plano de follow-ups, Task 3); os números de linha de `place-order.ts` abaixo não valem mais._
 
 `fetchDiscountPctByToolId` lê `discountPct` (removido), é percent-only e ignora `applies_to_all`. Reescrever para `percent`+`fixed` e respeitar promoção global — alinhando com o catalog. Os testes de estoque existentes devem continuar passando.
 
@@ -814,6 +818,8 @@ git commit -m "feat: server action applyCouponAction (preview do desconto)"
 ---
 
 ## Task 7: Integração do cupom no `placeOrder`
+
+_Nota 2026-09-28: erros de cupom no pedido passam por `publicCouponError` (`lib/coupons/validate-coupon.ts`), que colapsa código inexistente, expirado e esgotado em "Cupom inválido ou indisponível"; as asserções de mensagem abaixo refletem o texto original._
 
 Re-valida no servidor (verdade), trava a linha da `promotion` (`FOR UPDATE`), re-check do limite, incrementa `redemption_count`, grava `coupon_id`/`discount_amount` e ajusta o total.
 

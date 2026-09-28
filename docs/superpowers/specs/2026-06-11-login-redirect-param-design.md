@@ -1,5 +1,7 @@
 # Login respeita `?redirect=` — Design (#81)
 
+> **Status em 2026-09-28:** implementado (PR #85) e depois endurecido (PR #228). `apps/web/src/app/login/_components/login-form.tsx` lê `?redirect=` e `apps/web/src/app/login/page.tsx` envolve o formulário em `<Suspense>`. A função `sanitizeRedirect` foi trocada por `safeRedirect` em `apps/web/src/lib/safe-redirect.ts`, com regex mais estrita.
+
 > Fecha a issue #81. Bug de UX: o `proxy.ts` seta `?redirect=<rota-original>` ao barrar
 > acesso a rota protegida, mas a página `/login` ignora o param e sempre força `/dashboard`,
 > perdendo o destino original.
@@ -37,6 +39,7 @@ apps/web/src/app/login/
 ## Unidades
 
 ### 1. `sanitizeRedirect(raw: string | null): string`
+_Nota 2026-09-28: no código atual a função é `safeRedirect(raw, fallback)` em `apps/web/src/lib/safe-redirect.ts` (PR #228), com regex que segue a regra do Better Auth para `callbackURL` relativa. O trecho abaixo é o desenho original._
 Função pura, top-level em `login-form.tsx`. Guarda anti-open-redirect (**requisito de
 segurança, não opcional**).
 
@@ -90,3 +93,5 @@ Sem infra de teste no repo (CI roda só `check-types`). Validação:
 - Checkbox "Lembrar de mim" (`login/page.tsx` L267) é decorativo (sem state nem efeito).
   Não tocar aqui — candidato a issue futura.
 - `proxy.ts` — não tocar (escopo do #80, já mergeado).
+
+_Nota 2026-09-28: os números de linha citados acima (`login/page.tsx` L36, L44, L65, L107, L267) estão obsoletos; o formulário mora em `login/_components/login-form.tsx` e o checkbox "Lembrar de mim" agora alimenta `rememberMe` no `signIn.email`._

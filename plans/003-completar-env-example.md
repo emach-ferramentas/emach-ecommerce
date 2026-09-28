@@ -1,5 +1,7 @@
 # Plan 003: Completar o `.env.example` com as variáveis obrigatórias faltantes
 
+> **Status em 2026-09-28:** implementado, com conteúdo trocado. `apps/web/.env.example` tem a seção Upstash (linhas 60-66) e `NEXT_PUBLIC_SITE_URL`. As variáveis `SUPERFRETE_*` e `DEFAULT_BRANCH_ID` não existem mais: o frete migrou para Frenet (#178) e o `.env.example` traz `FRENET_TOKEN`, `FRENET_SELLER_CEP` e `FRENET_BASE_URL` (`packages/env/src/schemas.ts:38-40`).
+
 > **Executor instructions**: Follow this plan step by step. Run every verification
 > command. If anything in "STOP conditions" occurs, stop and report. When done,
 > update the status row in `plans/README.md`.
@@ -28,6 +30,8 @@ ausentes). Onboarding quebrado, falha silenciosa até o primeiro `bun dev:web`.
 ## Current state
 
 - `packages/env/src/server.ts:38-46` — vars que faltam no exemplo:
+
+_Nota 2026-09-28: o schema deixou de viver em `server.ts`. Hoje ele está em `packages/env/src/schemas.ts` (`serverSchema`, `clientSchema`) e `server.ts` só chama `createEnv`. As variáveis `SUPERFRETE_TOKEN`, `SUPERFRETE_BASE_URL`, `SUPERFRETE_USER_AGENT` e `DEFAULT_BRANCH_ID` foram removidas do schema e substituídas por `FRENET_TOKEN`, `FRENET_SELLER_CEP` e `FRENET_BASE_URL`. O bloco de código abaixo é o estado de 2026-06-17._
   ```ts
   SUPERFRETE_TOKEN: z.string().min(1),
   SUPERFRETE_BASE_URL: z.url(),
@@ -74,6 +78,8 @@ ausentes). Onboarding quebrado, falha silenciosa até o primeiro `bun dev:web`.
 ## Steps
 
 ### Step 1: Adicionar a seção de frete (SuperFrete)
+
+_Nota 2026-09-28: passo obsoleto. A seção de frete do `.env.example` hoje é "Frete (Frenet)" e não usa nenhuma variável `SUPERFRETE_*`._
 
 Anexe ao `apps/web/.env.example`, no estilo das seções existentes:
 

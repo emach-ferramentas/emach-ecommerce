@@ -1,5 +1,7 @@
 # Resultados — Fase 2 (bundle, imagem, transições)
 
+> **Status em 2026-09-28:** implementado, sem a Task 10 (abandonada, como o próprio documento registra). No código: `optimizedSrc` e `srcSet` em `app/(shop)/product/[slug]/_components/product-gallery.tsx`, `LazyMotion` em `components/hero-carousel.tsx` e `app/login/_components/login-brand-panel.tsx`, `@keyframes emach-reveal` em `apps/web/src/index.css`, `dynamic()` do `BranchMap` em `components/branch-map-section.tsx`, `Barlow_Condensed` com 3 pesos em `app/layout.tsx`. Os números de KB e LCP são medições históricas (não verificado).
+
 Branch `perfomace`, sobre a Fase 1 (cacheComponents). Build verde, lint + check-types limpos, smoke visual OK (home/PDP/catálogo).
 
 ## Imagem principal do PDP (o maior ganho de LCP)
@@ -30,5 +32,5 @@ A galeria (`product-gallery.tsx`) servia a imagem principal crua do Supabase via
 
 ## Follow-ups sugeridos (fora desta branch)
 
-- Imagem do PDP: `srcSet` responsivo (servir menor em mobile) baixaria mais o LCP.
+- Imagem do PDP: `srcSet` responsivo (servir menor em mobile) baixaria mais o LCP. _Nota 2026-09-28: feito em #146 (`NEXT_IMG_WIDTHS` e `GALLERY_SIZES` em `product-gallery.tsx`)._
 - Testes de integração-DB (`place-order`/`auto-promo`/`validate-coupon`/`revalidate-cart`) quebrados por estado do DB de teste (pré-existente, não regressão) — limpar a auto-promo do banco de teste / isolar por worker.

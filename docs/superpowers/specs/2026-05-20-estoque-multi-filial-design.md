@@ -1,5 +1,7 @@
 # Estoque multi-filial no checkout — design
 
+> **Status em 2026-09-28:** implementado. `apps/web/src/app/checkout/_lib/place-order.ts` tem `checkAggregateStock` (linha 477), `placeOrder` sem `branchId` e grava `branchId: null`; nenhum arquivo de `apps/web/src` além do teste toca `stock_movement`. `lib/default-branch.ts` foi removido (`a096c28`), o ADR-0003 existe e o ADR-0001 está marcado como superseded. A transição `pending_payment → paid` com o débito segue pendente: `confirmPayment` não existe no código.
+
 **Data:** 2026-05-20
 **Issue:** [#30](https://github.com/othavioquiliao/emach-ecommerce/issues/30)
 **Branch:** `feat/melhorias-pages-2` (decisão do user)
@@ -72,6 +74,8 @@ Schema **não muda** — `order.branch_id` e `stock_movement.branch_id` já são
 **Não alterado** (auditoria visual confirma que já agrega):
 - `packages/db/src/queries/catalog.ts` linhas 344-349 (`getTools`), 552-558 (`getToolBySlug`), 779-784 (`getActivePromotions`) — `SUM(sl.quantity)` sem filtro de branch.
 
+_Nota 2026-09-28: `queries/catalog.ts` não existe mais. As três funções estão em `packages/db/src/queries/tools.ts` (`getTools` na linha 155, `getToolBySlug` na 265) e `queries/promotions.ts` (`getActivePromotions`, linha 79), e seguem somando `stock_level.quantity` sem filtro de filial (`tools.ts:176` e `:425`, `promotions.ts:52`)._
+
 ## Algoritmo de validação agregada
 
 ```ts
@@ -101,6 +105,8 @@ async function checkAggregateStock(
 
 Sem escrita, sem lock. Otimista. Substitui `checkStock(tx, lines, branchId)` linha por linha.
 
+_Nota 2026-09-28: o código atual é igual a este trecho (`place-order.ts:477`)._
+
 ## Fluxo pós-mudança
 
 ```
@@ -125,6 +131,8 @@ Cliente submete checkout
 `stock_level` permanece intacto. Estoque mostrado no site continua refletindo o real até admin processar manualmente.
 
 ## Testes (`place-order.test.ts`)
+
+_Nota 2026-09-28: os 6 cenários e o de documento duplicado existem em `place-order.test.ts`; o arquivo hoje tem também cenários de `shippingUnverified` e de cupom. O teste usa o banco e está na lista `INTEGRATION` de `apps/web/vitest.config.ts`._
 
 Helpers a adicionar:
 

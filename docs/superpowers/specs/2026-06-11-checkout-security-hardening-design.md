@@ -1,5 +1,7 @@
 # Hardening de segurança no checkout/DB — issues #90, #94, #95
 
+> **Status em 2026-09-28:** implementado (PR #102). `apps/web/src/lib/client-ip.ts`, `apps/web/src/lib/rate-limit.ts` (Upstash com fallback em memória) e `packages/db/src/sql/rls.sql` existem; `create-order.ts`, `apply-coupon.ts` e `quote-shipping.ts` aplicam os limiters, e `publicCouponError` em `lib/coupons/validate-coupon.ts` colapsa `inválido`/`expirado`/`esgotado`.
+
 > Spec de implementação. Três fixes de segurança independentes, entregues em um PR único.
 > Issues: [#90](https://github.com/othavioquiliao/emach-ecommerce/issues/90), [#94](https://github.com/othavioquiliao/emach-ecommerce/issues/94), [#95](https://github.com/othavioquiliao/emach-ecommerce/issues/95).
 
@@ -7,7 +9,7 @@
 
 Três achados de auditoria de segurança, todos no perímetro do checkout e do banco compartilhado:
 
-1. **#90** — 13 tabelas do schema `public` estão expostas via PostgREST sem RLS. Qualquer um com a anon key lê (e em algumas, escreve) estoque por filial, margens de promoção e reviews direto pela REST API do Supabase.
+1. **#90** — 13 tabelas do schema `public` (o `rls.sql` de hoje cobre 14, com `cart_event`) estão expostas via PostgREST sem RLS. Qualquer um com a anon key lê (e em algumas, escreve) estoque por filial, margens de promoção e reviews direto pela REST API do Supabase.
 2. **#95** — o IP gravado no `consentLog` (evidência LGPD de aceite de termos) vem do primeiro hop de `x-forwarded-for`, que o cliente controla. O log registra IP forjável, enfraquecendo o valor probatório.
 3. **#94** — as server actions do checkout não têm throttle: `applyCouponAction` permite enumerar cupons válidos por força bruta, `quoteShippingAction` drena a cota/custo da API SuperFrete, `createOrderAction` permite marteladas em race conditions de estoque/cupom.
 
@@ -33,7 +35,7 @@ O objetivo é fechar os três sem alterar o fluxo normal de checkout.
 
 1. **Pré-checagem (gate).** Confirmar que nem o ecommerce nem o dashboard usam `supabase-js` com anon key para ler/escrever essas tabelas (`grep` por `createClient` de `@supabase/supabase-js` nos dois repos). Confirmar que o role usado pelo Drizzle via `DATABASE_URL` é owner ou tem `BYPASSRLS` (acesso server-side não pode quebrar). **Se algum uso de anon key aparecer, parar e reportar antes de aplicar.**
 2. Para cada tabela: `ALTER TABLE public.<tabela> ENABLE ROW LEVEL SECURITY;` — sem policies (deny-all via PostgREST). Aplicar via MCP Supabase (idempotente).
-3. Versionar o SQL em `packages/db/src/sql/rls.sql` (precedente: `triggers.sql`) com nota apontando o dashboard como canônico. Registrar a gotcha em `packages/db/CLAUDE.md`.
+3. Versionar o SQL em `packages/db/src/sql/rls.sql` (precedente: `triggers.sql`) com nota apontando o dashboard como canônico. _Nota 2026-09-28: hoje o arquivo é cópia sincronizada do `emach-dashboard` (PR de sync), então não se edita aqui._ Registrar a gotcha em `packages/db/CLAUDE.md`.
 4. Abrir issue no repo `emach-dashboard` para um agente avaliar se o `ENABLE RLS` deve virar ADR / arquivo SQL canônico lá.
 5. Rodar `get_advisors type=security` e confirmar zero `rls_disabled_in_public`.
 
@@ -71,7 +73,7 @@ getClientIp(headers): string | null
 - Usa `@upstash/ratelimit` (sliding window) sobre o client de `getRedis()` (`@emach/redis`).
 - Quando `getRedis()` retorna `null` (envs Upstash ausentes — dev local ou antes do provisionamento), cai para um limiter in-memory (`Map` com janela deslizante). Comentário documentando que o modo in-memory é best-effort em serverless (reseta em cold start, não compartilha entre instâncias).
 - Prefixo de chave `checkout:*` (auth usa `auth:*` — sem colisão).
-- API: uma função que recebe `(key, limit, windowSeconds)` e devolve se está dentro do limite.
+- API: uma função que recebe `(key, limit, windowSeconds)` e devolve se está dentro do limite. _Nota 2026-09-28: a API real é `Limiter.limit(key)` com instâncias por uso (`couponLimiter`, `orderLimiter`, `shippingLimiter`, `searchLimiter`, `cartEventLimiter`, `cepLimiter`); a janela vem de `RATE_LIMIT_WINDOW_SECONDS` em `@emach/redis`._
 
 **Aplicação nas actions:**
 
@@ -85,7 +87,7 @@ getClientIp(headers): string | null
 
 **Anti-enumeração de cupom** (`apps/web/src/lib/coupons/validate-coupon.ts` + `apply-coupon.ts`):
 
-- Colapsar `"Cupom inválido"`, `"Cupom expirado"`, `"Cupom esgotado"` numa única mensagem ao usuário: `"Cupom inválido ou indisponível"`.
+- Colapsar `"Cupom inválido"`, `"Cupom expirado"`, `"Cupom esgotado"` numa única mensagem ao usuário: `"Cupom inválido ou indisponível"`. _Nota 2026-09-28: o colapso mora em `publicCouponError` (`lib/coupons/validate-coupon.ts`), usado por `apply-coupon` e `place-order`._
 - Manter `"Cupom não cobre nenhum item do carrinho"` e `"Pedido mínimo de R$ X"` (feedback do carrinho, não enumeração do código).
 - Motivo real sempre no `log` estruturado (evlog) para debug.
 
@@ -110,5 +112,5 @@ getClientIp(headers): string | null
 
 - Storage durável do rate limit por Postgres (descartado — bloqueio cross-repo + carga no banco).
 - `secondaryStorage` global movendo sessão pro Redis (decisão da task de auth, não desta).
-- Frete fail-open hardening (#5 do roadmap — exige coluna nova no schema, nasce no dashboard).
+- Frete fail-open hardening (#5 do roadmap — exige coluna nova no schema, nasce no dashboard). _Nota 2026-09-28: entregue depois no #97 (PR #110), com `order.shippingUnverified`._
 - Drain externo do evlog (Axiom/Datadog/Sentry).

@@ -12,4 +12,4 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
-This repo uses the default vocabulary — the two columns match. Edit the right-hand column if you adopt different label names on GitHub. The `triage` skill creates these labels on GitHub if they don't exist yet.
+This repo uses the default vocabulary — the two columns match. Edit the right-hand column if you adopt different label names on GitHub. The `triage` skill (plugin `mattpocock-skills`, not versioned in `.claude/skills/`) creates missing labels on GitHub. Four of the five already exist (`needs-triage`, `ready-for-agent`, `ready-for-human`, `wontfix`); `needs-info` does not yet.

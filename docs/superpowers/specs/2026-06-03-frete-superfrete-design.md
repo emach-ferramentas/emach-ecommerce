@@ -1,5 +1,7 @@
 # Cotação de frete via SuperFrete no checkout — Design (#47)
 
+> **Status em 2026-09-28:** substituído. O SuperFrete chegou a produção (#49), mas o PR #164 trocou-o pelo motor de tabelas (`2026-06-22-frete-tabelas-checkout-design.md`) e o PR #178 trocou o motor de tabelas pela Frenet (`2026-07-02-frenet-cotacao-design.md`). Hoje não existe `lib/superfrete/`, `lib/origin-branch.ts` nem env `SUPERFRETE_*`; a cotação vive em `apps/web/src/lib/shipping/quote.ts` e `apps/web/src/lib/frenet/`.
+
 > Data: 2026-06-03 · Issue: emach-ecommerce#47 · Status: aprovado para plano
 > Brainstorming de **implementação** (a decisão de produto já estava na #47).
 
@@ -21,10 +23,16 @@ Substituir o frete **hardcoded** do checkout (`checkout-content.tsx:41-42`: grá
 
 **Achados que simplificaram o escopo da #47:**
 - **Peso/dimensão já existem** e são `NOT NULL` em `tool` (`weightKg`, `lengthCm`, `widthCm`, `heightCm`) e **já são lidos** no `place-order.ts:263-268`. → A "dependência cross-repo" da issue (abrir trabalho no dashboard) **não é necessária**.
+
+_Nota 2026-09-28: peso e dimensões de `tool` hoje são anuláveis (rascunho no dashboard); o CHECK `active_requires_shipping_data` só exige os valores em ferramenta ativa (`packages/db/src/schema/tools.ts:132`). Ferramenta sem eles cai em "Frete a combinar" (`apps/web/src/lib/shipping/quote.ts`)._
 - **Estoque já é geral** (soma de todas as filiais) na vitrine (`catalog.ts`) e na validação do checkout (`place-order.ts` `checkAggregateStock`). → Sem mudança de estoque.
 - `getDefaultBranchId()`/`lib/default-branch.ts` citado no `CLAUDE.md` raiz **não existe** (drift). Este design **cria** esse helper de fato.
 
+_Nota 2026-09-28: o helper de origem criado aqui (`lib/origin-branch.ts`, `DEFAULT_BRANCH_ID`) foi removido no PR #164. A origem hoje vem de `getShippingSettings` (`packages/db/src/queries/store-settings.ts`), com `FRENET_SELLER_CEP` como fallback._
+
 ## 3. Arquitetura
+
+_Nota 2026-09-28: os módulos desta seção (`lib/superfrete/`, `origin-branch.ts`) foram removidos no PR #164. `_actions/quote-shipping.ts`, `shipping-options.tsx` e a revalidação no `place-order.ts` continuam, agora sobre a Frenet. O `freight-calculator` citado no fluxo não existe mais (removido em `1ae3d0c`)._
 
 ```
 apps/web/src/
@@ -99,6 +107,8 @@ Teste real Curitiba(80010000)→SP(01310100), 1kg/20×15×10: **SEDEX R$35,96, 1
 - **Cache (nice-to-have):** in-memory curto por `(origem, destino, hash itens)` TTL ~10min para evitar recotação a cada render. Não-bloqueante pro MVP.
 
 ## 7. Env (adicionar em `packages/env/src/server.ts`, `z.string().min(1)`)
+
+_Nota 2026-09-28: as envs `SUPERFRETE_*` e `DEFAULT_BRANCH_ID` saíram de `packages/env/src/schemas.ts`. As envs de frete atuais são `FRENET_TOKEN`, `FRENET_SELLER_CEP` e `FRENET_BASE_URL` (`schemas.ts:38-40`)._
 
 `SUPERFRETE_TOKEN`, `SUPERFRETE_BASE_URL`, `SUPERFRETE_USER_AGENT`, `DEFAULT_BRANCH_ID` — já presentes no `apps/web/.env`.
 

@@ -10,9 +10,9 @@ This is a **multi-context** repo: the EMACH domain is decomposed into bounded co
 - The per-context **`CONTEXT.md`** under `docs/contexts/<slug>/` — read the one(s) relevant to the topic.
 - **`docs/adr/`** at the root — system-wide architectural decisions. Also check `docs/contexts/<slug>/docs/adr/` for context-scoped decisions.
 
-If any of these files don't exist yet, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`) creates them lazily as terms and decisions get resolved.
+If any of these files don't exist yet, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`, do plugin `mattpocock-skills`; não vem versionada em `.claude/skills/`) creates them lazily as terms and decisions get resolved.
 
-> The real PostgreSQL database (Supabase) is the source of truth for the schema. The Drizzle files in `packages/db/src/schema/` are a versioned mirror and may be out of date — verify against the live DB (via `psql` with `DATABASE_URL`, or the `supabase` MCP) before trusting them.
+> The real PostgreSQL database (Supabase) is the source of truth for the schema. The Drizzle files in `packages/db/src/schema/` are a versioned mirror and may be out of date — verify against the live DB (read-only: `SELECT` via `psql` with `DATABASE_URL`, or the `supabase` MCP) before trusting them. The DB is shared with production; never write to it without explicit authorization.
 
 ## File structure
 
@@ -40,7 +40,7 @@ If any of these files don't exist yet, **proceed silently**. Don't flag their ab
 
 When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in the relevant `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
 
-If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/grill-with-docs`).
+If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/grill-with-docs`, do plugin `mattpocock-skills`).
 
 ## Flag ADR conflicts
 

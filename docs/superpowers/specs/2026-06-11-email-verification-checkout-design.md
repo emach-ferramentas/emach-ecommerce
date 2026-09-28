@@ -1,5 +1,7 @@
 # Verificação de e-mail no checkout (#93)
 
+> **Status em 2026-09-28:** implementado (PR #110). `apps/web/src/app/checkout/_actions/create-order.ts` recusa cliente com `emailVerified` falso, e `checkout-content.tsx` mostra o banner com o botão "Reenviar e-mail". O `callbackURL` do reenvio é `/checkout`, não `/verificar-email`.
+
 > Status: aprovado (brainstorming). Decisão de produto: **B puro** — gate só no checkout.
 > Data: 2026-06-11.
 
@@ -32,8 +34,8 @@ só não finaliza pedido. Na prática, 1 conta de teste.
 ## Arquitetura
 
 Gate único no fluxo de criação de pedido + feedback na UI do checkout. **Sem
-mudança no pacote `@emach/auth`**: login e navegação seguem livres; `sendOnSignUp`
-já envia o e-mail no cadastro; o reenvio usa `authClient.sendVerificationEmail`,
+mudança no pacote `@emach/auth`** por este spec: login e navegação seguem livres; `sendOnSignUp`
+foi ligado pelo redesign da conta (spec 2026-06-09) e envia o e-mail no cadastro; o reenvio usa `authClient.sendVerificationEmail`,
 que já funciona com o `emailVerification.sendVerificationEmail` configurado.
 
 ### 1. Gate server-side (autoritativo)
@@ -61,7 +63,7 @@ passar `emailVerified` (e o `clientEmail` já passado) para `CheckoutContent`.
 - Quando `!emailVerified`: renderizar banner "Confirme seu e-mail para finalizar
   o pedido. Enviamos um link para `<email>`." + CTA **"Reenviar e-mail"**.
 - O CTA chama `authClient.sendVerificationEmail({ email, callbackURL: "/verificar-email" })`,
-  com toast de sucesso/erro (sonner, já em uso no projeto).
+  com toast de sucesso/erro (sonner, já em uso no projeto). _Nota 2026-09-28: o código usa `callbackURL: "/checkout"` para o cliente voltar ao checkout depois de confirmar; a rota `/verificar-email` continua sendo a que recebe o token._
 - Desabilitar o botão "Finalizar pedido" enquanto não-verificado (defesa de UX;
   o gate real é o server-side).
 

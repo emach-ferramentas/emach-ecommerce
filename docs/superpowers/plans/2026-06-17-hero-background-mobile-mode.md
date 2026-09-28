@@ -1,5 +1,7 @@
 # Hero `background_mobile_mode` Implementation Plan
 
+> **Status em 2026-09-28:** implementado. `resolveMobileBg` e `HeroBackground` estão em `apps/web/src/components/hero/hero-slide.tsx`, o tipo `HeroBanner` expõe `backgroundMobileMode` em `hero-carousel.tsx` e os fallbacks em `hero/hero-fallbacks.ts` usam `inherit`. Os caminhos do plano são anteriores ao #210.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fazer o `HeroCarousel` honrar `banner.backgroundMobileMode` (`inherit` | `custom` | `none`) na resolução do fundo no mobile, sem alterar o desktop.
@@ -19,6 +21,8 @@
 ---
 
 ### Task 1: `HeroBackground` honra `backgroundMobileMode`
+
+_Nota 2026-09-28: `HeroBackground` saiu de `hero-carousel.tsx` para `hero/hero-slide.tsx`, e `FALLBACK_BANNERS` para `hero/hero-fallbacks.ts`. O default do enum no schema hoje é `none`, não `inherit`._
 
 **Files:**
 - Modify: `apps/web/src/components/hero-carousel.tsx`

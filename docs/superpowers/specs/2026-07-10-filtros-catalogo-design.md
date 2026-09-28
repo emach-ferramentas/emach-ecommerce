@@ -1,5 +1,7 @@
 # Filtros do catálogo — acordeões + drill-down de categoria
 
+> **Status em 2026-09-28:** implementado (#205). Existem `_components/category-drilldown.tsx`, `_lib/drilldown-level.ts`, `_lib/price-ranges.ts` e `_lib/facet-counts.ts` em `apps/web/src/app/(shop)/catalog/`, o `filter-panel.tsx` usa Accordion, RadioGroup e o `Switch` de `packages/ui/src/components/switch.tsx`, e `category-tree.tsx` foi removido. O teste de integração `facet-counts.test.ts` está na lista `INTEGRATION` de `apps/web/vitest.config.ts`.
+
 Data: 2026-07-10 · Status: aprovado em brainstorming (direção "B" escolhida em mockup visual com 3 opções)
 
 ## Problema
@@ -88,7 +90,9 @@ Semântica padrão de faceta — cada grupo conta com os filtros dos **outros** 
 - `byVoltage: Record<VoltageKey, number>` — aplica categoria + preço + promo + busca.
 - `promo: number` — aplica categoria + preço + voltagem + busca.
 
-`page.tsx` calcula `facetCounts` no server (junto da query de produtos existente) e passa pro `CatalogContent` → `FilterPanel`. Preço considerado = **`MIN(price_amount)` das variantes do tool, sem desconto de promo** — é exatamente o predicado de preço do `buildToolListWhere` de `getTools`; as contagens precisam bater com o total do grid, então espelham a semântica real do filtro (não o preço exibido). Nota: `CategoryNode.productCount` já existe, mas vem do shell cacheado (600s) e não reflete os outros filtros — serve de fallback visual, não substitui a query dinâmica.
+`page.tsx` calcula `facetCounts` no server (junto da query de produtos existente) e passa pro `CatalogContent` → `FilterPanel`.
+
+_Nota 2026-09-28: o cálculo hoje roda em `getCatalogData` (`_lib/catalog-data.ts`, com `"use cache"`), chamado por `_components/catalog-results.tsx`; `page.tsx` só monta essa árvore sob Suspense._ Preço considerado = **`MIN(price_amount)` das variantes do tool, sem desconto de promo** — é exatamente o predicado de preço do `buildToolListWhere` de `getTools`; as contagens precisam bater com o total do grid, então espelham a semântica real do filtro (não o preço exibido). Nota: `CategoryNode.productCount` já existe (`packages/db/src/queries/categories.ts:22`), mas vem do shell cacheado (600s) e não reflete os outros filtros — serve de fallback visual, não substitui a query dinâmica.
 
 ## Mobile
 

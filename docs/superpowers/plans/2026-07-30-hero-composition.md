@@ -1,5 +1,7 @@
 # Hero por `banner.composition` — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #212, `8fc6417`). Os arquivos das Tasks 1 a 7 existem em `apps/web/src/lib/composition/` e `apps/web/src/components/hero/`, e o gotcha do `CLAUDE.md` foi atualizado. Tasks 8 a 10 (smoke, paridade em produção, gates finais) não verificado.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** O hero da home renderiza por `banner.composition` (builder por elemento, issue #210), com renderer único e sem `LAYOUT_CONFIG`.

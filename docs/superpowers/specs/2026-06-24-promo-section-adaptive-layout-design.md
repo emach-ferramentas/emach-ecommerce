@@ -1,7 +1,8 @@
 # Seção de promoção da home — layout adaptativo por contagem de produtos
 
+> **Status em 2026-09-28:** implementado. `apps/web/src/components/promo-highlight.tsx` escolhe o arranjo por `selectPromoLayout(promotion.tools.length)` (`apps/web/src/lib/promo-card-helpers.ts`), `promo-product-card.tsx` é o card horizontal com `mirrored`, e `apps/web/src/app/(shop)/page.tsx` mantém o gate `tools.length >= 2`. O texto abaixo continua válido; só a cobertura de testes difere (nota na seção 7).
+
 **Data:** 2026-06-24
-**Status:** implementado. Evidência: `apps/web/src/components/promo-highlight.tsx` escolhe o layout por `selectPromoLayout(promotion.tools.length)`.
 **Área:** `apps/web` (storefront) + 1 ajuste de regra em `packages/db` (query de leitura)
 
 ## 1. Problema
@@ -151,6 +152,8 @@ já é responsivo hoje (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`).
   voltagens, `inStock` true/false, `mirrored` true/false (estrutura/classes).
 - **Unit (seleção de layout):** `PromoHighlight` escolhe o arranjo certo para
   2, 3 e 4 produtos; não renderiza para < 2.
+
+_Nota 2026-09-28: só a seleção de layout e os cálculos têm teste, em `apps/web/src/lib/promo-card-helpers.test.ts`. Não há teste de render de `PromoProductCard` nem de `PromoHighlight` (o plano registra que o projeto não tem testing-library)._
 - **Gate de mínimo:** a home (`page.tsx`) não renderiza a seção quando a promoção
   featured tem < 2 produtos; renderiza com ≥ 2. (Sem teste de query — a regra mora
   no storefront, não em `getFeaturedPromotion`.)

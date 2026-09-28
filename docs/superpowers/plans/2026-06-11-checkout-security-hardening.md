@@ -1,5 +1,7 @@
 # Hardening de Segurança do Checkout — Plano de Implementação
 
+> **Status em 2026-09-28:** implementado (PR #102). Os arquivos da seção File Structure existem, exceto que `rls.sql` hoje é cópia sincronizada do dashboard e cobre 14 tabelas. Os checkboxes abaixo não foram marcados.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fechar três achados de segurança no checkout/DB (RLS ausente, IP spoofável no consentLog, actions sem rate limit) em um PR único.
@@ -13,7 +15,7 @@
 ## Dependências e ordem de execução
 
 - **Tasks 1–2 (#95)** e **Task 7 (#90)** — executáveis **imediatamente**, sem dependência externa.
-- **Tasks 3–6 (#94)** — **gated** no package `@emach/redis` e nas envs `UPSTASH_REDIS_REST_URL`/`_TOKEN`, que nascem no PR de auth (#91/#92/#96) e mergeiam **antes**. Não iniciar as Tasks 3–6 antes do `@emach/redis` estar disponível (senão `check-types` quebra no import). O usuário avisa quando o PR de auth mergear.
+- **Tasks 3–6 (#94)** — **gated** no package `@emach/redis` e nas envs `UPSTASH_REDIS_REST_URL`/`_TOKEN`, que nascem no PR de auth (#91/#92/#96) e mergeiam **antes**. Não iniciar as Tasks 3–6 antes do `@emach/redis` estar disponível (senão `check-types` quebra no import). O usuário avisa quando o PR de auth mergear. _Nota 2026-09-28: o PR de auth (#99) mergeou antes e `@emach/redis` existe em `packages/redis`._
 
 ## File Structure
 
@@ -26,7 +28,7 @@
 - `apps/web/src/lib/coupons/validate-coupon.test.ts` — **modificar.** Assertar `reason`.
 - `apps/web/src/app/checkout/_actions/apply-coupon.ts` — **modificar.** Rate limit + colapso de mensagem.
 - `apps/web/src/app/checkout/_actions/quote-shipping.ts` — **modificar.** Rate limit por IP.
-- `packages/db/src/sql/rls.sql` — **criar.** SQL idempotente de ENABLE RLS.
+- `packages/db/src/sql/rls.sql` — **criar.** SQL idempotente de ENABLE RLS. _Nota 2026-09-28: hoje é cópia sincronizada do `emach-dashboard`, com 14 tabelas (inclui `cart_event`)._
 - `packages/db/CLAUDE.md` — **modificar.** Nota sobre o RLS.
 
 ---

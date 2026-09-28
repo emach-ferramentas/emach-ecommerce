@@ -1,5 +1,7 @@
 # Plan 005: Checar posse do endereço em `resolveDestinationCep`
 
+> **Status em 2026-09-28:** implementado. `resolveDestinationCep(database, input, clientId)` filtra por `clientAddress.id` e `clientAddress.clientId` em `apps/web/src/app/checkout/_lib/place-order.ts:351-372`. O único caller passa `clientId` em `apps/web/src/app/checkout/_actions/create-order.ts:74`.
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP =
 > pare e reporte. Ao terminar, atualize `plans/README.md`.
 >
@@ -30,6 +32,8 @@ cotação roda contra o endereço alheio antes disso. O fix alinha
 ## Current state
 
 - `apps/web/src/app/checkout/_lib/place-order.ts:304-319` — sem filtro de posse:
+
+_Nota 2026-09-28: as linhas citadas derivaram. A função está em `place-order.ts:351` e o call site em `create-order.ts:74`. Os trechos abaixo mostram o estado anterior ao fix._
   ```ts
   export async function resolveDestinationCep(
   	database: typeof db,

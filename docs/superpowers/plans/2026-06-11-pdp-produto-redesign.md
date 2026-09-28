@@ -1,5 +1,7 @@
 # PDP Produto — Redesign Chiaroscuro · Implementation Plan
 
+> **Status em 2026-09-28:** substituído. O plano foi executado no #101 (`b4bee5c`) e a ficha e os comentários escuros foram refeitos em #105 e #180, que adotaram a placa técnica clara de `docs/superpowers/specs/2026-07-03-pdp-redesign-design.md`. Sobrevivem `apps/web/src/lib/format.ts` (`fmtSpecNumber`, `fmtSpecRange`) e `scripts/seed-pdp-demo-specs.sql`; `product-tabs.tsx` e o tema escuro da ficha não existem mais. Os checkboxes abaixo ficaram sem marcar e não refletem o que foi feito.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Redesenhar a página de produto (`/product/[slug]`) com ritmo claro/escuro do home: remove breadcrumb, ficha técnica e comentários escuros (tom cinema), bloco de compra refinado, formatação numérica PT-BR.
@@ -18,6 +20,8 @@
 ---
 
 ### Task 1: Helper `fmtSpecValue` (formatação numérica PT-BR) — TDD
+
+_Nota 2026-09-28: o helper saiu com os nomes `fmtSpecNumber` e `fmtSpecRange` em `apps/web/src/lib/format.ts`, sem `fmtSpecValue`._
 
 Corrige o bug `650.0000 W`. Única unidade de lógica pura → TDD.
 

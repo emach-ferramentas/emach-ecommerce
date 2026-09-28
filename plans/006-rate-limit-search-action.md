@@ -1,5 +1,7 @@
 # Plan 006: Rate limit em `searchToolsAction`
 
+> **Status em 2026-09-28:** implementado, com contrato de retorno diferente do plano. `searchLimiter = createLimiter(30)` está em `apps/web/src/lib/rate-limit.ts:62` e `searchToolsAction` o aplica por IP em `apps/web/src/lib/actions/search.ts:31`. Desde o #226 a action retorna `ActionResultWith<SearchResult[]>` e, ao estourar o limite, devolve `{ ok: false, error }` em vez de `[]`.
+
 > **Executor instructions**: Siga passo a passo, rode cada verificação. STOP =
 > pare e reporte. Ao terminar, atualize `plans/README.md`.
 >
@@ -60,6 +62,8 @@ por IP já existe no repo (`quote-shipping.ts`); este plano o aplica à busca.
 - `getClientIp` vem de `@/lib/client-ip`; `headers` de `next/headers`; `log` de `@/lib/evlog`.
 
 ## Decisão de contrato de retorno
+
+_Nota 2026-09-28: decisão superada pelo #226 (`fix(busca): erro, corrida, Enter e paginação`). `searchToolsAction` agora retorna `ActionResultWith<SearchResult[]>`, e o caller `components/search-overlay.tsx` trata `res.ok`. Ao estourar o limite a action devolve `{ ok: false, error: "Muitas buscas seguidas. Aguarde alguns segundos." }`. O import de `searchTools` vem de `@emach/db/queries/tools`, não mais de `queries/catalog`._
 
 Hoje `searchToolsAction` retorna `ToolSearchResult[]` direto (sem envelope
 `{ok}`). Para não quebrar o caller (`search-overlay.tsx`), **mantenha o tipo de

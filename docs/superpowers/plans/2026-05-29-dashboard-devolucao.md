@@ -1,5 +1,7 @@
 # Devolução / Reembolso (client-side) Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #39, commit `b753d68`). A lista real de `/dashboard/reembolso`, a sheet de solicitar devolução e `requestRefundAction` existem em `apps/web/src/app/dashboard/reembolso/`, `apps/web/src/app/dashboard/pedidos/[id]/_components/refund-sheet.tsx`, `apps/web/src/app/dashboard/pedidos/_actions/refunds.ts` e `apps/web/src/lib/refunds/`; os mocks foram apagados. O #96 moveu `ACTIVE_REFUND_STATUSES` para `@emach/db/schema/orders`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ligar a área de devolução/reembolso do cliente (`/dashboard/reembolso` + botão no detalhe do pedido) à tabela real `refund_request`, removendo os mocks.
@@ -19,6 +21,8 @@
 - "Finalizado" (`finalizado`): `refunded`, `rejected`
 
 **Regra de "solicitação ativa":** `requested`, `under_review` **ou** `approved`. O índice parcial do DB só cobre `requested`/`under_review` (backstop de corrida); a app bloqueia também `approved` na elegibilidade.
+
+_Nota 2026-09-28: o índice parcial de hoje (`packages/db/src/schema/orders.ts`) já cobre `approved`, porque o predicado deriva de `ACTIVE_REFUND_STATUSES`. `ACTIVE_REFUND_STATUSES` não é mais definida em `lib/refunds/status.ts` (Task 1): vem de `@emach/db/schema/orders`, e `status.ts` a importa de lá. Os comentários de `refunds.ts` que citam só `requested`/`under_review` estão defasados._
 
 **Arquivos que vão sair (mocks):**
 - `apps/web/src/app/dashboard/_lib/mock-refunds.ts` (deletado)

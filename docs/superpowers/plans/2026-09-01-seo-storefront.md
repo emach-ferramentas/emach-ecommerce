@@ -1,5 +1,7 @@
 # SEO do storefront — Implementation Plan
 
+> **Status em 2026-09-28:** implementado. As três fases entraram em #218 (canonical e JSON-LD), #219 (`/catalog/[cat]` e redirect 308) e #220 (`/privacidade`, `/entrega`, footer, H1 da home). Os arquivos do mapa existem em `apps/web/src`, com desvios pontuais anotados nas tasks 4 e 10 e no fecho do plano.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Canonical em toda rota indexável, dados estruturados de site e filiais, URL própria por categoria (`/catalog/[slug]`) com redirect das antigas, e páginas `/privacidade` e `/entrega` com copy humanizada.
@@ -2689,5 +2691,7 @@ Reler o corpo com `/unslop`. Link no relatório.
 ## Self-review (feito ao escrever)
 
 - **Cobertura do spec:** canonical (T1), Organization/WebSite/HardwareStore (T2–T3), Product enriquecido sem `hasMerchantReturnPolicy`/`gtin`/`shippingDetails` (T4), rota `/catalog/[slug]` + metadata + H1 + `generateStaticParams` + `notFound` (T8), migração dos 5 call-sites (T9), redirect 308 (T10), sitemap (T9, T15), `/privacidade` e `/entrega` (T13, T14), footer (T15), copy humanizada + verificador-factual (T16), H1 da home (T15). Facet/drill-down migra junto via `buildHref` (T7).
+
+_Nota 2026-09-28: o builder final de `Product` emite `gtin` por `Offer` quando o `barcode` da variante tem 8, 12, 13 ou 14 dígitos, e o `@id` da oferta usa `encodeURIComponent(sku)` (`_lib/product-json-ld.ts`). A regra do redirect (T10) ficou mais rígida: `legacyCategoryRedirect` recusa `cat=..` e `cat=.` (`lib/seo/catalog-redirect.ts`)._
 - **Placeholders:** nenhum "TBD"/"similar à task N"; todo passo de código tem o código.
 - **Consistência de nomes:** `canonicalFor`, `buildSiteGraph`, `openingHoursFor`, `JsonLdScript`, `buildProductJsonLd`, `buildBreadcrumbJsonLd`, `priceValidUntil`, `parseCatalogSearchParams`, `CatalogSearchParams`, `getCategoryShell`, `CatalogResults`, `legacyCategoryRedirect`, `InstitutionalPage`/`InstitutionalSection`, `privacySections`/`deliverySections` usados com o mesmo nome em todas as tasks.

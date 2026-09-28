@@ -1,5 +1,7 @@
 # Follow-ups do cupom no checkout — design
 
+> **Status em 2026-09-28:** implementado, com dois desvios. As unidades A, B e C estão no código: `numericToCents` e `fmtNumericBRL` únicos, `apps/web/src/lib/auto-promo.ts` (`fetchAutoPromosByToolId`, `autoPromoToolIdsFromMap`) injetado em `validateCoupon`, e `apps/web/src/app/checkout/_actions/revalidate-cart.ts` chamado no mount de `checkout-content.tsx`. A Fase final (issue de handoff no `emach-dashboard`) não foi verificada, porque este repo não lê o dashboard; `order.coupon_id` já consta em `packages/db/src/schema/orders.ts`.
+
 > Resolve a issue **#57** (follow-ups consolidados pós **PR #56**, que fechou #55).
 > Escopo desta rodada: itens **2, 3, 5, 6** (ecommerce-owned). Itens **1 e 4**
 > (cross-repo, dashboard) viram um issue de handoff no `emach-dashboard`,
@@ -40,7 +42,7 @@ Refactor puro, sem comportamento novo. Remove duplicações introduzidas no #56.
 - `validate-coupon.ts`: trocar o `toLocaleString` inline (erro de pedido mínimo)
   por `fmtNumericBRL` (`lib/format.ts`).
 - Shape do cart-item do cupom: definir **um** `zod` schema exportado (em
-  `apply-coupon.ts`) e tipar `CouponField.cartItems` com `z.infer<...>[number]`,
+  `apply-coupon.ts`; _nota 2026-09-28: ficou em `apps/web/src/app/checkout/_lib/coupon-schema.ts`, porque arquivo `"use server"` só exporta funções async_) e tipar `CouponField.cartItems` com `z.infer<...>[number]`,
   eliminando a redeclaração de `CouponCartItem` em `coupon-field.tsx`. Assim um
   rename no schema quebra em tsc.
 
@@ -107,6 +109,7 @@ divergem.
 - Novo server action `apps/web/src/app/checkout/_actions/revalidate-cart.ts`
   (`revalidateCartAction`), molde do `quote-shipping`:
   - input `zod`: `cartItems[]` (`variantId`, `toolId`, `quantity`);
+    _nota 2026-09-28: o schema atual só recebe `toolId` e `variantId`, sem `quantity`, e a resposta ganhou `unavailable: string[]` (variante sem preço, removida ou oculta); `checkout-content.tsx` remove esses itens do carrinho com toast_;
   - re-busca o preço real da variante + auto-promo vigente **reusando o helper da
     Unidade B**;
   - retorna por variante `{ variantId, finalPriceCents }` (preço efetivo atual).
@@ -123,6 +126,7 @@ divergem.
 
 **Interface:** `revalidateCartAction(input): Promise<{ ok: true; prices:
 Array<{ variantId: string; finalPriceCents: number }> } | { ok: false; error }>`.
+_Nota 2026-09-28: o retorno de sucesso hoje também traz `unavailable: string[]`._
 
 **Fronteira:** o action é a única fonte de preço fresco; o componente só
 reconcilia display + snapshot. A regra de auto-promo não é reimplementada aqui —

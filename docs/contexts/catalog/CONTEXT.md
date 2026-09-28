@@ -9,21 +9,22 @@ A entidade-pai do catálogo — um item à venda (ferramenta elétrica ou manual
 _Avoid_: Product, Item, Produto
 
 **Variant**:
-Uma forma comprável concreta de um **Tool** — combina voltagem, preço e custo próprios. Toda **Tool** tem ao menos uma, e exatamente uma é a padrão. É a **Variant**, não o **Tool**, que é a unidade de venda e de estoque.
+Uma forma comprável concreta de um **Tool** — combina voltagem e preço próprios. O custo foi removido do sistema (#119); a **Variant** não guarda custo. Um **Tool** tem no máximo uma **Variant** padrão (índice único parcial `tool_variant_one_default_per_tool`). O banco não exige que um **Tool** tenha **Variant** nem padrão; um rascunho (`status = 'draft'`) pode não ter nenhuma. Se o gate de publicação do dashboard exige variante: não verificado. É a **Variant**, não o **Tool**, que é a unidade de venda e de estoque.
+Só é vendável a **Variant** com `visible_on_site = true` e `price_amount` preenchido; sem preço ou oculta, ela some da página do produto e é recusada no cupom, na revalidação do carrinho, no `placeOrder` e na recompra. `price_amount` e `barcode` são nulos em rascunho. Um **Tool** sem peso e dimensões tem frete "a combinar" (o CHECK `active_requires_shipping_data` só exige esses campos quando `status = 'active'`).
 _Avoid_: SKU (como nome da entidade)
 
 **SKU**:
 O código único de controle de estoque de uma **Variant**. É um atributo da **Variant**, não a **Variant** em si.
 
 **Category**:
-Um nó na árvore hierárquica de categorias sob a qual um **Tool** é classificado.
+Um nó na árvore hierárquica de categorias (profundidade máxima 5; `path` e `depth` são calculados por trigger e o ciclo é barrado). Uma **Category** inativa (`is_active = false`) fica fora das consultas da vitrine. Um **Tool** pode estar em várias, e no máximo uma delas é a primária (`tool_category.is_primary`).
 
 **Attribute**:
 Uma definição de especificação técnica (voltagem, torque, RPM, peso…) associada a uma **Category**. O valor concreto de um **Attribute** para um **Tool** é separado da definição.
 _Avoid_: Spec, Especificação, Feature
 
 **Supplier**:
-O fornecedor de quem um **Tool** é adquirido.
+O fornecedor de quem o estoque é comprado (proveniência da entrada de compra).
 _Avoid_: Vendor, Fabricante (o fabricante é `manufacturer_name`, um campo livre — não é o **Supplier**)
 
 **Primary image** (imagem primária):
@@ -32,12 +33,12 @@ _Avoid_: thumbnail, foto principal
 
 ## Relationships
 
-- Um **Tool** tem uma ou mais **Variants**; exatamente uma é a **Variant** padrão
+- Um **Tool** tem zero ou mais **Variants** (um rascunho pode não ter nenhuma); no máximo uma é a **Variant** padrão
 - Uma **Variant** pertence a exatamente um **Tool**
 - Um **Tool** é classificado em uma ou mais **Categories**
 - Uma **Category** tem no máximo uma **Category** pai (árvore)
 - Um **Attribute** é definido para uma **Category**; um **Tool** carrega valores de **Attribute**
-- Um **Tool** é adquirido de no máximo um **Supplier**
+- Um **Supplier** se liga ao estoque, não ao **Tool**: cada **Stock Movement** de entrada por compra (`entrada_compra`) registra o `supplier_id` de origem. O **Tool** não guarda fornecedor.
 
 ## Example dialogue
 

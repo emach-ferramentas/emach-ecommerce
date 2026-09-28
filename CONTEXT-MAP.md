@@ -17,7 +17,7 @@ O domínio EMACH é servido por dois apps que compartilham uma única base Postg
 
 ## Relationships
 
-- **Catalog → Ordering**: um **Order Item** referencia um **Tool** e uma **Variant** por id e snapshota nome, SKU, voltagem, dados fiscais (NCM/CEST) e dimensões no momento da compra. O preço de venda é derivado do preço-base da **Variant**.
+- **Catalog → Ordering**: um **Order Item** referencia um **Tool** e uma **Variant** por id e snapshota nome, SKU, voltagem, dados fiscais (NCM/CEST) e dimensões no momento da compra. O preço de venda gravado no **Order Item** é o preço-base da **Variant** já com a **Automatic Promotion** vigente (a de menor preço final).
 - **Catalog ↔ Inventory**: um **Stock Level** é mantido por par (**Variant**, **Branch**). Inventory rastreia estoque da unidade-de-venda do Catalog.
 - **Catalog ↔ Promotions**: uma **Promotion** liga-se a um ou mais **Tools** (`promotion_tool`) e aplica um desconto (`discount_type` `percent`|`fixed`) no nível do **Tool**.
 - **Ordering → Inventory**: a criação de um **Order** apenas **valida** disponibilidade agregada (`SUM(stock_level.quantity)` em todas as filiais) — **não debita** estoque nem grava **Stock Movement**. O débito (`saida_venda`, ator `system`) é adiado para a transição `pending_payment → paid` (ainda não cabeada — pagamento é stub), quando o storefront escreverá no ledger compartilhado `stock_movement`; o crédito de volta (cancelamento/estorno/devolução) é conduzido pelo dashboard. Ver ADR-0003 (supersede ADR-0001) e ADR-0007 do dashboard.
@@ -26,12 +26,12 @@ O domínio EMACH é servido por dois apps que compartilham uma única base Postg
 - **Ordering ↔ Reviews**: uma **Review** referencia obrigatoriamente um **Order** — só se avalia um produto efetivamente comprado.
 - **Catalog ↔ Reviews / Customer Accounts ↔ Reviews**: uma **Review** é escrita por um **Client** sobre um **Tool**; é única por (**Client**, **Tool**, **Order**).
 - **Staff Access ↔ Inventory**: um membro do **Staff** é associado a uma ou mais **Branches** (`user_branch`); o dashboard gere estoque a partir dessas filiais.
-- **Staff Access → Ordering**: o **Staff** conduz o ciclo de vida do **Order** (preparação, envio, cancelamento) e registra histórico e notas.
+- **Staff Access → Ordering**: o **Staff** conduz o ciclo de vida do **Order** a partir do pagamento (preparação, envio, cancelamento), e o cliente só cancela antes do pagamento. O **Staff** também registra histórico e notas.
 - **Staff Access → Promotions / Catalog / Reviews**: o **Staff** autora promoções, mantém o catálogo e modera reviews.
 
 ## Notas de fronteira
 
 - **Cart** não é um contexto — é estado efêmero client-side (`localStorage`) no storefront. Um **Order** só passa a existir quando o checkout o cria, já em `pending_payment`.
 - **Payment** não é um contexto próprio hoje — o estado de pagamento vive em `order.status` (`pending_payment`/`paid`/`payment_failed`) mais `payment_method`/`payment_provider_ref`. Tornar-se-á um contexto se entrar uma integração real com provedor de pagamento.
-- **Shipping** não é um contexto. O frete é cotado no checkout via **Frenet** (`apps/web/src/lib/shipping/quote.ts` + `apps/web/src/lib/frenet/`). A origem é o CEP da filial em `store_settings.shipping_origin_branch_id`, lido por `getShippingSettings`. Sem filial configurada ou com CEP inválido, a origem cai em `FRENET_SELLER_CEP`. Os dados do frete ficam embutidos no **Order** (`shipping_*`). A cotação é fail-open: falha da Frenet não bloqueia a venda e o pedido nasce com `shipping_unverified = true` para revisão do staff.
+- **Shipping** não é um contexto. O frete é cotado no checkout via **Frenet** (`apps/web/src/lib/shipping/quote.ts` + `apps/web/src/lib/frenet/`). A origem é o CEP da filial em `store_settings.shipping_origin_branch_id`, lido por `getShippingSettings`. Sem filial configurada ou com CEP inválido, a origem cai em `FRENET_SELLER_CEP`. Os dados do frete ficam embutidos no **Order** (`shipping_*`). A cotação é fail-open só para falha de infraestrutura (Frenet fora do ar, CEP desconhecido da Frenet ou pedido sem CEP de destino): o pedido nasce com `shipping_unverified = true` para revisão do staff. "Frete a combinar" e frete adulterado recusam o pedido.
 - Não há integração via **API key** entre os apps: eles compartilham a DB diretamente. A tabela `api_key` não existe na DB real.

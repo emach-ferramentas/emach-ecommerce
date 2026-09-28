@@ -9,7 +9,7 @@ Uma pessoa ou empresa que compra na loja. É distinto de **User** — **User** �
 _Avoid_: User, Customer, Buyer, Usuário
 
 **Client Type**:
-Se o **Client** é `b2c` (pessoa física, identificada por CPF) ou `b2b` (pessoa jurídica, identificada por CNPJ). É derivado do **Document**, não escolhido manualmente.
+Se o **Client** é `b2c` (pessoa física, identificada por CPF) ou `b2b` (pessoa jurídica, identificada por CNPJ). É derivado do **Document** por trigger (`derive_client_type`): 11 dígitos = `b2c`, 14 = `b2b`, sem **Document** = sem tipo. O cliente não o escolhe. O trigger recalcula o tipo em todo UPDATE que cita `document` sem mudar `client_type`, mesmo com o documento igual, e o `placeOrder` grava `document` a cada checkout: um valor gravado manualmente cai no pedido seguinte do cliente; o **Audit Trail** prevê a ação `type_changed` para essa alteração (a tela que a faz vive no dashboard: não verificado).
 
 **Document**:
 O CPF (de um **Client** `b2c`) ou CNPJ (de um **Client** `b2b`). Persistido só com dígitos, após validação de dígito verificador.
@@ -23,7 +23,7 @@ Um endereço de entrega pertencente a um **Client**. Um deles é o padrão. O cl
 _Avoid_: Endereço, Location
 
 **Customer Portal**:
-A área logada do **Client** no storefront (`/dashboard`): perfil + endereços (`dados-pessoais`), histórico de **Orders** (`pedidos` — lista, detalhe, rastreio, cancelar, recomprar, avaliar) e **Refund Requests** (`reembolso`). É o storefront — **não** confundir com o dashboard do staff (repo irmão `emach-dashboard`).
+A área logada do **Client** no storefront (`/dashboard`): perfil + endereços (`dados-pessoais`), histórico de **Orders** (`pedidos` — lista, detalhe, rastreio, cancelar, recomprar, avaliar) e **Refund Requests** (`reembolso`). É o storefront — **não** confundir com o dashboard do staff (repo irmão `emach-dashboard`). O portal também tem `/dashboard/pedidos/[id]/pagar` (escolha do meio de pagamento; hoje stub, sem provedor integrado) e o checkout termina em `/pedidos/[number]`, a confirmação do pedido. O **Client** edita o **Document** e o telefone em `dados-pessoais`; a validação e a normalização (só dígitos) rodam nos hooks do Better Auth (`packages/auth/src/ecommerce.ts`).
 
 ## Relationships
 

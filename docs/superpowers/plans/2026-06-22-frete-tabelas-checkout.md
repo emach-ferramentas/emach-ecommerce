@@ -1,5 +1,7 @@
 # Frete por tabelas no checkout Implementation Plan
 
+> **Status em 2026-09-28:** substituído. O plano foi executado (#164), mas o PR #178 trocou o motor de tabelas pela Frenet. `getActiveCarriersWithTables` e o `quoteShipping` de zonas não existem mais em `packages/db/src/queries/`; `apps/web/src/lib/shipping/quote.ts` hoje cota via `apps/web/src/lib/frenet/`. Ver `docs/superpowers/plans/2026-07-02-frenet-cotacao.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Substituir a cotação SuperFrete pelo motor de frete por tabelas (`@emach/db/queries/shipping-quote`) no checkout e na calculadora de frete.

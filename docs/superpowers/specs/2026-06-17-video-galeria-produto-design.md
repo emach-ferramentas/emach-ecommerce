@@ -1,5 +1,7 @@
 # Vídeo de destaque da ferramenta na galeria do produto
 
+> **Status em 2026-09-28:** implementado (#140, `d82e407`). O bloqueio do SELECT caiu no sync #141 (`d9c26bf`): `getToolBySlug` em `packages/db/src/queries/tools.ts:265` já lê `video_url` e `video_poster_url` (linhas 282-283). O código vive em `apps/web/src/app/(shop)/product/[slug]/_components/gallery-slots.ts` (`buildSlots`), `product-gallery.tsx` e no `remotePattern` de `tool-videos` em `apps/web/next.config.ts:57`. Desde o #180 os thumbs são chips em overlay no painel da galeria, e a placa técnica também mostra o vídeo (`plate-media.tsx`).
+
 > Issue: [#137] — `[catálogo] Renderizar vídeo de destaque da ferramenta na galeria do produto`
 > Data: 2026-06-17
 > Repo: `emach-ecommerce` (storefront)
@@ -19,6 +21,8 @@ Design/viabilidade originais (lado dashboard): `emach-dashboard` →
 `docs/superpowers/specs/2026-06-16-galeria-drag-video-design.md` (Parte 2).
 
 ## Estado do bloqueio (blocked-by) — resolvido parcialmente
+
+_Nota 2026-09-28: resolvido por completo. O sync #141 trouxe os campos para o SELECT e o arquivo `catalog.ts` foi dividido (#157): `getToolBySlug` mora hoje em `packages/db/src/queries/tools.ts`. Se a issue no dashboard chegou a ser aberta: não verificado (o repo dashboard está fora do alcance desta revisão)._
 
 O issue nasceu **blocked-by** a chegada das colunas via sync (ADR-0009). O PR de
 sync **#139** (`chore: sincroniza schema da DB com o dashboard`) já adicionou as
@@ -47,7 +51,7 @@ trouxer os campos. Sem o SELECT, nada quebra — a galeria apenas se comporta co
 ## Decisões de UX (confirmadas)
 
 - **Posicionamento estilo Mercado Livre:** o vídeo entra como **mais um thumbnail**
-  na fileira de miniaturas existente, **logo após a 1ª imagem**. Ordem:
+  na fileira de miniaturas existente (desde o #180, chips em overlay no canto inferior esquerdo do painel, sem a coluna vertical), **logo após a 1ª imagem**. Ordem:
   `[capa, VÍDEO, ...demais fotos]`.
 - **Thumb do vídeo:** poster renderizado via `<ProductImage>` + overlay com ícone
   ▶ (lucide `Play`).

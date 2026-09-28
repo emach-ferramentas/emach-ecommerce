@@ -1,5 +1,7 @@
 # Otimização de render das imagens do hero (#126)
 
+> **Status em 2026-09-28:** implementado. `apps/web/next.config.ts:41-42` declara `formats: ["image/avif", "image/webp"]` e `qualities: [75, 85]`; o fundo usa `quality={75}` e `priority={isFirst}` em `hero/hero-slide.tsx`, e o produto usa `quality={85}` sem `unoptimized` em `hero/hero-element-renders.tsx`. O hero saiu de `hero-carousel.tsx` para `components/hero/` (#210), e o `sizes` do produto hoje é `(max-width: 1024px) 92vw, 42vw`.
+
 **Data:** 2026-06-15
 **Issue:** othavioquiliao/emach-ecommerce#126 (`perf`)
 **Blocked by:** #122 (hero consumível servido pelo banco) — **CLOSED**, desbloqueado.
@@ -47,6 +49,8 @@ images: {
 
 ### 2. `apps/web/src/components/hero-carousel.tsx`
 
+_Nota 2026-09-28: o arquivo foi dividido no #210. `isFirst` continua vindo de `index === 0` em `hero-carousel.tsx`; o fundo mora em `hero/hero-slide.tsx` e o produto em `hero/hero-element-renders.tsx`. O produto só emite `priority` quando `preload` é verdadeiro, para não duplicar o preload do mesmo asset entre desktop e mobile (`productImageLoadProps`)._
+
 Propagar a posição do slide até `HeroSlideContent` via novo prop `isFirst: boolean`, derivado
 de `index === 0` no `.map` de `HeroCarousel`. Com isso:
 
@@ -64,7 +68,7 @@ de `index === 0` no `.map` de `HeroCarousel`. Com isso:
   - `priority={isFirst}` (era `priority` fixo)
   - `quality={85}` (era `100`) — produto é o elemento focal, com bordas duras sobre
     transparência; 85 preserva nitidez sem banding.
-  - `sizes="(max-width: 1024px) 82vw, 42vw"` (mantido — já casa com a largura real:
+  - `sizes="(max-width: 1024px) 82vw, 42vw"` (mantido — _Nota 2026-09-28: hoje é `92vw`, ver `hero-element-renders.tsx`_ — já casava com a largura real:
     `lg:w-[40%]`/`[42%]` no desktop, `w-[82%]` no mobile).
   - `fetchPriority="high"` apenas no primeiro slide.
 
@@ -88,6 +92,8 @@ O produto renderiza um único `<Image src={mobileProduct}>`, onde
 `mobileProduct = productImageMobileUrl ?? productImageUrl`. Se um banner tiver produto mobile
 separado, o **desktop também serve a arte mobile** — bug de correção (não de perf). Não tocar
 aqui; abrir issue própria se confirmar com dado real.
+
+_Nota 2026-09-28: resolvido no #210. `HeroPositionedProduct` (`hero/hero-slide.tsx`) usa `productImageUrl` no desktop e `productImageMobileUrl ?? productImageUrl` no mobile._
 
 ## Verificação
 

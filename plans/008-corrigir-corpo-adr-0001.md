@@ -1,5 +1,7 @@
 # Plan 008: Corrigir o corpo do ADR-0001 (contradiz o ADR-0003 atual)
 
+> **Status em 2026-09-28:** implementado. `docs/adr/0001-debito-de-estoque-na-criacao-do-pedido.md` tem o aviso de revogação antes do histórico, com as seções "Decisão original (histórico)" e "Por que foi revogada". O ADR-0003 segue correto: `checkAggregateStock` só valida em `apps/web/src/app/checkout/_lib/place-order.ts:477`.
+
 > **Executor instructions**: Siga passo a passo. STOP = pare e reporte. Ao
 > terminar, atualize `plans/README.md`.
 >
@@ -27,6 +29,8 @@ assuma estoque já debitado.
 ## Current state
 
 - `docs/adr/0001-debito-de-estoque-na-criacao-do-pedido.md` (atual, completo):
+
+_Nota 2026-09-28: o trecho abaixo é o ADR-0001 antes do fix. O arquivo hoje já segue a estrutura sugerida no Step 1._
   ```md
   # Débito de estoque na criação do pedido
 

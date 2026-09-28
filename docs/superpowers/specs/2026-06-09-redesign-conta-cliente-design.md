@@ -1,5 +1,7 @@
 # Redesign da conta do cliente (dashboard) — design
 
+> **Status em 2026-09-28:** implementado. `apps/web/src/app/dashboard/page.tsx` é a Overview real; `AccountHero`, `AccountBadge`, `StatusStepper` e `QuickActionCard` vivem em `apps/web/src/app/dashboard/_components/`. `packages/auth/src/ecommerce.ts` tem `sendOnSignUp: true` e não força mais `emailVerified: true`. Entrega no PR #74.
+
 > Data: 2026-06-09 · Escopo: `apps/web/src/app/dashboard/**` + nova rota overview.
 > Objetivo: trazer a linguagem visual da home (chiaroscuro Ferrari) para as telas da
 > conta, que hoje são "claras e planas", sem hierarquia nem assinatura de marca.
@@ -126,7 +128,9 @@ Substitui o `redirect()` atual por uma página real.
 
 ## 4.1 Ativação real da verificação de e-mail (auth P0 — decidido)
 
-Hoje `packages/auth/src/ecommerce.ts` força **todo cliente como verificado** na
+_Nota 2026-09-28: o texto abaixo descreve o estado de antes do redesign; hoje `sendOnSignUp` é `true` e o hook `databaseHooks.user.create.before` continua, agora chamando `normalizeUserForWrite`; só saiu o `emailVerified: true` forçado._
+
+Antes do redesign, `packages/auth/src/ecommerce.ts` forçava **todo cliente como verificado** na
 criação (`databaseHooks.user.create.before → emailVerified: true`), com
 `sendOnSignUp: false` e `requireEmailVerification: false`. Logo, ninguém fica "não
 verificado" e o card de e-mail seria inerte.
@@ -164,7 +168,7 @@ Sem barrel files (proibido em `apps/web/src`). Co-locar em `_components/`.
 - `dados-pessoais/_components/profile-header.tsx` — perfil escuro.
 
 **Editar:**
-- `dashboard/layout.tsx` — ajustar shell/spacing; manter a `DashboardSidebar`. O hero
+- `dashboard/layout.tsx` — ajustar shell/spacing; manter a `DashboardSidebar`. _Nota 2026-09-28: a guarda de sessão e o shell (sidebar e `DashboardNavMobile`) hoje ficam em `dashboard/_components/dashboard-chrome.tsx`, montado sob Suspense pelo `layout.tsx` (#98); a lista de itens de navegação está em `dashboard/_components/nav-items.ts`._ O hero
   é renderizado por cada página (não pelo layout), pois título/conteúdo variam.
 - `_components/dashboard-sidebar.tsx` — refino visual; **adicionar item "Início"**
   apontando para `/dashboard` (overview). Tratar mobile (ver §6).

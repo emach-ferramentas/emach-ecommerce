@@ -37,6 +37,8 @@ emach-ecommerce/
 
 ## Setup
 
+> O `.env.example` traz só um placeholder, mas o `DATABASE_URL` do `.env` real é o Supabase compartilhado com o dashboard (dev = prod). Os comandos de banco abaixo escrevem nele: rodar só com autorização explícita, ou apontar o `.env` para um Postgres local.
+
 ```bash
 bun install
 cp apps/web/.env.example apps/web/.env  # schema das envs em packages/env/src/schemas.ts
@@ -79,11 +81,14 @@ bunx shadcn@latest diff -c packages/ui
 
 ## Documentação para agentes
 
-- **`CLAUDE.md`** — instruções completas: packages, ownership de tabelas, invariantes P0 auth, anti-patterns, MCP servers, workflow.
+- **`CLAUDE.md`** — log de mistakes e decisões não óbvias: guardrails de banco, ownership de tabelas, invariantes P0 de auth, anti-patterns, gotchas, deploy e CI, MCP do Resend. Servidores MCP do projeto: `.mcp.json`.
 - **`AGENTS.md`** — pointer pra agentes externos (Codex, Amp, Cursor).
 - **`docs/agents/*.md`** — config das skills de engenharia (issue tracker, triage labels, domain docs).
 - **`DESIGN.md`** — tokens completos do design Ferrari-inspired (cores, tipografia, princípios, componentes EMACH custom).
 - **`packages/db/CLAUDE.md`** — convenções de schema Drizzle (FKs, enums, money, triggers, queries compartilhadas).
+- **`CONTEXT-MAP.md`** e **`docs/contexts/<slug>/CONTEXT.md`** — glossário e fronteiras dos 8 bounded contexts.
+- **`docs/adr/`** — decisões de sistema (0001 débito de estoque, superseded; 0002 ownership de migrations; 0003 estoque multi-filial; 0004 deploy e gates de CI).
+- **`PRODUCT.md`** — contexto de produto. **`docs/superpowers/{specs,plans}`** — specs e planos por feature.
 
 ## Invariantes críticos
 

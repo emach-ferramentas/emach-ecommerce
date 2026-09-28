@@ -1,5 +1,7 @@
 # Cotação de frete via SuperFrete — Implementation Plan
 
+> **Status em 2026-09-28:** substituído. O plano foi executado (#49) e o SuperFrete foi removido pelo PR #164, que o trocou pelo motor de tabelas; o PR #178 depois trocou o motor pela Frenet. Nenhum arquivo `lib/superfrete/` ou `origin-branch.ts` existe hoje. Ver `docs/superpowers/plans/2026-07-02-frenet-cotacao.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Substituir o frete hardcoded do checkout por cotação real do SuperFrete (server-side, sob demanda no CEP), exibindo serviços com preço/prazo pro cliente escolher.

@@ -1,5 +1,7 @@
 # Promoção em destaque no home — Implementation Plan
 
+> **Status em 2026-09-28:** implementado (Parte B verificada no código). `getFeaturedPromotion` está em `packages/db/src/queries/promotions.ts:162`, `formatCountdown` em `apps/web/src/lib/countdown.ts`, e `PromoHighlight` e `PromoCountdown` em `apps/web/src/components/`, montados em `apps/web/src/app/(shop)/page.tsx`. Os caminhos e imports dos passos abaixo estão desatualizados em dois pontos (ver notas nas Tasks 6, 9 e 10). A Parte A roda no `emach-dashboard` e não foi verificada.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Dar ao staff controle editorial de uma promoção em destaque no home, exibida numa seção preta cinematográfica com contador regressivo até o fim da vigência.
@@ -315,6 +317,8 @@ git commit -m "feat(db): cópia antecipada de promotion.featured (ADR-0009, sync
 
 **Files:**
 - Modify: `packages/db/src/queries/catalog.ts`
+
+_Nota 2026-09-28: o `catalog.ts` foi dividido (PR #157); a função vive hoje em `packages/db/src/queries/promotions.ts`, e os imports `@emach/db/queries/catalog` das Tasks 6, 9 e 10 viraram `@emach/db/queries/promotions`._
 
 - [ ] **Step 1: Ler `getActivePromotions` para reusar o bloco de tools**
 
@@ -638,6 +642,8 @@ git commit -m "feat(promo): PromoCountdown client SSR-safe (dígitos vermelhos)"
 **Files:**
 - Create: `apps/web/src/components/promo-highlight.tsx`
 
+_Nota 2026-09-28: o corpo com `ProductCarousel` foi trocado por layout adaptativo (pair, trio, grid) no plano `2026-06-24-promo-section-adaptive-layout.md`._
+
 - [ ] **Step 1: Conferir as props dos componentes reusados**
 
 Ler `apps/web/src/components/product-carousel.tsx`, `section-label.tsx`, `emach-button.tsx` e `page-container.tsx` para confirmar nomes de props (`ProductCarousel` recebe `label`/`title`/`link`/`tools`; `SectionLabel` aceita `tone`; `EmachButton` aceita `variant`/`size`).
@@ -744,6 +750,8 @@ Reorganizar o JSX do `<main>` para a ordem:
 4. Seção **Novidades** (`bg-gray-10`)
 5. Seção **Marca** "Feito para durar" (`bg-black`)
 
+_Nota 2026-09-28: a seção Marca foi removida e substituída por `BranchMapSection` (plano `2026-06-09-secao-onde-estamos.md`)._
+
 Garantir que cada seção continua com seu guard (`recentTools.length > 0`, `rootCategories.length > 0`).
 
 - [ ] **Step 4: Verificar tipos**
@@ -811,3 +819,4 @@ Confirmar que `bun check-types` passou nos dois repos e o smoke visual bateu com
 ## Follow-ups (fora do escopo)
 - Conciliar a cópia de schema/query com o PR de sync quando rodar.
 - Avaliar mover `getActivePromotions` para uso só no `/catalog?promo=1` (ainda referenciada lá).
+  _Nota 2026-09-28: nenhum código de `apps/web` chama `getActivePromotions`; só o teste em `packages/db/src/queries/__tests__/catalog-promotions.test.ts`. O `/catalog?promo=1` usa o filtro `onlyPromo` (`catalog/_lib/parse-search-params.ts:97`)._

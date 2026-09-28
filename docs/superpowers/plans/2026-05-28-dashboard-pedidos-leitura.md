@@ -1,10 +1,14 @@
 # Dashboard de Pedidos — Camada de Leitura (Plano 1) Implementation Plan
 
+> **Status em 2026-09-28:** implementado (PR #36, commit `a3d62d2`). O módulo de status, as queries e as telas de lista, detalhe e rastreio existem em `apps/web/src/lib/orders/status.ts`, `apps/web/src/lib/orders/queries.ts` e `apps/web/src/app/dashboard/pedidos/`; os mocks de pedido foram removidos. `listClientOrders` continua sem paginação, como a dívida do fim do plano previa.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Substituir os dados mockados de `/dashboard/pedidos` (lista + detalhe + rastreio) pelos dados reais das tabelas `order`, `orderItem` e `orderStatusHistory`, preservando a UI existente.
 
 **Architecture:** Server Components leem via `db` + drizzle (mesmo padrão de `dashboard/dados-pessoais/page.tsx` e `pedidos/[number]/page.tsx`), passam dados tipados aos componentes client já existentes. Um novo módulo puro (`lib/orders/status.ts`) centraliza o mapa dos 9 status reais → badge/tab/stepper. Sem server actions neste plano (botões de ação ficam ocultos até o Plano 2).
+
+_Nota 2026-09-28: a página de referência `pedidos/[number]/page.tsx` mora hoje em `apps/web/src/app/(shop)/pedidos/[number]/page.tsx`. O stepper do detalhe usa `orderStepDisplayState` (que delega a `stepStateFor`) por meio de `pedidos/_components/order-steps.ts`._
 
 **Tech Stack:** Next 16 (RSC + typedRoutes), Drizzle ORM, Postgres (Supabase), Vitest (lógica pura), Tailwind, shadcn (Base UI), `next/image`.
 
@@ -1313,6 +1317,8 @@ Expected: sem erros. Se algum tipo de Refund quebrar por ter perdido `OrderItem`
 git add apps/web/src/app/dashboard/_lib/
 git commit -m "chore: remover mocks de pedido após migração"
 ```
+
+_Nota 2026-09-28: `types.ts` só ficou até o Plano 3. O PR #39 apagou `types.ts` e `mock-refunds.ts`, e a pasta `apps/web/src/app/dashboard/_lib/` não existe mais._
 
 ---
 
