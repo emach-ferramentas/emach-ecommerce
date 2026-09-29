@@ -4,23 +4,28 @@ import { cn } from "@emach/ui/lib/utils";
 import { Menu, Search, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/account-menu";
 import { CartSheet } from "@/components/cart-sheet";
 import { HeaderNav } from "@/components/header-nav";
 import { MobileMenu } from "@/components/mobile-menu";
 import { SearchOverlay } from "@/components/search-overlay";
-import { useCart } from "@/lib/cart-context";
+import { useCart, useCartSheet } from "@/lib/cart-context";
 
 export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
 	const { totalCount } = useCart();
 	const [searchOpen, setSearchOpen] = useState(false);
-	const [cartOpen, setCartOpen] = useState(false);
+	const { open: cartOpen, setOpen: setCartOpen } = useCartSheet();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [pulse, setPulse] = useState(false);
 	const [scrolled, setScrolled] = useState(false);
 	const prevCount = useRef(totalCount);
+
+	// A gaveta vive no CartProvider e sobrevive à troca de página. Sem isto, voltar
+	// no histórico com ela aberta a reabre na página anterior com o scroll travado.
+	// Layout effect para fechar antes do paint da página nova.
+	useLayoutEffect(() => () => setCartOpen(false), [setCartOpen]);
 
 	useEffect(() => {
 		if (totalCount > prevCount.current) {

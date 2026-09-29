@@ -25,6 +25,8 @@ interface CartState {
 interface CartActions {
 	add: (item: CartItemSnapshot, qty?: number) => void;
 	clear: () => void;
+	/** Abre a gaveta do carrinho. `add` não abre sozinho: quem adiciona decide. */
+	openSheet: () => void;
 	reconcile: (priceByVariantId: Map<string, string>) => void;
 	remove: (variantId: string) => void;
 	/** Re-adiciona sem emitir cart_event — só pro undo de remoção (#175). */
@@ -44,19 +46,33 @@ const CartActionsContext = createContext<CartActions>({
 	remove: () => undefined,
 	restore: () => undefined,
 	clear: () => undefined,
+	openSheet: () => undefined,
 	reconcile: () => undefined,
+});
+
+interface CartSheetState {
+	open: boolean;
+	setOpen: (open: boolean) => void;
+}
+
+// Contexto próprio p/ a gaveta: abrir/fechar não re-renderiza os consumidores
+// de `useCart` (cards, carrinho), só quem lê `useCartSheet`.
+const CartSheetContext = createContext<CartSheetState>({
+	open: false,
+	setOpen: () => undefined,
 });
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
 	const [items, setItems] = useState<CartItem[]>([]);
 	const [hydrated, setHydrated] = useState(false);
+	const [sheetOpen, setSheetOpen] = useState(false);
 
 	useEffect(() => {
 		setItems(loadCart());
 		setHydrated(true);
 	}, []);
 
-	// As ações só dependem de setItems (estável), logo o React Compiler mantém
+	// As ações só dependem de setters (estáveis), logo o React Compiler mantém
 	// este objeto referencialmente estável. Vivem num contexto SEPARADO do estado
 	// p/ que consumidores que só despacham (QuickAddButton em cada card do grid,
 	// botões da PDP, recomprar) NÃO re-renderizem quando `items`/`totalCount` muda.
@@ -82,6 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 			setItems([]);
 			saveCart([]);
 		},
+		openSheet: () => setSheetOpen(true),
 		reconcile: (priceByVariantId) =>
 			setItems((prev) => reconcilePrices(prev, priceByVariantId)),
 	};
@@ -91,7 +108,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 	return (
 		<CartActionsContext.Provider value={actions}>
 			<CartStateContext.Provider value={{ items, totalCount, hydrated }}>
-				{children}
+				<CartSheetContext.Provider
+					value={{ open: sheetOpen, setOpen: setSheetOpen }}
+				>
+					{children}
+				</CartSheetContext.Provider>
 			</CartStateContext.Provider>
 		</CartActionsContext.Provider>
 	);
@@ -108,4 +129,9 @@ export function useCart(): CartState & CartActions {
  */
 export function useCartActions(): CartActions {
 	return useContext(CartActionsContext);
+}
+
+/** Estado aberto/fechado da gaveta do carrinho (consumido pelo `SiteHeader`). */
+export function useCartSheet(): CartSheetState {
+	return useContext(CartSheetContext);
 }

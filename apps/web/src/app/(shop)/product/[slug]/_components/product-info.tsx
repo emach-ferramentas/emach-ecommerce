@@ -83,7 +83,7 @@ export function ProductInfo({
 	const [shared, setShared] = useState(false);
 	const [showSticky, setShowSticky] = useState(false);
 	const buyActionsRef = useRef<HTMLDivElement>(null);
-	const { add, clear } = useCartActions();
+	const { add, clear, openSheet } = useCartActions();
 	const router = useRouter();
 	// A navegação pro checkout é a maior janela morta da página: sem isso o
 	// usuário aperta, nada muda, e ele aperta de novo.
@@ -163,7 +163,7 @@ export function ProductInfo({
 			return;
 		}
 		add(buildCartItem(), qty);
-		toast.success(`${tool.name} adicionado ao carrinho`);
+		openSheet();
 	}
 
 	function handleBuyNow() {
