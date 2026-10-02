@@ -1,8 +1,10 @@
+import { ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import { Fragment, Suspense } from "react";
 
-import { PageContainer } from "@/components/page-container";
+import { HOME_CRUMB } from "@/components/breadcrumb";
+import { PageHead } from "@/components/page-head";
 import { SiteHeader } from "@/components/site-header";
 import {
 	type BusinessHoursRow,
@@ -84,156 +86,114 @@ function pluralizeBranches(count: number) {
 	return count === 1 ? "filial" : "filiais";
 }
 
-// Fallback do cache-miss (getBranches é 'use cache' 600s): segura o canvas
-// preto do hero (100svh - navbar) sem flash branco até os dados chegarem.
-function AboutSkeleton() {
-	return (
-		<main className="bg-gray-10" id="main-content">
-			<section className="min-h-[calc(100svh-56px)] bg-black" />
-		</main>
-	);
-}
+const SECTION_TITLE_CLASS =
+	"font-display font-extrabold text-[clamp(1.75rem,1.4rem+1vw,2.25rem)] text-ink uppercase leading-[0.95]";
 
 export default function AboutPage() {
 	return (
 		<>
 			<SiteHeader />
-			<Suspense fallback={<AboutSkeleton />}>
-				<AboutContent />
-			</Suspense>
+			<main className="bg-paper pb-16 md:pb-24" id="main-content">
+				<div className="shop-wrap">
+					<PageHead
+						current="Quem somos"
+						title="Ferramenta profissional, e quem responde por ela"
+						trail={[HOME_CRUMB]}
+					>
+						<p className="max-w-[65ch] leading-relaxed">{ABOUT_DESCRIPTION}</p>
+					</PageHead>
+
+					<ul className="border-line border-t">
+						{aboutPillars.map((pillar) => (
+							<li
+								className="grid gap-2 border-line border-b py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8"
+								key={pillar.id}
+							>
+								<h2 className="font-extrabold text-[17px] text-ink">
+									{pillar.label}
+								</h2>
+								<div className="max-w-[65ch]">
+									<p className="font-bold text-[20px] text-ink leading-snug">
+										{pillar.title}
+									</p>
+									<p className="mt-2 text-[16px] text-ink-2 leading-relaxed">
+										{pillar.description}
+									</p>
+								</div>
+							</li>
+						))}
+						{sideNotes.map((note) => (
+							<li
+								className="grid gap-2 border-line border-b py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8"
+								key={note.id}
+							>
+								<h2 className="font-extrabold text-[17px] text-ink">
+									{note.label}
+								</h2>
+								<p className="max-w-[65ch] font-bold text-[20px] text-ink leading-snug">
+									{note.text}
+								</p>
+							</li>
+						))}
+					</ul>
+				</div>
+
+				<section
+					aria-labelledby="filiais-titulo"
+					className="mt-12 scroll-mt-6 bg-canteiro py-12 md:mt-16 md:py-16"
+					id="filiais"
+				>
+					<div className="shop-wrap">
+						<Suspense fallback={<BranchesSkeleton />}>
+							<Branches />
+						</Suspense>
+					</div>
+				</section>
+			</main>
 		</>
 	);
 }
 
-async function AboutContent() {
+function BranchesSkeleton() {
+	return (
+		<div aria-hidden="true">
+			<div className="h-9 w-72 max-w-full rounded-[3px] bg-paper" />
+			<div className="mt-6 grid gap-5 lg:grid-cols-2">
+				<div className="h-[420px] rounded-[5px] border border-line bg-paper" />
+				<div className="h-[420px] rounded-[5px] border border-line bg-paper" />
+			</div>
+		</div>
+	);
+}
+
+async function Branches() {
 	const branches = await getBranches();
 	const branchCount = branches.length;
-	const branchLabel = pluralizeBranches(branchCount);
 
 	return (
-		<main className="bg-gray-10" id="main-content">
-			<section className="relative min-h-[calc(100svh-56px)] overflow-hidden bg-black text-white">
-				<div
-					aria-hidden="true"
-					className="absolute inset-0 bg-[radial-gradient(circle_at_66%_28%,rgba(218,41,28,0.19),transparent_24%),linear-gradient(128deg,rgba(255,255,255,0.065)_0_1px,transparent_1px_34px)]"
-				/>
-				<div
-					aria-hidden="true"
-					className="absolute top-10 right-[-0.08em] font-bold font-display text-[clamp(86px,14vw,190px)] text-white/8 leading-[0.75] tracking-[-0.055em]"
-				>
-					EMACH
-				</div>
+		<>
+			<div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+				<h2 className={SECTION_TITLE_CLASS} id="filiais-titulo">
+					Onde a gente te atende
+				</h2>
+				<p className="text-[15px] text-ink-muted tabular-nums">
+					{branchCount} {pluralizeBranches(branchCount)}
+				</p>
+			</div>
 
-				<PageContainer className="relative grid min-h-[calc(100svh-56px)] grid-cols-1 gap-8 px-6 py-12 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_360px_minmax(0,0.9fr)] lg:px-12 lg:py-14 xl:gap-10">
-					<div className="flex flex-col justify-between gap-10">
-						<h1 className="max-w-180 text-balance font-bold font-display text-[clamp(46px,8vw,82px)] leading-[0.88] tracking-[-0.02em]">
-							Ferramenta profissional, e quem responde por ela
-						</h1>
-
-						<div className="grid gap-3 sm:grid-cols-2">
-							{aboutPillars.map((pillar) => (
-								<article
-									className={
-										pillar.tone === "light"
-											? "bg-gray-10 p-5 text-near-black"
-											: "border border-white/20 bg-white/[0.035] p-5 text-white"
-									}
-									key={pillar.id}
-								>
-									<div
-										className={
-											pillar.tone === "light"
-												? "font-bold font-display text-[11px] text-gray-60 uppercase tracking-[0.16em]"
-												: "font-bold font-display text-[11px] text-gray-50 uppercase tracking-[0.16em]"
-										}
-									>
-										{pillar.label}
-									</div>
-									<h2 className="mt-2 font-bold text-[21px] leading-[1.05]">
-										{pillar.title}
-									</h2>
-									<p
-										className={
-											pillar.tone === "light"
-												? "mt-2 text-[13px] text-gray-60 leading-relaxed"
-												: "mt-2 text-[13px] text-white/62 leading-relaxed"
-										}
-									>
-										{pillar.description}
-									</p>
-								</article>
-							))}
-						</div>
-					</div>
-
-					<div className="relative flex items-center justify-center py-4">
-						<div
-							aria-hidden="true"
-							className="absolute inset-x-0 top-12 bottom-12 hidden -skew-x-12 border border-white/15 lg:block"
-						/>
-						<div className="relative flex -skew-x-[9deg] flex-col items-center text-center">
-							<div className="font-bold font-display text-[12px] text-white/55 uppercase tracking-[0.2em]">
-								Presença local
-							</div>
-							<div className="-my-2 font-display font-semibold text-[clamp(190px,26vw,320px)] text-transparent leading-[0.78] tracking-[-0.04em] [-webkit-text-stroke:3px_#da291c]">
-								{branchCount}
-							</div>
-							<div className="font-bold font-display text-[clamp(22px,2.6vw,32px)] text-white uppercase tracking-[0.2em]">
-								{branchLabel}
-							</div>
-						</div>
-					</div>
-
-					<div className="flex flex-col justify-end gap-3 lg:pb-8">
-						{sideNotes.map((note) => (
-							<article
-								className="border border-white/20 bg-white/[0.035] p-5"
-								key={note.id}
-							>
-								<div className="font-bold font-display text-[11px] text-gray-50 uppercase tracking-[0.16em]">
-									{note.label}
-								</div>
-								<p className="mt-2 font-bold text-[18px] leading-[1.12]">
-									{note.text}
-								</p>
-							</article>
-						))}
-					</div>
-
-					<div
-						aria-hidden="true"
-						className="absolute right-6 bottom-10 left-6 h-px bg-white/15 lg:right-12 lg:left-12"
-					/>
-				</PageContainer>
-			</section>
-
-			<section className="scroll-mt-20 bg-gray-10 py-12 sm:py-16" id="filiais">
-				<PageContainer className="px-6 sm:px-8 lg:px-12">
-					<div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-						<h2 className="max-w-155 font-bold font-display text-[clamp(36px,5vw,52px)] text-near-black leading-[0.95] tracking-[-0.01em]">
-							Onde a gente te atende
-						</h2>
-						<div
-							aria-hidden="true"
-							className="h-0.5 w-40 bg-near-black sm:w-55"
-						/>
-					</div>
-
-					<div className="grid gap-5 lg:grid-cols-2">
-						{branches.map((branch) => (
-							<BranchCard branch={branch} key={branch.id} />
-						))}
-					</div>
-				</PageContainer>
-			</section>
-		</main>
+			<div className="grid gap-5 lg:grid-cols-2">
+				{branches.map((branch) => (
+					<BranchCard branch={branch} key={branch.id} />
+				))}
+			</div>
+		</>
 	);
 }
 
 function BranchCard({ branch }: { branch: BranchCardData }) {
 	const inner = (
 		<>
-			<div className="relative min-h-55 overflow-hidden bg-[#232323]">
+			<div className="relative min-h-55 overflow-hidden bg-well">
 				{branch.mapEmbedUrl ? (
 					<iframe
 						className="pointer-events-none absolute inset-0 h-full w-full border-0 grayscale"
@@ -243,64 +203,54 @@ function BranchCard({ branch }: { branch: BranchCardData }) {
 						tabIndex={-1}
 						title={`Mapa da filial ${branch.name}`}
 					/>
-				) : (
-					<div className="absolute inset-0 bg-[#232323]" />
-				)}
-				<div className="pointer-events-none absolute inset-0 bg-near-black/35 mix-blend-multiply" />
-
-				<div className="absolute right-5 bottom-4 min-w-37.5 bg-emach-red p-3 text-white">
-					<div className="font-bold font-display text-[10px] text-white uppercase tracking-[0.16em]">
-						Filial
-					</div>
-					<strong className="mt-1 block text-[18px] leading-none">
-						{branch.name}
-					</strong>
-					{branch.locality && (
-						<div className="mt-1 font-bold font-display text-[10px] text-white uppercase tracking-[0.14em]">
-							{branch.locality}
-						</div>
-					)}
-				</div>
+				) : null}
 			</div>
 
-			<div className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-end">
-				<div className="grid gap-2 text-[13px] text-white/62 leading-relaxed">
-					<div>
-						<strong className="text-white">Endereço</strong>: {branch.address}
-					</div>
-					{branch.phone && (
-						<div>
-							<strong className="text-white">Telefone</strong>: {branch.phone}
-						</div>
+			<div className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-end md:p-6">
+				<div className="min-w-0">
+					<h3 className="font-extrabold text-[17px] text-ink">{branch.name}</h3>
+					{branch.locality && (
+						<p className="text-[14px] text-ink-muted">{branch.locality}</p>
 					)}
-					{branch.hoursRows && (
+					<dl className="mt-4 grid gap-2 text-[14.5px] text-ink-2 leading-relaxed">
 						<div>
-							<strong className="text-white">Horário</strong>
-							<div className="mt-1 grid grid-cols-[72px_1fr] gap-x-4 gap-y-0.5">
-								{branch.hoursRows.map((row) => (
-									<Fragment key={row.label}>
-										<span className="self-center font-bold font-display text-[11px] text-white/45 uppercase tracking-[0.14em]">
-											{row.label}
-										</span>
-										<span
-											className={
-												row.value === "Fechado"
-													? "text-white/38 tabular-nums"
-													: "text-white/78 tabular-nums"
-											}
-										>
-											{row.value}
-										</span>
-									</Fragment>
-								))}
+							<dt className="font-semibold text-ink">Endereço</dt>
+							<dd>{branch.address}</dd>
+						</div>
+						{branch.phone && (
+							<div>
+								<dt className="font-semibold text-ink">Telefone</dt>
+								<dd className="tabular-nums">{branch.phone}</dd>
 							</div>
-						</div>
-					)}
+						)}
+						{branch.hoursRows && (
+							<div>
+								<dt className="font-semibold text-ink">Horário</dt>
+								<dd className="mt-1 grid grid-cols-[72px_1fr] gap-x-4 gap-y-0.5">
+									{branch.hoursRows.map((row) => (
+										<Fragment key={row.label}>
+											<span className="text-ink-muted">{row.label}</span>
+											<span
+												className={
+													row.value === "Fechado"
+														? "text-ink-muted tabular-nums"
+														: "text-ink tabular-nums"
+												}
+											>
+												{row.value}
+											</span>
+										</Fragment>
+									))}
+								</dd>
+							</div>
+						)}
+					</dl>
 				</div>
 
 				{branch.mapsUrl && (
-					<span className="inline-flex h-10.5 items-center justify-center border border-white/60 px-5 font-bold text-[13px] text-white uppercase tracking-[0.08em] transition-colors group-hover:border-emach-red group-hover:bg-emach-red group-hover:text-white">
+					<span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-5 font-bold text-[15px] text-ink transition-colors group-hover:border-ink">
 						Ver rota
+						<ExternalLink aria-hidden="true" className="size-4" />
 					</span>
 				)}
 			</div>
@@ -308,7 +258,7 @@ function BranchCard({ branch }: { branch: BranchCardData }) {
 	);
 
 	const className =
-		"group grid overflow-hidden border border-black bg-near-black text-white transition-colors hover:border-white/25 lg:grid-rows-[minmax(210px,240px)_auto]";
+		"group grid overflow-hidden rounded-[5px] border border-line bg-paper text-ink lg:grid-rows-[minmax(210px,240px)_auto]";
 
 	if (!branch.mapsUrl) {
 		return <article className={className}>{inner}</article>;
@@ -317,7 +267,7 @@ function BranchCard({ branch }: { branch: BranchCardData }) {
 	return (
 		<a
 			aria-label={`Ver rota da filial ${branch.name} no Google Maps`}
-			className={`${className} cursor-pointer`}
+			className={`${className} cursor-pointer no-underline focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2`}
 			href={branch.mapsUrl}
 			rel="noopener"
 			target="_blank"

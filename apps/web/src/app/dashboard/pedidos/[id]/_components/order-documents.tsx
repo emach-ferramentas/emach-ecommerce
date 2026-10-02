@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { Download, FileText, Receipt } from "lucide-react";
-import { AccountSection } from "@/app/dashboard/_components/account-section";
+import { emachButtonVariants } from "@/components/emach-button";
+import { Panel } from "@/components/panel";
 
 interface OrderDocumentsProps {
 	nfeNumber: string | null;
@@ -23,7 +24,7 @@ export function OrderDocuments({
 	}
 
 	return (
-		<AccountSection title="Documentos">
+		<Panel title="Documentos">
 			<div className="flex flex-col gap-2.5">
 				{hasNfe ? (
 					<DocRow
@@ -43,7 +44,7 @@ export function OrderDocuments({
 					</DocRow>
 				) : null}
 			</div>
-		</AccountSection>
+		</Panel>
 	);
 }
 
@@ -59,14 +60,14 @@ function DocRow({
 	title: string;
 }) {
 	return (
-		<div className="flex flex-wrap items-center gap-3.5 border border-white/10 bg-near-black px-4 py-3.5">
-			<span className="flex h-10 w-10 shrink-0 items-center justify-center border border-white/30 text-white">
-				<Icon className="h-5 w-5" strokeWidth={1.6} />
+		<div className="flex flex-wrap items-center gap-3.5 rounded-[3px] border border-line px-4 py-3.5">
+			<span className="flex size-10 shrink-0 items-center justify-center rounded-[3px] bg-canteiro text-ink">
+				<Icon aria-hidden="true" className="size-5" strokeWidth={1.6} />
 			</span>
 			<div className="min-w-0 flex-1">
-				<div className="font-semibold text-[14px] text-white">{title}</div>
+				<div className="font-semibold text-[15px] text-ink">{title}</div>
 				{subtitle ? (
-					<div className="text-[12px] text-gray-50">{subtitle}</div>
+					<div className="text-[13.5px] text-ink-muted">{subtitle}</div>
 				) : null}
 			</div>
 			<div className="flex flex-wrap items-center gap-2">{children}</div>
@@ -77,12 +78,12 @@ function DocRow({
 function DocLink({ href, label }: { href: string; label: string }) {
 	return (
 		<a
-			className="inline-flex h-9 items-center justify-center gap-1.5 border border-white/30 bg-transparent px-3.5 font-sans font-semibold text-[13px] text-white tracking-[0.04em] transition-all duration-180 hover:bg-white/10 hover:text-white"
+			className={emachButtonVariants({ variant: "line" })}
 			href={href}
 			rel="noopener noreferrer"
 			target="_blank"
 		>
-			<Download className="h-3.5 w-3.5" strokeWidth={1.8} />
+			<Download aria-hidden="true" className="size-4" strokeWidth={1.8} />
 			{label}
 		</a>
 	);

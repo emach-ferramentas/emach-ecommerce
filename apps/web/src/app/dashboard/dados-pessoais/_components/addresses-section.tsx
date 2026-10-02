@@ -1,11 +1,14 @@
 "use client";
 
 import type { ClientAddress } from "@emach/db/schema/client";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { AccountSection } from "@/app/dashboard/_components/account-section";
 import { setDefaultAddressAction } from "@/app/dashboard/dados-pessoais/_actions/addresses";
+import { EmachButton } from "@/components/emach-button";
+import { Notice } from "@/components/notice";
+import { Panel } from "@/components/panel";
 
 import { AddressSheet, type AddressSheetMode } from "./address-sheet";
 
@@ -37,29 +40,31 @@ export function AddressesSection({ addresses }: AddressesSectionProps) {
 	const hasOthers = addresses.length > 0;
 
 	return (
-		<AccountSection bodyClassName="p-0" title="Endereço de entrega">
+		<Panel
+			actions={
+				primary === null ? null : (
+					<EmachButton
+						icon={<Plus aria-hidden="true" className="size-4" />}
+						onClick={() => setSheetMode({ kind: "create", hasOthers })}
+						variant="link"
+					>
+						Adicionar endereço
+					</EmachButton>
+				)
+			}
+			flush
+			title="Endereço de entrega"
+		>
 			{primary === null ? (
 				<EmptyState
 					onAdd={() => setSheetMode({ kind: "create", hasOthers: false })}
 				/>
 			) : (
-				<div className="divide-y divide-white/10">
+				<div className="divide-y divide-line border-line border-t">
 					<AddressCard
 						address={primary}
 						onEdit={() => setSheetMode({ kind: "edit", address: primary })}
 					/>
-
-					{others.length > 0 && (
-						<button
-							className="w-full px-5 py-3 text-left font-display font-semibold text-[11px] text-gray-50 uppercase tracking-[0.14em] hover:text-white"
-							onClick={() => setExpanded((v) => !v)}
-							type="button"
-						>
-							{expanded
-								? `Ocultar outros endereços (${others.length})`
-								: `Ver outros endereços (${others.length})`}
-						</button>
-					)}
 
 					{expanded &&
 						others.map((addr) => (
@@ -70,39 +75,45 @@ export function AddressesSection({ addresses }: AddressesSectionProps) {
 							/>
 						))}
 
-					<button
-						className="w-full px-5 py-3.5 text-left font-display font-semibold text-[12px] text-white uppercase tracking-[0.08em] hover:underline"
-						onClick={() => setSheetMode({ kind: "create", hasOthers })}
-						type="button"
-					>
-						+ Adicionar endereço
-					</button>
+					{others.length > 0 && (
+						<div className="px-5 py-1 md:px-6">
+							<EmachButton
+								onClick={() => setExpanded((v) => !v)}
+								variant="link"
+							>
+								{expanded
+									? `Ocultar outros endereços (${others.length})`
+									: `Ver outros endereços (${others.length})`}
+							</EmachButton>
+						</div>
+					)}
 				</div>
 			)}
 
 			<AddressSheet mode={sheetMode} onClose={() => setSheetMode(null)} />
-		</AccountSection>
+		</Panel>
 	);
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
 	return (
-		<div className="flex items-start justify-between gap-4 bg-emach-red/15 p-5">
-			<div className="min-w-0 flex-1">
-				<div className="font-display font-semibold text-[11px] text-emach-red-on-dark uppercase tracking-[0.14em]">
-					Nenhum endereço cadastrado
-				</div>
-				<div className="mt-1 text-[13px] text-white/65">
-					Necessário para finalizar compras.
-				</div>
-			</div>
-			<button
-				className="shrink-0 font-display font-semibold text-[11px] text-emach-red-on-dark uppercase tracking-[0.08em] hover:underline"
-				onClick={onAdd}
-				type="button"
+		<div className="px-5 pb-5 md:px-6 md:pb-6">
+			<Notice
+				action={
+					<EmachButton
+						icon={<Plus aria-hidden="true" className="size-4" />}
+						onClick={onAdd}
+						variant="line"
+					>
+						Adicionar
+					</EmachButton>
+				}
 			>
-				+ Adicionar
-			</button>
+				<strong className="font-semibold text-ink">
+					Nenhum endereço cadastrado
+				</strong>
+				<span className="block">Necessário para finalizar compras.</span>
+			</Notice>
 		</div>
 	);
 }
@@ -138,39 +149,35 @@ function AddressCard({ address, onEdit }: AddressCardProps) {
 	].join(" · ");
 
 	return (
-		<div className="flex items-start justify-between gap-4 p-5">
+		<div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 py-4 md:px-6">
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-2">
-					<div className="font-display font-semibold text-[11px] text-gray-50 uppercase tracking-[0.14em]">
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="font-semibold text-[15px] text-ink">
 						{address.label ?? "Endereço"}
-					</div>
+					</span>
 					{address.isDefault && (
-						<span className="bg-white px-2 py-0.5 font-display font-semibold text-[10px] text-near-black uppercase tracking-[0.08em]">
+						<span className="rounded-[3px] border border-line-strong px-1.5 py-px font-semibold text-[12.5px] text-ink-2">
 							Padrão
 						</span>
 					)}
 				</div>
-				<div className="mt-1 text-[16px] text-white">{lineMain}</div>
-				<div className="mt-1 text-[13px] text-gray-50">{lineSub}</div>
+				<div className="mt-1 text-[15px] text-ink">{lineMain}</div>
+				<div className="mt-0.5 text-[13.5px] text-ink-muted">{lineSub}</div>
 			</div>
-			<div className="flex shrink-0 flex-col items-end gap-2">
-				<button
-					className="font-display font-semibold text-[11px] text-white uppercase tracking-[0.08em] hover:underline"
-					onClick={onEdit}
-					type="button"
-				>
-					Editar
-				</button>
+			<div className="flex shrink-0 items-center gap-4">
 				{!address.isDefault && (
-					<button
-						className="font-display font-semibold text-[11px] text-gray-50 uppercase tracking-[0.08em] hover:text-white hover:underline disabled:opacity-50"
+					<EmachButton
 						disabled={isPending}
+						isLoading={isPending}
 						onClick={handleSetDefault}
-						type="button"
+						variant="link"
 					>
 						Tornar padrão
-					</button>
+					</EmachButton>
 				)}
+				<EmachButton onClick={onEdit} variant="link">
+					Editar
+				</EmachButton>
 			</div>
 		</div>
 	);

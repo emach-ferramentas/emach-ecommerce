@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Panel } from "@/components/panel";
 import { getClientOrderDetail } from "@/lib/orders/queries";
 import {
 	getRefundForOrder,
@@ -61,68 +62,64 @@ export default async function OrderDetailPage({ params }: PageProps) {
 				number={order.number}
 				status={order.status}
 			/>
-			<div className="px-6 py-8 md:px-10">
-				<OrderItems
-					items={items}
-					orderId={order.id}
-					reviewedToolIds={reviewedToolIds}
-					status={order.status}
-				/>
-				<OrderTotals
-					couponApplied={Boolean(order.couponId)}
-					discountAmount={order.discountAmount}
-					itemCount={itemCount}
-					paymentMethod={order.paymentMethod}
-					shippingAmount={order.shippingAmount}
-					shippingMethod={order.shippingMethod}
-					subtotalAmount={order.subtotalAmount}
-					totalAmount={order.totalAmount}
-				/>
-				<OrderTracking
-					history={history}
-					shippingMethod={order.shippingMethod}
-					status={order.status}
-					trackingCode={order.shippingTrackingCode}
-				/>
-				<BuyerInfo buyer={buyer} />
-				<ShippingAddress address={order.shippingAddress} />
-				<OrderDocuments
-					nfeNumber={order.nfeNumber}
-					nfeStatus={order.nfeStatus}
-					nfeUrl={order.nfeUrl}
-					nfeXmlUrl={order.nfeXmlUrl}
-					paymentReceiptUrl={order.paymentReceiptUrl}
-				/>
-				{refund ? (
-					<div className="mt-6 border border-black bg-near-black text-white">
-						<div className="flex items-center gap-x-3.5 border-white/12 border-b px-5 py-3">
-							<span className="font-display font-semibold text-[11px] text-gray-50 uppercase tracking-[0.14em]">
-								Devolução
-							</span>
-							<span className="font-semibold text-[13px] text-white">
-								#{refund.id.slice(0, 8)}
-							</span>
+			<div className="mt-5 grid items-start gap-5 pb-12 lg:grid-cols-[minmax(0,1fr)_320px]">
+				<div className="min-w-0 space-y-5">
+					<OrderItems
+						items={items}
+						orderId={order.id}
+						reviewedToolIds={reviewedToolIds}
+						status={order.status}
+					/>
+					<OrderTracking
+						history={history}
+						shippingMethod={order.shippingMethod}
+						status={order.status}
+						trackingCode={order.shippingTrackingCode}
+					/>
+					<BuyerInfo buyer={buyer} />
+					<ShippingAddress address={order.shippingAddress} />
+					<OrderDocuments
+						nfeNumber={order.nfeNumber}
+						nfeStatus={order.nfeStatus}
+						nfeUrl={order.nfeUrl}
+						nfeXmlUrl={order.nfeXmlUrl}
+						paymentReceiptUrl={order.paymentReceiptUrl}
+					/>
+					{refund ? (
+						<Panel flush title={`Devolução #${refund.id.slice(0, 8)}`}>
+							<OrderRefundBlock
+								refund={{
+									status: refund.status,
+									rejectionReason: refund.rejectionReason,
+									resolvedAt: refund.resolvedAt,
+								}}
+								variant="page"
+							/>
+						</Panel>
+					) : null}
+					{canRequestRefund ? (
+						<div className="flex justify-end">
+							<RequestRefundButton
+								orderId={order.id}
+								orderNumber={order.number}
+								totalAmount={order.totalAmount}
+							/>
 						</div>
-						<OrderRefundBlock
-							refund={{
-								status: refund.status,
-								rejectionReason: refund.rejectionReason,
-								resolvedAt: refund.resolvedAt,
-							}}
-							variant="page"
-						/>
-					</div>
-				) : null}
-				{canRequestRefund ? (
-					<div className="mt-6 flex justify-end">
-						<RequestRefundButton
-							orderId={order.id}
-							orderNumber={order.number}
-							totalAmount={order.totalAmount}
-						/>
-					</div>
-				) : null}
-				<OrderActions orderId={order.id} status={order.status} />
+					) : null}
+				</div>
+				<div className="space-y-4 lg:sticky lg:top-6">
+					<OrderTotals
+						couponApplied={Boolean(order.couponId)}
+						discountAmount={order.discountAmount}
+						itemCount={itemCount}
+						paymentMethod={order.paymentMethod}
+						shippingAmount={order.shippingAmount}
+						shippingMethod={order.shippingMethod}
+						subtotalAmount={order.subtotalAmount}
+						totalAmount={order.totalAmount}
+					/>
+					<OrderActions orderId={order.id} status={order.status} />
+				</div>
 			</div>
 		</>
 	);

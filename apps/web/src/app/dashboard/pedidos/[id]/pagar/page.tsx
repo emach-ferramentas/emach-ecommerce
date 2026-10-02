@@ -1,5 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { notFound, redirect } from "next/navigation";
+import {
+	ACCOUNT_TRAIL,
+	ORDERS_CRUMB,
+} from "@/app/dashboard/_components/account-trail";
+import { PageHead } from "@/components/page-head";
 import { getClientOrderDetail } from "@/lib/orders/queries";
 import { requireCurrentClient } from "@/lib/session";
 import { PaymentMethods } from "./_components/payment-methods";
@@ -23,20 +28,25 @@ export default async function PagarPage({
 	if (order.status !== "pending_payment" && order.status !== "payment_failed") {
 		redirect(`/dashboard/pedidos/${id}`);
 	}
+	const trail = [
+		...ACCOUNT_TRAIL,
+		ORDERS_CRUMB,
+		{
+			href: `/dashboard/pedidos/${id}` as Route,
+			label: `Pedido #${order.number}`,
+		},
+	];
 	return (
-		<div className="px-6 py-8 md:px-10">
-			<div className="mx-auto max-w-[760px]">
-				<h1 className="mb-1 font-display font-medium text-[32px] leading-none">
-					Pagamento
-				</h1>
-				<p className="mb-7 text-[13px] text-gray-60">Pedido #{order.number}</p>
-				<PaymentMethods
-					orderNumber={order.number}
-					shipping={order.shippingAmount}
-					subtotal={order.subtotalAmount}
-					total={order.totalAmount}
-				/>
-			</div>
+		<div className="pb-12">
+			<PageHead title="Pagamento" trail={trail}>
+				Pedido #{order.number}
+			</PageHead>
+			<PaymentMethods
+				orderNumber={order.number}
+				shipping={order.shippingAmount}
+				subtotal={order.subtotalAmount}
+				total={order.totalAmount}
+			/>
 		</div>
 	);
 }

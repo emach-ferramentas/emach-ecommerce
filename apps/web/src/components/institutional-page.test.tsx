@@ -12,7 +12,6 @@ function render(
 ): string {
 	return renderToStaticMarkup(
 		<InstitutionalPage
-			label="X"
 			lede="Y"
 			sections={privacySections}
 			title="T"
@@ -36,6 +35,14 @@ describe("InstitutionalPage", () => {
 	it("envolve o conteúdo num main#main-content", () => {
 		expect(html).toContain("<main");
 		expect(html).toContain('id="main-content"');
+	});
+
+	it("mostra a trilha Início > página atual", () => {
+		expect(html).toContain('aria-label="Você está em"');
+		expect(html).toContain('href="/"');
+		expect(html).toContain(
+			'<span aria-current="page" class="line-clamp-1">T</span>'
+		);
 	});
 
 	it("liga o sumário a cada seção", () => {

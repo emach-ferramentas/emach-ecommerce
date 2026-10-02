@@ -68,22 +68,18 @@ export function RefundSheet({
 		<Sheet onOpenChange={handleOpenChange} open={open}>
 			<SheetContent className="flex flex-col gap-0" side="right">
 				<SheetHeader>
-					<SheetTitle className="font-display">Solicitar devolução</SheetTitle>
+					<SheetTitle>Solicitar devolução</SheetTitle>
 				</SheetHeader>
-				<div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-					<div className="text-[13px] text-gray-60">
+				<div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+					<div className="text-[14px] text-ink-2">
 						Pedido{" "}
-						<span className="font-semibold text-near-black">
-							#{orderNumber}
-						</span>{" "}
-						· devolução do pedido inteiro
+						<span className="font-semibold text-ink">#{orderNumber}</span> ·
+						devolução do pedido inteiro
 					</div>
-					<label className="block">
-						<span className="mb-1.5 block font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
-							Motivo
-						</span>
+					<label className="emach-field">
+						<span className="emach-field__label">Motivo</span>
 						<select
-							className="h-10 w-full border border-border bg-white px-3 text-[14px] outline-none focus:border-near-black focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2"
+							className="emach-select"
 							disabled={pending}
 							onChange={(e) => setReason(e.target.value as RefundReason)}
 							value={reason}
@@ -95,12 +91,10 @@ export function RefundSheet({
 							))}
 						</select>
 					</label>
-					<label className="block">
-						<span className="mb-1.5 block font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
-							Detalhes (opcional)
-						</span>
+					<label className="emach-field">
+						<span className="emach-field__label">Detalhes (opcional)</span>
 						<textarea
-							className="min-h-[120px] w-full border border-border p-3 text-[14px] outline-none focus:border-near-black focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2"
+							className="emach-textarea"
 							disabled={pending}
 							maxLength={2000}
 							onChange={(e) => setText(e.target.value)}
@@ -108,20 +102,20 @@ export function RefundSheet({
 							value={text}
 						/>
 					</label>
-					<div className="flex items-baseline justify-between border-border border-t pt-4">
-						<span className="font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
+					<div className="flex items-baseline justify-between border-line border-t pt-4">
+						<span className="font-semibold text-[15px] text-ink">
 							Valor a reembolsar
 						</span>
-						<span className="font-bold text-[18px] text-near-black">
+						<span className="font-extrabold text-[20px] text-ink tabular-nums">
 							{fmtNumericBRL(totalAmount)}
 						</span>
 					</div>
 				</div>
-				<SheetFooter className="flex-row gap-2">
+				<SheetFooter className="flex-row items-center justify-end gap-4 border-line border-t bg-canteiro px-5">
 					<EmachButton
 						onClick={() => handleOpenChange(false)}
 						size="md"
-						variant="ghost"
+						variant="link"
 					>
 						Cancelar
 					</EmachButton>
@@ -129,7 +123,7 @@ export function RefundSheet({
 						disabled={pending}
 						onClick={submit}
 						size="md"
-						variant="primary"
+						variant="dark"
 					>
 						{pending ? "Enviando..." : "Solicitar devolução"}
 					</EmachButton>

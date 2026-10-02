@@ -7,6 +7,7 @@ import {
 	addToCart,
 	type CartItem,
 	type CartItemSnapshot,
+	cartSubtotalCents,
 	loadCart,
 	reconcilePrices,
 	removeFromCart,
@@ -19,6 +20,7 @@ interface CartState {
 	/** `false` até o carrinho ser carregado do localStorage (1º render no client). */
 	hydrated: boolean;
 	items: CartItem[];
+	subtotalCents: number;
 	totalCount: number;
 }
 
@@ -36,6 +38,7 @@ interface CartActions {
 
 const CartStateContext = createContext<CartState>({
 	items: [],
+	subtotalCents: 0,
 	totalCount: 0,
 	hydrated: false,
 });
@@ -104,10 +107,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 	};
 
 	const totalCount = items.reduce((acc, i) => acc + i.quantity, 0);
+	const subtotalCents = cartSubtotalCents(items);
 
 	return (
 		<CartActionsContext.Provider value={actions}>
-			<CartStateContext.Provider value={{ items, totalCount, hydrated }}>
+			<CartStateContext.Provider
+				value={{ items, subtotalCents, totalCount, hydrated }}
+			>
 				<CartSheetContext.Provider
 					value={{ open: sheetOpen, setOpen: setSheetOpen }}
 				>

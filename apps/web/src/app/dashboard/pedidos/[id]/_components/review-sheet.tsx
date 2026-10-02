@@ -37,18 +37,17 @@ function StarInput({
 				<button
 					aria-label={`${n} estrela${n > 1 ? "s" : ""}`}
 					aria-pressed={value === n}
-					className="flex min-h-11 min-w-11 items-center justify-center"
+					className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-[3px] focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
 					key={n}
 					onClick={() => onChange(n)}
 					onMouseEnter={() => setHover(n)}
 					type="button"
 				>
 					<Star
+						aria-hidden="true"
 						className={cn(
-							"h-7 w-7 transition-colors",
-							(hover || value) >= n
-								? "fill-emach-red text-emach-red"
-								: "text-gray-50"
+							"size-7 transition-colors",
+							(hover || value) >= n ? "fill-ink text-ink" : "text-line-strong"
 						)}
 						strokeWidth={1.5}
 					/>
@@ -116,46 +115,40 @@ export function ReviewSheet({
 		<Sheet onOpenChange={handleOpenChange} open={open}>
 			<SheetContent className="flex flex-col gap-0" side="right">
 				<SheetHeader>
-					<SheetTitle className="font-display">Avaliar produto</SheetTitle>
+					<SheetTitle>Avaliar produto</SheetTitle>
 				</SheetHeader>
-				<div className="flex-1 space-y-5 overflow-y-auto px-4 py-5">
-					<div className="font-semibold text-[14px] text-near-black">
+				<div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+					<div className="font-semibold text-[15px] text-ink">
 						{productName}
 					</div>
 					<div>
-						<div className="mb-2 font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
-							Sua nota
-						</div>
+						<div className="emach-field__label mb-1">Sua nota</div>
 						<StarInput onChange={setRating} value={rating} />
 					</div>
-					<label className="block">
-						<span className="mb-1.5 block font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
-							Título (opcional)
-						</span>
+					<label className="emach-field">
+						<span className="emach-field__label">Título (opcional)</span>
 						<input
-							className="h-10 w-full border border-border px-3 text-[14px] outline-none focus:border-near-black focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2"
+							className="emach-input"
 							maxLength={120}
 							onChange={(e) => setTitle(e.target.value)}
 							value={title}
 						/>
 					</label>
-					<label className="block">
-						<span className="mb-1.5 block font-display font-semibold text-[11px] text-gray-60 uppercase tracking-[0.14em]">
-							Sua avaliação
-						</span>
+					<label className="emach-field">
+						<span className="emach-field__label">Sua avaliação</span>
 						<textarea
-							className="min-h-[120px] w-full border border-border p-3 text-[14px] outline-none focus:border-near-black focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2"
+							className="emach-textarea"
 							maxLength={2000}
 							onChange={(e) => setBody(e.target.value)}
 							value={body}
 						/>
 					</label>
 				</div>
-				<SheetFooter className="flex-row gap-2">
+				<SheetFooter className="flex-row items-center justify-end gap-4 border-line border-t bg-canteiro px-5">
 					<EmachButton
 						onClick={() => handleOpenChange(false)}
 						size="md"
-						variant="ghost"
+						variant="link"
 					>
 						Cancelar
 					</EmachButton>
@@ -163,7 +156,7 @@ export function ReviewSheet({
 						disabled={pending}
 						onClick={submit}
 						size="md"
-						variant="primary"
+						variant="dark"
 					>
 						{pending ? "Enviando..." : "Enviar avaliação"}
 					</EmachButton>

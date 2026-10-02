@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { SiteHeader } from "@/components/site-header";
+import { StoreFrame } from "@/components/store-frame";
 import { DashboardChrome } from "./_components/dashboard-chrome";
 import { DashboardChromeSkeleton } from "./_components/dashboard-chrome-skeleton";
 
@@ -18,11 +18,10 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<>
-			<SiteHeader />
+		<StoreFrame>
 			<Suspense fallback={<DashboardChromeSkeleton />}>
 				<DashboardChrome>{children}</DashboardChrome>
 			</Suspense>
-		</>
+		</StoreFrame>
 	);
 }

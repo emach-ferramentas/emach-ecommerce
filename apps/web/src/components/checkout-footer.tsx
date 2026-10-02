@@ -3,28 +3,24 @@ import Link from "next/link";
 
 export function CheckoutFooter() {
 	return (
-		<footer
-			className="bg-cinema-3 px-4 py-6 text-gray-60 sm:px-6 lg:px-10"
-			role="contentinfo"
-		>
-			<div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
+		<footer className="bg-grafite-deep text-on-dark-muted">
+			<div className="shop-wrap flex flex-wrap items-center justify-between gap-4 py-6 text-[13.5px]">
 				<Link
-					aria-label="EMACH — voltar à home"
-					className="inline-flex shrink-0"
+					aria-label="EMACH Ferramentas, página inicial"
+					className="inline-flex min-h-11 items-center rounded-[3px] focus-visible:outline-2 focus-visible:outline-on-dark focus-visible:outline-offset-2"
 					href="/"
 				>
 					<Image
-						alt="EMACH"
-						className="h-6 w-auto"
+						alt=""
+						className="h-auto w-[110px]"
 						height={377}
-						priority={false}
-						src="/emach-logo-red.svg"
+						src="/emach-logo.svg"
 						width={2041}
 					/>
 				</Link>
-				<p className="text-[12px] text-gray-55">CNPJ 04.128.615/0001-59</p>
-				<p className="text-[12px] text-gray-55">
-					<span className="text-emach-red-on-dark">©</span> 2026 EMACH
+				<p>
+					EMACH Ferramentas · CNPJ{" "}
+					<span className="tabular-nums">04.128.615/0001-59</span>
 				</p>
 			</div>
 		</footer>

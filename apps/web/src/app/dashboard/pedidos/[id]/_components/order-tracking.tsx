@@ -5,7 +5,8 @@ import { cn } from "@emach/ui/lib/utils";
 import { ChevronDown, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AccountSection } from "@/app/dashboard/_components/account-section";
+import { EmachButton } from "@/components/emach-button";
+import { Panel } from "@/components/panel";
 import type { OrderHistoryEntry } from "@/lib/orders/queries";
 import { isTerminalNegative, ORDER_STATUS_BADGE } from "@/lib/orders/status";
 
@@ -34,26 +35,23 @@ function TrackingCode({
 		}
 	};
 	return (
-		<div className="grid grid-cols-1 gap-4 border border-white/10 bg-near-black px-4 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
+		<div className="grid grid-cols-1 gap-4 rounded-[3px] border border-line bg-canteiro px-4 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
 			<div>
 				{method ? (
-					<div className="mb-1 font-display font-semibold text-[12px] text-white/65 uppercase tracking-[0.12em]">
-						{method}
-					</div>
+					<div className="mb-1 text-[13.5px] text-ink-2">{method}</div>
 				) : null}
-				<div className="font-mono font-semibold text-[18px] text-white tracking-[0.04em]">
+				<div className="break-all font-mono font-semibold text-[18px] text-ink">
 					{code}
 				</div>
 			</div>
-			<button
+			<EmachButton
 				aria-label="Copiar código de rastreio"
-				className="inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 border border-white/30 bg-transparent px-4 font-sans font-semibold text-[13px] text-white tracking-[0.04em] transition-all duration-180 hover:bg-white/10 hover:text-white"
+				icon={<Copy aria-hidden="true" className="size-4" strokeWidth={1.8} />}
 				onClick={handleCopy}
-				type="button"
+				variant="line"
 			>
-				<Copy className="h-4 w-4" strokeWidth={1.8} />
 				Copiar código
-			</button>
+			</EmachButton>
 		</div>
 	);
 }
@@ -76,9 +74,9 @@ function TrackingBody({
 		return <TrackingCode code={trackingCode} method={method} />;
 	}
 	return (
-		<div className="border border-white/10 border-dashed bg-near-black px-4 py-3.5 text-[13px] text-white/65">
+		<p className="rounded-[3px] border border-line bg-canteiro px-4 py-3.5 text-[14px] text-ink-2">
 			{placeholderMessage(status)}
-		</div>
+		</p>
 	);
 }
 
@@ -92,19 +90,22 @@ function placeholderMessage(status: OrderStatus): string {
 function HistoryTimeline({ history }: { history: OrderHistoryEntry[] }) {
 	if (history.length === 0) {
 		return (
-			<p className="text-[13px] text-gray-50">Sem histórico registrado.</p>
+			<p className="text-[14px] text-ink-muted">Sem histórico registrado.</p>
 		);
 	}
 	return (
 		<ol className="space-y-3.5">
 			{history.map((h) => (
-				<li className="flex gap-3 text-[13px]" key={h.id}>
-					<div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emach-red" />
+				<li className="flex gap-3 text-[14px]" key={h.id}>
+					<div
+						aria-hidden="true"
+						className="mt-1.5 size-2.5 shrink-0 rounded-full bg-ink"
+					/>
 					<div>
-						<div className="font-semibold text-white">
+						<div className="font-semibold text-ink">
 							{ORDER_STATUS_BADGE[h.toStatus].label}
 						</div>
-						<div className="text-[12px] text-gray-50">
+						<div className="text-[13px] text-ink-muted tabular-nums">
 							{DATETIME_FMT.format(h.createdAt)}
 							{h.reason ? ` · ${h.reason}` : ""}
 						</div>
@@ -130,7 +131,7 @@ export function OrderTracking({
 	const negative = isTerminalNegative(status);
 
 	return (
-		<AccountSection id="rastreio" title="Rastreio do envio">
+		<Panel id="rastreio" title="Rastreio do envio">
 			<TrackingBody
 				method={shippingMethod}
 				negative={negative}
@@ -142,26 +143,24 @@ export function OrderTracking({
 				{...(open ? { "aria-controls": "order-history" } : {})}
 				aria-expanded={open}
 				className={cn(
-					"inline-flex items-center gap-1.5 font-semibold text-[13px] text-white/65 hover:text-white",
-					negative ? "" : "mt-5"
+					"inline-flex min-h-11 cursor-pointer items-center gap-1.5 font-semibold text-[14px] text-ink-2 underline underline-offset-[3px] hover:text-ink",
+					negative ? "" : "mt-3"
 				)}
 				onClick={() => setOpen((v) => !v)}
 				type="button"
 			>
 				<ChevronDown
-					className={cn("h-4 w-4 transition-transform", open && "rotate-180")}
+					aria-hidden="true"
+					className={cn("size-4 transition-transform", open && "rotate-180")}
 					strokeWidth={1.8}
 				/>
 				{open ? "Ocultar histórico" : "Ver histórico completo"}
 			</button>
 			{open ? (
-				<div
-					className="mt-3.5 border-white/10 border-t pt-4"
-					id="order-history"
-				>
+				<div className="mt-2 border-line border-t pt-4" id="order-history">
 					<HistoryTimeline history={history} />
 				</div>
 			) : null}
-		</AccountSection>
+		</Panel>
 	);
 }

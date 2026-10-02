@@ -1,12 +1,16 @@
 "use client";
 
 import { cn } from "@emach/ui/lib/utils";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
+
+import { QtyStepper } from "@/components/buy/qty-stepper";
 import { ProductImage } from "@/components/product-image";
-import { SectionLabel } from "@/components/section-label";
 import type { CartItem } from "@/lib/cart-store";
-import { fmtNumericBRL, numericToCents } from "@/lib/format";
-import { QuantityPicker } from "./quantity-picker";
+import { fmtBRL, numericToCents } from "@/lib/format";
+import { voltageLabel } from "@/lib/purchase";
+
+const MAX_LINE_QTY = 99;
 
 interface CartItemRowProps {
 	item: CartItem;
@@ -26,99 +30,78 @@ export function CartItemRow({
 	onLinkClick,
 }: CartItemRowProps) {
 	const isCompact = variant === "compact";
-	const lineTotalCents = numericToCents(item.priceAmount) * item.quantity;
-	// Label: categoria, ou a voltagem como fallback p/ produtos sem categoria.
-	// A voltagem só aparece na linha meta quando NÃO é o próprio label (evita
-	// duplicar quando o produto não tem categoria).
-	const labelText = item.categoryName ?? item.voltage ?? "";
-	const showVoltageMeta = item.categoryName != null && item.voltage != null;
-	const priceLabel = fmtNumericBRL((lineTotalCents / 100).toFixed(2));
+	const unitCents = numericToCents(item.priceAmount);
+	const href = `/product/${item.slug}` as const;
 
 	return (
 		<div
 			className={cn(
-				"emach-cart-item border-border border-b last:border-b-0",
-				isCompact
-					? "grid grid-cols-[80px_1fr_auto] items-start gap-3.5 py-4"
-					: "grid grid-cols-[120px_1fr_auto] items-center gap-5 py-5"
+				"emach-cart-item grid grid-cols-[72px_minmax(0,1fr)] gap-x-3.5 gap-y-2 border-line border-b py-4",
+				!isCompact && "md:grid-cols-[96px_minmax(0,1fr)]"
 			)}
 			data-leaving={leaving ? "true" : undefined}
 		>
-			<div
+			<Link
+				aria-hidden="true"
 				className={cn(
-					"relative overflow-hidden bg-image-bg",
-					isCompact ? "size-20" : "size-[120px]"
+					"relative row-span-2 size-[72px] overflow-hidden rounded-[3px] bg-well",
+					!isCompact && "md:size-24"
 				)}
+				href={href}
+				onClick={onLinkClick}
+				tabIndex={-1}
 			>
 				<ProductImage
-					alt={item.name}
 					categorySlug={item.categorySlug ?? ""}
-					sizes={isCompact ? "80px" : "120px"}
+					sizes={isCompact ? "72px" : "96px"}
 					src={item.imageUrl ?? undefined}
 				/>
-			</div>
+			</Link>
 
 			<div className="min-w-0">
-				{labelText && (
-					<SectionLabel className={isCompact ? "block truncate" : undefined}>
-						{labelText}
-					</SectionLabel>
-				)}
-				{isCompact ? (
-					<Link
-						className="mt-0.5 block overflow-hidden text-ellipsis whitespace-nowrap font-medium text-[14px] hover:underline"
-						href={`/product/${item.slug}`}
-						onClick={onLinkClick}
-						title={item.name}
-					>
-						{item.name}
-					</Link>
-				) : (
-					<Link
-						className="mt-1 block font-medium text-[16px] hover:underline"
-						href={`/product/${item.slug}`}
-						onClick={onLinkClick}
-					>
-						{item.name}
-					</Link>
-				)}
-				{showVoltageMeta && (
-					<div
-						className={cn(
-							"text-gray-60",
-							isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-[12px]"
-						)}
-					>
-						{item.voltage}
-					</div>
-				)}
-				{!isCompact && (
-					<div className="mt-3 flex flex-wrap items-center gap-4">
-						<QuantityPicker onChange={onQuantityChange} value={item.quantity} />
-						<button
-							aria-label={`Remover ${item.name} do carrinho`}
-							className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent text-[12px] text-gray-60 underline transition-colors hover:text-near-black active:text-near-black"
-							onClick={onRemove}
-							type="button"
-						>
-							Remover
-						</button>
-					</div>
-				)}
+				<Link
+					className="font-bold text-[15px] text-ink leading-[1.3] no-underline hover:underline"
+					href={href}
+					onClick={onLinkClick}
+				>
+					{item.name}
+				</Link>
+				<span className="mt-[3px] block text-[13px] text-ink-muted tabular-nums">
+					{item.voltage ? (
+						<>
+							Voltagem{" "}
+							<b className="font-bold text-ink">
+								{voltageLabel(item.voltage).name}
+							</b>{" "}
+							·{" "}
+						</>
+					) : null}
+					{fmtBRL(unitCents)} cada · Cód. {item.sku}
+				</span>
 			</div>
 
-			{isCompact ? (
-				<div className="flex flex-col items-end gap-2.5">
-					<div className="font-bold text-[14px] tabular-nums">{priceLabel}</div>
-					<QuantityPicker
-						min={0}
-						onChange={onQuantityChange}
-						value={item.quantity}
-					/>
-				</div>
-			) : (
-				<div className="font-bold text-[16px] tabular-nums">{priceLabel}</div>
-			)}
+			<div className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+				<QtyStepper
+					label={`Quantidade de ${item.name}`}
+					max={MAX_LINE_QTY}
+					min={isCompact ? 0 : 1}
+					onChange={onQuantityChange}
+					size="md"
+					value={item.quantity}
+				/>
+				<button
+					aria-label={`Remover ${item.name} do carrinho`}
+					className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[3px] px-2 font-semibold text-[13.5px] text-ink-muted underline-offset-[3px] hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
+					onClick={onRemove}
+					type="button"
+				>
+					<Trash2 aria-hidden="true" className="size-[17px]" />
+					Remover
+				</button>
+				<span className="ml-auto font-extrabold text-[16.5px] text-ink tabular-nums">
+					{fmtBRL(unitCents * item.quantity)}
+				</span>
+			</div>
 		</div>
 	);
 }

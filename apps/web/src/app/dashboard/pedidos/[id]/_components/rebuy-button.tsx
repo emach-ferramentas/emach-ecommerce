@@ -3,16 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { EmachButton } from "@/components/emach-button";
+import { type ButtonVariant, EmachButton } from "@/components/emach-button";
 import { useCartActions } from "@/lib/cart-context";
 import { rebuyAction } from "../../_actions/orders";
 
 export function RebuyButton({
 	orderId,
-	variant = "outline",
+	variant = "line",
 }: {
 	orderId: string;
-	variant?: "outline" | "outline-light" | "primary" | "ghost";
+	variant?: Extract<ButtonVariant, "line" | "link" | "dark">;
 }) {
 	const { add } = useCartActions();
 	const [pending, start] = useTransition();
@@ -43,7 +43,7 @@ export function RebuyButton({
 		<EmachButton
 			isLoading={pending}
 			onClick={onClick}
-			size="sm"
+			size="md"
 			variant={variant}
 		>
 			{pending ? "Adicionando" : "Comprar novamente"}

@@ -1,5 +1,6 @@
 import type { RefundStatus } from "@emach/db/schema/orders";
 import { cn } from "@emach/ui/lib/utils";
+import { CircleAlert } from "lucide-react";
 
 const DATE_FMT = new Intl.DateTimeFormat("pt-BR", {
 	timeZone: "America/Sao_Paulo",
@@ -30,7 +31,10 @@ export function OrderRefundBlock({
 				label="Reembolso"
 				text={
 					<>
-						Estornado em <strong className="text-white">{date}</strong>
+						Estornado em{" "}
+						<strong className="font-semibold text-ink tabular-nums">
+							{date}
+						</strong>
 					</>
 				}
 				variant={variant}
@@ -41,7 +45,6 @@ export function OrderRefundBlock({
 	if (refund.status === "rejected") {
 		return (
 			<Row
-				bg="bg-emach-red/15"
 				label="Decisão"
 				text={refund.rejectionReason ?? "Solicitação recusada."}
 				tone="danger"
@@ -61,34 +64,41 @@ export function OrderRefundBlock({
 function Row({
 	label,
 	text,
-	bg,
 	variant,
 	tone = "default",
 }: {
-	bg?: string;
 	label: string;
 	text: React.ReactNode;
 	tone?: "default" | "danger";
 	variant: "card" | "page";
 }) {
-	const padding = variant === "page" ? "px-[18px] py-4" : "px-[18px] py-3";
+	const danger = tone === "danger";
 	return (
 		<div
 			className={cn(
-				"flex flex-wrap items-baseline gap-x-6 gap-y-1 border-white/12 border-t",
-				bg,
-				padding
+				"flex flex-wrap items-baseline gap-x-6 gap-y-1 border-line border-t text-[14px]",
+				variant === "page" ? "px-5 py-4 md:px-6" : "px-[18px] py-3"
 			)}
 		>
 			<span
 				className={cn(
-					"font-display font-semibold text-[11px] uppercase tracking-[0.14em]",
-					tone === "danger" ? "text-emach-red-on-dark" : "text-gray-50"
+					"inline-flex items-center gap-1.5 font-bold",
+					danger ? "text-error-text" : "text-ink"
 				)}
 			>
+				{danger ? (
+					<CircleAlert aria-hidden="true" className="size-4 self-center" />
+				) : null}
 				{label}
 			</span>
-			<span className="text-[13px] text-white/80 leading-relaxed">{text}</span>
+			<span
+				className={cn(
+					"leading-relaxed",
+					danger ? "text-error-text" : "text-ink-2"
+				)}
+			>
+				{text}
+			</span>
 		</div>
 	);
 }

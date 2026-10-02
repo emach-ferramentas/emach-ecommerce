@@ -10,44 +10,46 @@ export interface StepperStep {
 	state: StepState;
 }
 
-export function StatusStepper({
-	steps,
-	tone = "light",
-}: {
-	steps: StepperStep[];
-	tone?: "light" | "dark";
-}) {
-	const dark = tone === "dark";
+const NODE_CLASS: Record<StepState, string> = {
+	ok: "border-ok bg-ok text-white",
+	current: "border-ink bg-ink text-white",
+	done: "border-ink bg-paper text-ink",
+	upcoming: "border-line-strong bg-paper text-ink-muted",
+};
+
+const LABEL_CLASS: Record<StepState, string> = {
+	ok: "font-bold text-ok",
+	current: "font-bold text-ink",
+	done: "text-ink-2",
+	upcoming: "text-ink-muted",
+};
+
+export function StatusStepper({ steps }: { steps: StepperStep[] }) {
 	return (
-		<div
-			className={cn(
-				"flex items-start border-t px-[18px] pt-5 pb-4",
-				dark ? "border-white/12 bg-white/[0.035]" : "border-border bg-gray-10"
-			)}
-		>
+		<div className="flex items-start border-line border-t px-3 pt-5 pb-4 sm:px-[18px]">
 			{steps.map((step, idx) => (
 				<div className="contents" key={step.key}>
 					{idx > 0 && (
 						<div
 							className={cn(
-								"mt-[18px] h-[2px] flex-1",
-								segClass(steps[idx - 1].state, dark)
+								"mt-[18px] h-[2px] min-w-1 flex-1",
+								isFilled(steps[idx - 1].state) ? "bg-ink" : "bg-line-strong"
 							)}
 						/>
 					)}
-					<div className="flex w-[88px] shrink-0 flex-col items-center">
+					<div className="flex min-w-0 basis-[88px] flex-col items-center">
 						<span
 							className={cn(
-								"flex h-[38px] w-[38px] items-center justify-center rounded-full border",
-								nodeClass(step.state, dark)
+								"flex h-[38px] w-[38px] items-center justify-center rounded-full border-[1.5px]",
+								NODE_CLASS[step.state]
 							)}
 						>
 							<step.Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
 						</span>
 						<span
 							className={cn(
-								"mt-[9px] text-center font-display font-semibold text-[12px] uppercase leading-tight tracking-[0.06em]",
-								labelClass(step.state, dark)
+								"mt-[9px] text-center text-[12px] leading-tight sm:text-[13px]",
+								LABEL_CLASS[step.state]
 							)}
 						>
 							{step.label}
@@ -59,38 +61,6 @@ export function StatusStepper({
 	);
 }
 
-function nodeClass(state: StepState, dark: boolean): string {
-	if (state === "ok") {
-		return "border-success bg-success text-white";
-	}
-	if (state === "current") {
-		return "border-emach-red bg-emach-red text-white shadow-[0_0_0_5px_rgba(218,41,28,0.30)]";
-	}
-	if (state === "done") {
-		return "border-emach-red bg-transparent text-emach-red";
-	}
-	return dark
-		? "border-white/25 bg-transparent text-[#888]"
-		: "border-border bg-white text-gray-60";
-}
-
-function labelClass(state: StepState, dark: boolean): string {
-	if (state === "ok") {
-		return "text-success";
-	}
-	if (state === "current") {
-		return dark ? "text-white" : "text-near-black";
-	}
-	if (state === "done") {
-		return dark ? "text-white/70" : "text-near-black/70";
-	}
-	return dark ? "text-[#888]" : "text-gray-60";
-}
-
-function segClass(prevState: StepState, dark: boolean): string {
-	const filled = prevState === "done" || prevState === "ok";
-	if (filled) {
-		return "bg-emach-red";
-	}
-	return dark ? "bg-white/20" : "bg-border";
+function isFilled(state: StepState): boolean {
+	return state === "done" || state === "ok";
 }

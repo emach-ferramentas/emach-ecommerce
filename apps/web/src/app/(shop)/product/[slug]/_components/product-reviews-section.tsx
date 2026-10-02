@@ -64,7 +64,7 @@ export async function ProductReviewsSection({
 							</h2>
 							<p className="mt-2 text-[15px] text-ink-2">
 								Este produto ainda não recebeu avaliações. Avaliações vêm de
-								compradores verificados, com nota fiscal.
+								compradores verificados.
 							</p>
 						</div>
 						<div

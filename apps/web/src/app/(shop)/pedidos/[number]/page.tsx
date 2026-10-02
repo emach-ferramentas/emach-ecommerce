@@ -1,15 +1,24 @@
 import { db } from "@emach/db";
 import type { OrderStatus } from "@emach/db/schema/orders";
 import { order, orderItem } from "@emach/db/schema/orders";
-import { Separator } from "@emach/ui/components/separator";
 import { and, eq } from "drizzle-orm";
 import type { Metadata, Route } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { emachButtonVariants } from "@/components/emach-button";
-import { PageContainer } from "@/components/page-container";
+import {
+	OrderNumber,
+	OrderReceived,
+} from "@/app/(shop)/pedidos/_components/order-received";
+import {
+	ACCOUNT_TRAIL,
+	ORDERS_CRUMB,
+} from "@/app/dashboard/_components/account-trail";
+import { OrderStatusBadge } from "@/app/dashboard/pedidos/_components/order-status-badge";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { EmachLinkButton } from "@/components/emach-button";
+import { PageHead } from "@/components/page-head";
+import { Panel, SummaryRow } from "@/components/panel";
 import { SiteHeader } from "@/components/site-header";
 import { fmtNumericBRL } from "@/lib/format";
 import { requireCurrentClient } from "@/lib/session";
@@ -35,18 +44,6 @@ interface AddressSnapshot {
 	zipCode?: string;
 }
 
-const STATUS_LABEL: Record<OrderStatus, string> = {
-	pending_payment: "Aguardando pagamento",
-	paid: "Pago",
-	preparing: "Em preparação",
-	shipped: "Enviado",
-	delivered: "Entregue",
-	canceled: "Cancelado",
-	refunded: "Reembolsado",
-	payment_failed: "Pagamento falhou",
-	returned: "Devolvido",
-};
-
 // O checkout cai aqui com o pedido em pending_payment: o título diz o que
 // falta em vez de "confirmado", e o pagamento mora no detalhe da conta.
 const HEADLINE: Partial<Record<OrderStatus, { title: string; lead: string }>> =
@@ -60,6 +57,8 @@ const HEADLINE: Partial<Record<OrderStatus, { title: string; lead: string }>> =
 			lead: "O pedido continua aberto. Tente pagar de novo pela página do pedido na sua conta.",
 		},
 	};
+
+const ORDER_TRAIL = [...ACCOUNT_TRAIL, ORDERS_CRUMB] as const;
 
 const ITEM_ROWS = ["item-a", "item-b"] as const;
 const SUMMARY_ROWS = ["subtotal", "frete", "total"] as const;
@@ -80,64 +79,57 @@ export default function OrderConfirmationPage({
 	);
 }
 
-// Mesma anatomia do conteúdo: cabeçalho com ações, lista de itens e as duas
-// caixas laterais (resumo e entrega).
 function OrderConfirmationSkeleton() {
 	return (
-		<main id="main-content">
-			<PageContainer className="animate-pulse py-12">
-				<div className="mb-8">
-					<div className="h-10 w-72 max-w-full bg-gray-20" />
-					<div className="mt-3 h-4 w-80 max-w-full bg-gray-20" />
-					<div className="mt-3 h-4 w-full max-w-xl bg-gray-20" />
-					<div className="mt-6 flex flex-col gap-3 sm:flex-row">
-						<div className="h-13 w-full bg-gray-20 sm:w-52" />
-						<div className="h-13 w-full border border-gray-20 sm:w-52" />
-					</div>
+		<main
+			className="shop-wrap animate-pulse pt-6 pb-16 md:pt-10"
+			id="main-content"
+		>
+			<div className="h-4 w-56 max-w-full rounded-[3px] bg-canteiro" />
+			<div className="mt-4 h-12 w-80 max-w-full rounded-[3px] bg-canteiro" />
+			<div className="mt-3 h-4 w-full max-w-xl rounded-[3px] bg-canteiro" />
+			<div className="mt-6 flex flex-col gap-3 sm:flex-row">
+				<div className="h-13 w-full rounded-[3px] bg-canteiro sm:w-52" />
+				<div className="h-13 w-full rounded-[3px] border-[1.5px] border-line sm:w-52" />
+			</div>
+			<div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
+				<div className="rounded-[5px] border border-line p-5 md:p-6">
+					<div className="h-5 w-16 rounded-[3px] bg-canteiro" />
+					{ITEM_ROWS.map((row) => (
+						<div
+							className="grid grid-cols-[1fr_auto] gap-4 border-line border-b py-4 last:border-b-0"
+							key={row}
+						>
+							<div className="space-y-2">
+								<div className="h-4 w-3/5 rounded-[3px] bg-canteiro" />
+								<div className="h-3 w-28 rounded-[3px] bg-canteiro" />
+								<div className="h-3 w-36 rounded-[3px] bg-canteiro" />
+							</div>
+							<div className="h-4 w-20 rounded-[3px] bg-canteiro" />
+						</div>
+					))}
 				</div>
-				<div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
-					<section>
-						<div className="h-3 w-12 bg-gray-20" />
-						<div className="mt-3 h-px bg-border" />
-						{ITEM_ROWS.map((row) => (
-							<div
-								className="grid grid-cols-[1fr_auto] gap-4 border-border border-b py-4"
-								key={row}
-							>
-								<div className="space-y-2">
-									<div className="h-4 w-3/5 bg-gray-20" />
-									<div className="h-3 w-28 bg-gray-20" />
-									<div className="h-3 w-36 bg-gray-20" />
-								</div>
-								<div className="h-4 w-20 bg-gray-20" />
+				<div className="space-y-6">
+					<div className="space-y-3 rounded-[5px] border border-line bg-canteiro p-5 md:p-6">
+						<div className="h-5 w-20 rounded-[3px] bg-paper" />
+						{SUMMARY_ROWS.map((row) => (
+							<div className="flex justify-between" key={row}>
+								<div className="h-4 w-16 rounded-[3px] bg-paper" />
+								<div className="h-4 w-20 rounded-[3px] bg-paper" />
 							</div>
 						))}
-					</section>
-					<aside className="space-y-6">
-						<div className="border border-border p-5">
-							<div className="h-3 w-16 bg-gray-20" />
-							<div className="mt-3 h-px bg-border" />
-							<div className="mt-3 space-y-3">
-								{SUMMARY_ROWS.map((row) => (
-									<div className="flex justify-between" key={row}>
-										<div className="h-4 w-16 bg-gray-20" />
-										<div className="h-4 w-20 bg-gray-20" />
-									</div>
-								))}
-							</div>
-						</div>
-						<div className="border border-border p-5">
-							<div className="h-3 w-16 bg-gray-20" />
-							<div className="mt-3 h-px bg-border" />
-							<div className="mt-3 space-y-1.5">
-								{ADDRESS_ROWS.map((width) => (
-									<div className={`h-3.5 bg-gray-20 ${width}`} key={width} />
-								))}
-							</div>
-						</div>
-					</aside>
+					</div>
+					<div className="space-y-2 rounded-[5px] border border-line p-5 md:p-6">
+						<div className="h-5 w-20 rounded-[3px] bg-canteiro" />
+						{ADDRESS_ROWS.map((width) => (
+							<div
+								className={`h-3.5 rounded-[3px] bg-canteiro ${width}`}
+								key={width}
+							/>
+						))}
+					</div>
 				</div>
-			</PageContainer>
+			</div>
 		</main>
 	);
 }
@@ -170,158 +162,143 @@ async function OrderConfirmationContent({
 	const address = (orderRow.shippingAddress ?? {}) as AddressSnapshot;
 	const headline = HEADLINE[orderRow.status];
 	const accountOrderHref = `/dashboard/pedidos/${orderRow.id}` as Route;
+	const current = `Pedido ${orderRow.number}`;
+	const status = <OrderStatusBadge status={orderRow.status} />;
+	const createdAt = orderRow.createdAt.toLocaleString("pt-BR", {
+		timeZone: "America/Sao_Paulo",
+		dateStyle: "short",
+		timeStyle: "short",
+	});
+	const actions = (
+		<>
+			<EmachLinkButton href={accountOrderHref} size="lg" variant="dark">
+				Ver pedido na conta
+			</EmachLinkButton>
+			<EmachLinkButton href="/catalog" size="lg" variant="line">
+				Continuar comprando
+			</EmachLinkButton>
+		</>
+	);
 
 	return (
-		<main id="main-content">
-			<PageContainer className="py-12">
-				<div className="mb-8">
-					<h1 className="font-display font-medium text-[40px] leading-tight tracking-[-0.01em]">
-						{headline?.title ?? `Pedido ${orderRow.number}`}
-					</h1>
-					<div className="mt-2 flex flex-wrap gap-3 text-[13px] text-gray-60">
-						{headline ? (
-							<>
-								<span>
-									Pedido <strong>{orderRow.number}</strong>
-								</span>
-								<span>·</span>
-							</>
-						) : null}
-						<span>
-							Status: <strong>{STATUS_LABEL[orderRow.status]}</strong>
-						</span>
-						<span>·</span>
-						<span>
-							Criado em{" "}
-							{orderRow.createdAt.toLocaleString("pt-BR", {
-								timeZone: "America/Sao_Paulo",
-								dateStyle: "short",
-								timeStyle: "short",
-							})}
-						</span>
-					</div>
-					{headline ? (
-						<p className="mt-3 max-w-xl text-[15px] text-near-black">
+		<main className="shop-wrap pb-16" id="main-content">
+			{orderRow.status === "pending_payment" && headline ? (
+				<>
+					<Breadcrumb current={current} trail={ORDER_TRAIL} />
+					<div className="mt-2 md:mt-4">
+						<OrderReceived
+							actions={actions}
+							meta={
+								<div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+									<OrderNumber number={orderRow.number} />
+									{status}
+									<span className="text-[14px] text-ink-muted tabular-nums">
+										Criado em {createdAt}
+									</span>
+								</div>
+							}
+							title={headline.title}
+						>
 							{headline.lead}
-						</p>
-					) : null}
-					<div className="mt-6 flex flex-col gap-3 sm:flex-row">
-						<Link
-							className={emachButtonVariants({
-								size: "lg",
-								variant: "primary",
-							})}
-							href={accountOrderHref}
-						>
-							Ver pedido na conta
-						</Link>
-						<Link
-							className={emachButtonVariants({
-								size: "lg",
-								variant: "outline",
-							})}
-							href="/catalog"
-						>
-							Continuar comprando
-						</Link>
+						</OrderReceived>
 					</div>
+				</>
+			) : (
+				<>
+					<PageHead
+						aside={status}
+						current={current}
+						title={headline?.title ?? current}
+						trail={ORDER_TRAIL}
+					>
+						<p className="tabular-nums">
+							{headline ? (
+								<>
+									Pedido <strong className="text-ink">{orderRow.number}</strong>{" "}
+									·{" "}
+								</>
+							) : null}
+							Criado em {createdAt}
+						</p>
+						{headline ? (
+							<p className="mt-2 max-w-[60ch] text-ink">{headline.lead}</p>
+						) : null}
+					</PageHead>
+					<div className="flex flex-wrap gap-3">{actions}</div>
+				</>
+			)}
+
+			<div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
+				<Panel className="lg:self-start" flush title="Itens">
+					<ul className="divide-y divide-line border-line border-t">
+						{items.map((it) => (
+							<li
+								className="grid grid-cols-[1fr_auto] gap-4 px-5 py-4 md:px-6"
+								key={it.id}
+							>
+								<div>
+									<p className="font-semibold text-[15px] text-ink">
+										{it.name}
+									</p>
+									<p className="mt-0.5 text-[13.5px] text-ink-muted">
+										SKU {it.sku}
+										{it.voltage && ` · ${it.voltage}`}
+									</p>
+									<p className="mt-1 text-[14px] text-ink-2 tabular-nums">
+										Qtd {it.quantity} × {fmtNumericBRL(it.unitPrice)}
+									</p>
+								</div>
+								<p className="font-bold text-ink tabular-nums">
+									{fmtNumericBRL(it.lineTotal)}
+								</p>
+							</li>
+						))}
+					</ul>
+				</Panel>
+
+				<div className="space-y-6 lg:self-start">
+					<Panel title="Resumo" tone="canteiro">
+						<SummaryRow label="Subtotal">
+							{fmtNumericBRL(orderRow.subtotalAmount)}
+						</SummaryRow>
+						{Number(orderRow.discountAmount) > 0 && (
+							<SummaryRow label="Desconto" tone="discount">
+								−{fmtNumericBRL(orderRow.discountAmount)}
+							</SummaryRow>
+						)}
+						<SummaryRow label="Frete">
+							{Number(orderRow.shippingAmount) === 0
+								? "Grátis"
+								: fmtNumericBRL(orderRow.shippingAmount)}
+						</SummaryRow>
+						<SummaryRow label="Total" total>
+							{fmtNumericBRL(orderRow.totalAmount)}
+						</SummaryRow>
+					</Panel>
+
+					<Panel title="Entrega">
+						<address className="space-y-0.5 text-[15px] text-ink-2 not-italic">
+							{address.recipient && (
+								<div className="font-semibold text-ink">
+									{address.recipient}
+								</div>
+							)}
+							{address.street && (
+								<div>
+									{address.street}, {address.number}
+									{address.complement && ` — ${address.complement}`}
+								</div>
+							)}
+							{address.neighborhood && <div>{address.neighborhood}</div>}
+							{address.city && (
+								<div>
+									{address.city} / {address.state} · {address.zipCode}
+								</div>
+							)}
+						</address>
+					</Panel>
 				</div>
-
-				<div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_360px]">
-					<section>
-						<h2 className="font-display font-semibold text-xs uppercase tracking-wider">
-							Itens
-						</h2>
-						<Separator className="mt-3" />
-						<ul className="divide-y">
-							{items.map((it) => (
-								<li
-									className="grid grid-cols-[1fr_auto] gap-4 py-4"
-									key={it.id}
-								>
-									<div>
-										<div className="font-medium text-[15px]">{it.name}</div>
-										<div className="mt-0.5 text-[12px] text-gray-60">
-											SKU {it.sku}
-											{it.voltage && ` · ${it.voltage}`}
-										</div>
-										<div className="mt-1 text-[13px] text-gray-60">
-											Qtd {it.quantity} × {fmtNumericBRL(it.unitPrice)}
-										</div>
-									</div>
-									<div className="self-start font-bold tabular-nums">
-										{fmtNumericBRL(it.lineTotal)}
-									</div>
-								</li>
-							))}
-						</ul>
-					</section>
-
-					<aside className="space-y-6">
-						<div className="border border-border p-5">
-							<h2 className="font-display font-semibold text-xs uppercase tracking-wider">
-								Resumo
-							</h2>
-							<Separator className="mt-3" />
-							<div className="mt-3 space-y-2 text-sm">
-								<div className="flex justify-between">
-									<span className="text-gray-60">Subtotal</span>
-									<span className="tabular-nums">
-										{fmtNumericBRL(orderRow.subtotalAmount)}
-									</span>
-								</div>
-								{Number(orderRow.discountAmount) > 0 && (
-									<div className="flex justify-between text-success">
-										<span>Desconto</span>
-										<span className="tabular-nums">
-											−{fmtNumericBRL(orderRow.discountAmount)}
-										</span>
-									</div>
-								)}
-								<div className="flex justify-between">
-									<span className="text-gray-60">Frete</span>
-									<span className="tabular-nums">
-										{Number(orderRow.shippingAmount) === 0
-											? "Grátis"
-											: fmtNumericBRL(orderRow.shippingAmount)}
-									</span>
-								</div>
-								<Separator />
-								<div className="flex justify-between font-bold">
-									<span>Total</span>
-									<span className="tabular-nums">
-										{fmtNumericBRL(orderRow.totalAmount)}
-									</span>
-								</div>
-							</div>
-						</div>
-
-						<div className="border border-border p-5">
-							<h2 className="font-display font-semibold text-xs uppercase tracking-wider">
-								Entrega
-							</h2>
-							<Separator className="mt-3" />
-							<address className="mt-3 space-y-0.5 text-[13px] not-italic">
-								{address.recipient && (
-									<div className="font-medium">{address.recipient}</div>
-								)}
-								{address.street && (
-									<div>
-										{address.street}, {address.number}
-										{address.complement && ` — ${address.complement}`}
-									</div>
-								)}
-								{address.neighborhood && <div>{address.neighborhood}</div>}
-								{address.city && (
-									<div>
-										{address.city} / {address.state} · {address.zipCode}
-									</div>
-								)}
-							</address>
-						</div>
-					</aside>
-				</div>
-			</PageContainer>
+			</div>
 		</main>
 	);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Voltage } from "@emach/db/schema/tools";
+import { numericToCents } from "@/lib/format";
 
 export interface CartItem {
 	categoryName: string | null;
@@ -79,6 +80,13 @@ export function removeFromCart(
 	const next = items.filter((i) => i.variantId !== variantId);
 	saveCart(next);
 	return next;
+}
+
+export function cartSubtotalCents(items: readonly CartItem[]): number {
+	return items.reduce(
+		(sum, item) => sum + numericToCents(item.priceAmount) * item.quantity,
+		0
+	);
 }
 
 /**

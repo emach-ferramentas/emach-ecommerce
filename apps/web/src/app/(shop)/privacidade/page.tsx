@@ -18,7 +18,6 @@ export default function PrivacyPage() {
 		<>
 			<SiteHeader />
 			<InstitutionalPage
-				label="Privacidade"
 				lede={PRIVACY_LEDE}
 				sections={privacySections}
 				title="Privacidade e proteção de dados"

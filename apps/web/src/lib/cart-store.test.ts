@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { type CartItem, reconcilePrices } from "./cart-store";
+import {
+	type CartItem,
+	cartSubtotalCents,
+	reconcilePrices,
+} from "./cart-store";
 
 const item = (variantId: string, priceAmount: string): CartItem => ({
 	variantId,
@@ -27,5 +31,19 @@ describe("reconcilePrices", () => {
 		const items = [item("v1", "100.00")];
 		const next = reconcilePrices(items, new Map([["v1", "100.00"]]));
 		expect(next).toBe(items);
+	});
+});
+
+describe("cartSubtotalCents", () => {
+	it("soma preço vezes quantidade em centavos", () => {
+		const items = [
+			{ ...item("v1", "899.90"), quantity: 2 },
+			{ ...item("v2", "0.10"), quantity: 3 },
+		];
+		expect(cartSubtotalCents(items)).toBe(180_010);
+	});
+
+	it("carrinho vazio vale 0", () => {
+		expect(cartSubtotalCents([])).toBe(0);
 	});
 });

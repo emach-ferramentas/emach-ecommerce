@@ -1,8 +1,6 @@
 "use client";
 
 import type { ClientAddress } from "@emach/db/schema/client";
-import { Checkbox } from "@emach/ui/components/checkbox";
-import { Separator } from "@emach/ui/components/separator";
 import {
 	isValidCpfCnpj,
 	isValidPhone,
@@ -12,30 +10,37 @@ import {
 	onlyLetters,
 } from "@emach/validators";
 import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
+import { CircleAlert } from "lucide-react";
 import type { Route } from "next";
-import NextImage from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { createOrderAction } from "@/app/checkout/_actions/create-order";
 import { quoteShippingAction } from "@/app/checkout/_actions/quote-shipping";
 import { revalidateCartAction } from "@/app/checkout/_actions/revalidate-cart";
-import { CouponField } from "@/app/checkout/_components/coupon-field";
+import { ConsentField } from "@/app/checkout/_components/consent-field";
+import {
+	type AppliedCoupon,
+	OrderSummary,
+} from "@/app/checkout/_components/order-summary";
 import {
 	ShippingOptions,
 	type ShippingStatus,
 } from "@/app/checkout/_components/shipping-options";
-import { EmachButton, emachButtonVariants } from "@/components/emach-button";
+import { EmachButton } from "@/components/emach-button";
+import { errorMessages, Field, TextField } from "@/components/field";
+import { Notice } from "@/components/notice";
+import { PageHead } from "@/components/page-head";
+import { Panel } from "@/components/panel";
 import { authClient } from "@/lib/auth-client";
 import { useCart } from "@/lib/cart-context";
-import { fmtBRL, numericToCents } from "@/lib/format";
 import type { ShippingOption } from "@/lib/shipping/types";
 import { useCepAutofill } from "@/lib/use-cep-autofill";
 import { addressFieldsSchema } from "@/lib/validators/address";
 
 const NEW_ADDRESS_ID = "__new__";
+const CHECKOUT_FORM_ID = "checkout-form";
 
 const formatUf = (raw: string): string =>
 	onlyLetters(raw).toUpperCase().slice(0, 2);
@@ -102,7 +107,14 @@ export function CheckoutContent({
 	emailVerified,
 }: CheckoutContentProps) {
 	const router = useRouter();
-	const { items, clear, reconcile, remove, hydrated } = useCart();
+	const {
+		items,
+		clear,
+		reconcile,
+		remove,
+		hydrated,
+		subtotalCents: subtotal,
+	} = useCart();
 	const submittedRef = useRef(false);
 	const revalidatedRef = useRef(false);
 	const [resendingVerification, setResendingVerification] = useState(false);
@@ -171,20 +183,7 @@ export function CheckoutContent({
 		})();
 	}, [items, reconcile, remove]);
 
-	// React Compiler memoiza derivações automaticamente — sem useMemo manual.
-	const orderItems = items;
-	const subtotal = items.reduce(
-		(sum, item) => sum + numericToCents(item.priceAmount) * item.quantity,
-		0
-	);
-
-	const shipping = selectedShippingCents ?? 0;
-	const [coupon, setCoupon] = useState<{
-		code: string;
-		discountCents: number;
-	} | null>(null);
-	const discount = coupon?.discountCents ?? 0;
-	const total = Math.max(0, subtotal - discount + shipping);
+	const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
 
 	const form = useForm({
 		defaultValues: {
@@ -349,399 +348,291 @@ export function CheckoutContent({
 		}
 	};
 
-	return (
-		<div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-			<div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px] lg:gap-12">
-				<div>
-					<h1 className="font-display font-medium text-[28px] tracking-[-0.01em]">
-						Finalizar compra
-					</h1>
-					<p className="mt-1 text-gray-60 text-sm">
-						Confira seus dados e endereço de entrega
-					</p>
+	const submitButton = (
+		<form.Subscribe
+			selector={(state) => ({
+				canSubmit: state.canSubmit,
+				isSubmitting: state.isSubmitting,
+			})}
+		>
+			{({ canSubmit, isSubmitting }) => (
+				<EmachButton
+					disabled={
+						!canSubmit ||
+						isSubmitting ||
+						!emailVerified ||
+						shippingStatus === "loading"
+					}
+					form={CHECKOUT_FORM_ID}
+					full
+					size="lg"
+					type="submit"
+					variant="cta"
+				>
+					{isSubmitting ? "Processando…" : "Confirmar pedido"}
+				</EmachButton>
+			)}
+		</form.Subscribe>
+	);
 
+	return (
+		<div className="shop-wrap pb-16">
+			<PageHead title="Finalizar compra">
+				Confira seus dados e endereço de entrega
+			</PageHead>
+			<div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-10">
+				<div className="min-w-0 space-y-5">
 					{emailVerified ? null : (
-						<div className="mt-6 flex flex-col gap-3 border border-gray-20 p-4 sm:flex-row sm:items-center sm:justify-between">
-							<div>
-								<p className="font-semibold text-near-black text-sm">
-									Confirme seu e-mail para finalizar o pedido
-								</p>
-								<p className="mt-0.5 text-gray-60 text-sm">
-									Enviamos um link de confirmação para {clientEmail}.
-								</p>
-							</div>
-							<EmachButton
-								className="shrink-0"
-								disabled={resendingVerification}
-								onClick={handleResendVerification}
-								size="sm"
-								type="button"
-								variant="outline"
-							>
-								{resendingVerification ? "Enviando…" : "Reenviar e-mail"}
-							</EmachButton>
-						</div>
+						<Notice
+							action={
+								<EmachButton
+									disabled={resendingVerification}
+									onClick={handleResendVerification}
+									type="button"
+									variant="line"
+								>
+									{resendingVerification ? "Enviando…" : "Reenviar e-mail"}
+								</EmachButton>
+							}
+						>
+							<p className="font-semibold text-ink">
+								Confirme seu e-mail para finalizar o pedido
+							</p>
+							<p className="mt-0.5">
+								Enviamos um link de confirmação para {clientEmail}.
+							</p>
+						</Notice>
 					)}
 
 					<form
-						className="mt-8 space-y-6"
+						className="space-y-5"
+						id={CHECKOUT_FORM_ID}
 						onSubmit={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
 							form.handleSubmit();
 						}}
 					>
-						<h2 className="font-display font-medium text-xl tracking-[-0.01em]">
-							Seus dados
-						</h2>
-
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<TextField
-								autoComplete="name"
-								form={form}
-								label="Nome completo"
-								name="name"
-								placeholder="Maria da Silva"
-								transform={onlyLetters}
-							/>
-							<div className="emach-field">
-								<label className="emach-field__label" htmlFor="email">
-									E-mail
-								</label>
-								<input
-									aria-describedby="email-hint"
-									autoComplete="email"
-									className="emach-input bg-gray-10! text-gray-60!"
-									id="email"
-									readOnly
-									type="email"
-									value={clientEmail}
-								/>
-								<span className="emach-field__hint" id="email-hint">
-									E-mail da sua conta
-								</span>
-							</div>
-						</div>
-
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<form.Field name="phone">
-								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="phone"
-										label="Telefone"
-									>
+						<Panel title="Seus dados">
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<form.Field name="name">
+									{(field) => (
+										<TextField
+											autoComplete="name"
+											field={field}
+											label="Nome completo"
+											placeholder="Maria da Silva"
+											transform={onlyLetters}
+										/>
+									)}
+								</form.Field>
+								<Field hint="E-mail da sua conta" id="email" label="E-mail">
+									{(control) => (
 										<input
+											{...control}
+											autoComplete="email"
+											className="emach-input"
+											readOnly
+											type="email"
+											value={clientEmail}
+										/>
+									)}
+								</Field>
+								<form.Field name="phone">
+									{(field) => (
+										<TextField
 											autoComplete="tel"
-											className="emach-input"
-											id="phone"
-											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(maskPhone(e.target.value))
-											}
+											field={field}
+											label="Telefone"
 											placeholder="(11) 99999-9999"
+											transform={maskPhone}
 											type="tel"
-											value={field.state.value}
 										/>
-									</FieldShell>
-								)}
-							</form.Field>
-
-							<form.Field name="document">
-								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="document"
-										label="CPF ou CNPJ"
-									>
-										<input
-											autoComplete="off"
-											className="emach-input"
-											id="document"
-											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(maskCpfCnpj(e.target.value))
-											}
-											placeholder="000.000.000-00"
-											value={field.state.value}
-										/>
-									</FieldShell>
-								)}
-							</form.Field>
-						</div>
-
-						<Separator />
-
-						<h2 className="font-display font-medium text-xl tracking-[-0.01em]">
-							Endereço de entrega
-						</h2>
-
-						<form.Field name="addressId">
-							{(field) => (
-								<FieldShell
-									errors={field.state.meta.errors}
-									htmlFor="addressId"
-									label="Endereço"
-								>
-									<select
-										className="emach-select"
-										id="addressId"
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										value={field.state.value}
-									>
-										{addresses.map((addr) => (
-											<option key={addr.id} value={addr.id}>
-												{formatAddressLabel(addr)}
-											</option>
-										))}
-										<option value={NEW_ADDRESS_ID}>+ Novo endereço</option>
-									</select>
-								</FieldShell>
-							)}
-						</form.Field>
-
-						<form.Subscribe
-							selector={(state) => state.values.addressId === NEW_ADDRESS_ID}
-						>
-							{(showNew) =>
-								showNew ? (
-									<div className="space-y-4 border border-gray-20 p-5">
-										<div className="grid grid-cols-1 gap-4 sm:grid-cols-[140px_1fr]">
-											<form.Field name="newAddress.zipCode">
-												{(field) => (
-													<div>
-														<FieldShell
-															errors={field.state.meta.errors}
-															htmlFor="zipCode"
-															label="CEP"
-														>
-															<input
-																aria-busy={cepAutofill.loading}
-																autoComplete="postal-code"
-																className="emach-input"
-																id="zipCode"
-																onBlur={field.handleBlur}
-																onChange={(e) => {
-																	const next = onlyDigits(e.target.value).slice(
-																		0,
-																		8
-																	);
-																	field.handleChange(next);
-																	cepAutofill.maybeLookup(next);
-																}}
-																placeholder="00000000"
-																value={field.state.value}
-															/>
-														</FieldShell>
-														{cepAutofill.loading ? (
-															<p
-																aria-live="polite"
-																className="mt-1 text-gray-60 text-xs"
-															>
-																Buscando endereço…
-															</p>
-														) : null}
-														{cepAutofill.notFound ? (
-															<p
-																className="mt-1 text-destructive text-xs"
-																role="alert"
-															>
-																CEP não encontrado — confira o número antes de
-																continuar
-															</p>
-														) : null}
-													</div>
-												)}
-											</form.Field>
-											<TextField
-												autoComplete="address-line1"
-												form={form}
-												label="Rua"
-												name="newAddress.street"
-												placeholder="Rua 21 de Abril"
-											/>
-										</div>
-										<div className="grid grid-cols-1 gap-4 sm:grid-cols-[160px_1fr]">
-											<TextField
-												autoComplete="address-line2"
-												form={form}
-												label="Número"
-												name="newAddress.number"
-												placeholder="123"
-												transform={onlyDigits}
-											/>
-											<TextField
-												autoComplete="off"
-												form={form}
-												label="Complemento"
-												name="newAddress.complement"
-												placeholder="Apto 101 (opcional)"
-											/>
-										</div>
+									)}
+								</form.Field>
+								<form.Field name="document">
+									{(field) => (
 										<TextField
 											autoComplete="off"
-											form={form}
-											label="Bairro"
-											name="newAddress.neighborhood"
-											placeholder="Centro"
+											field={field}
+											label="CPF ou CNPJ"
+											placeholder="000.000.000-00"
+											transform={maskCpfCnpj}
 										/>
-										<div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_120px]">
-											<TextField
-												autoComplete="address-level2"
-												form={form}
-												label="Cidade"
-												name="newAddress.city"
-												placeholder="São Paulo"
-												transform={onlyLetters}
-											/>
-											<TextField
-												autoComplete="address-level1"
-												form={form}
-												label="Estado"
-												name="newAddress.state"
-												placeholder="SP"
-												transform={formatUf}
-											/>
-										</div>
-									</div>
-								) : null
-							}
-						</form.Subscribe>
-
-						<Separator />
-
-						<div className="space-y-3">
-							<form.Field name="acceptTos">
-								{(field) => (
-									<ConsentField
-										checked={field.state.value === true}
-										errors={field.state.meta.errors}
-										id="acceptTos"
-										label="Li e aceito os Termos de Uso"
-										onChange={(v) => field.handleChange(v)}
-										required
-									/>
-								)}
-							</form.Field>
-							<form.Field name="acceptPrivacy">
-								{(field) => (
-									<ConsentField
-										checked={field.state.value === true}
-										errors={field.state.meta.errors}
-										id="acceptPrivacy"
-										label="Li e aceito a Política de Privacidade"
-										onChange={(v) => field.handleChange(v)}
-										required
-									/>
-								)}
-							</form.Field>
-							<form.Field name="acceptMarketing">
-								{(field) => (
-									<ConsentField
-										checked={field.state.value}
-										errors={field.state.meta.errors}
-										id="acceptMarketing"
-										label="Quero receber ofertas e novidades por e-mail"
-										onChange={(v) => field.handleChange(v)}
-									/>
-								)}
-							</form.Field>
-						</div>
-
-						<div className="flex flex-col-reverse items-stretch gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
-							<Link
-								className={emachButtonVariants({
-									size: "lg",
-									variant: "outline",
-								})}
-								href="/cart"
-							>
-								Voltar ao carrinho
-							</Link>
-							<form.Subscribe
-								selector={(state) => ({
-									canSubmit: state.canSubmit,
-									isSubmitting: state.isSubmitting,
-								})}
-							>
-								{({ canSubmit, isSubmitting }) => (
-									<EmachButton
-										disabled={
-											!canSubmit ||
-											isSubmitting ||
-											!emailVerified ||
-											shippingStatus === "loading"
-										}
-										size="lg"
-										type="submit"
-										variant="primary"
-									>
-										{isSubmitting ? "Processando…" : "Confirmar pedido"}
-									</EmachButton>
-								)}
-							</form.Subscribe>
-						</div>
-					</form>
-				</div>
-
-				<div>
-					<div className="space-y-4 border border-gray-20 p-6 lg:sticky lg:top-10">
-						<h2 className="font-display font-semibold text-xs uppercase tracking-[0.14em]">
-							Resumo do pedido
-						</h2>
-						<Separator />
-
-						{orderItems.map((item) => (
-							<div className="flex gap-4" key={item.variantId}>
-								<div className="relative size-16 shrink-0 overflow-hidden bg-muted">
-									{item.imageUrl ? (
-										<NextImage
-											alt={item.name}
-											className="object-cover"
-											fill
-											sizes="64px"
-											src={item.imageUrl}
-										/>
-									) : (
-										<div className="absolute inset-0 bg-gray-10" />
 									)}
-								</div>
-								<div className="flex-1 text-sm">
-									<p className="font-medium">{item.name}</p>
-									<p className="text-gray-60">Qtd: {item.quantity}</p>
-								</div>
-								<span className="font-medium text-sm">
-									{fmtBRL(numericToCents(item.priceAmount) * item.quantity)}
-								</span>
+								</form.Field>
 							</div>
-						))}
+						</Panel>
 
-						<Separator />
+						<Panel title="Entrega">
+							<div className="space-y-4">
+								<form.Field name="addressId">
+									{(field) => (
+										<Field
+											error={errorMessages(field.state.meta.errors)}
+											id="addressId"
+											label="Endereço"
+										>
+											{(control) => (
+												<select
+													{...control}
+													className="emach-select"
+													onBlur={field.handleBlur}
+													onChange={(e) => field.handleChange(e.target.value)}
+													value={field.state.value}
+												>
+													{addresses.map((addr) => (
+														<option key={addr.id} value={addr.id}>
+															{formatAddressLabel(addr)}
+														</option>
+													))}
+													<option value={NEW_ADDRESS_ID}>
+														+ Novo endereço
+													</option>
+												</select>
+											)}
+										</Field>
+									)}
+								</form.Field>
 
-						<div className="space-y-2 text-sm">
-							<div className="flex justify-between">
-								<span className="text-gray-60">Subtotal</span>
-								<span>{fmtBRL(subtotal)}</span>
+								<form.Subscribe
+									selector={(state) =>
+										state.values.addressId === NEW_ADDRESS_ID
+									}
+								>
+									{(showNew) =>
+										showNew ? (
+											<div className="space-y-4 border-line border-t pt-4">
+												<div className="grid grid-cols-1 gap-4 sm:grid-cols-[160px_1fr]">
+													<form.Field name="newAddress.zipCode">
+														{(field) => (
+															<div>
+																<Field
+																	error={errorMessages(field.state.meta.errors)}
+																	id="zipCode"
+																	label="CEP"
+																>
+																	{(control) => (
+																		<input
+																			{...control}
+																			aria-busy={cepAutofill.loading}
+																			autoComplete="postal-code"
+																			className="emach-input"
+																			inputMode="numeric"
+																			onBlur={field.handleBlur}
+																			onChange={(e) => {
+																				const next = onlyDigits(
+																					e.target.value
+																				).slice(0, 8);
+																				field.handleChange(next);
+																				cepAutofill.maybeLookup(next);
+																			}}
+																			placeholder="00000000"
+																			value={field.state.value}
+																		/>
+																	)}
+																</Field>
+																{cepAutofill.loading ? (
+																	<p
+																		aria-live="polite"
+																		className="mt-1.5 text-[13px] text-ink-muted"
+																	>
+																		Buscando endereço…
+																	</p>
+																) : null}
+																{cepAutofill.notFound ? (
+																	<p
+																		className="mt-1.5 flex items-start gap-1.5 text-[13px] text-error-text"
+																		role="alert"
+																	>
+																		<CircleAlert
+																			aria-hidden="true"
+																			className="mt-0.5 size-3.5 shrink-0"
+																		/>
+																		CEP não encontrado — confira o número antes
+																		de continuar
+																	</p>
+																) : null}
+															</div>
+														)}
+													</form.Field>
+													<form.Field name="newAddress.street">
+														{(field) => (
+															<TextField
+																autoComplete="address-line1"
+																field={field}
+																label="Rua"
+																placeholder="Rua 21 de Abril"
+															/>
+														)}
+													</form.Field>
+												</div>
+												<div className="grid grid-cols-1 gap-4 sm:grid-cols-[160px_1fr]">
+													<form.Field name="newAddress.number">
+														{(field) => (
+															<TextField
+																autoComplete="address-line2"
+																field={field}
+																label="Número"
+																placeholder="123"
+																transform={onlyDigits}
+															/>
+														)}
+													</form.Field>
+													<form.Field name="newAddress.complement">
+														{(field) => (
+															<TextField
+																autoComplete="off"
+																field={field}
+																label="Complemento"
+																placeholder="Apto 101 (opcional)"
+															/>
+														)}
+													</form.Field>
+												</div>
+												<form.Field name="newAddress.neighborhood">
+													{(field) => (
+														<TextField
+															autoComplete="off"
+															field={field}
+															label="Bairro"
+															placeholder="Centro"
+														/>
+													)}
+												</form.Field>
+												<div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_120px]">
+													<form.Field name="newAddress.city">
+														{(field) => (
+															<TextField
+																autoComplete="address-level2"
+																field={field}
+																label="Cidade"
+																placeholder="São Paulo"
+																transform={onlyLetters}
+															/>
+														)}
+													</form.Field>
+													<form.Field name="newAddress.state">
+														{(field) => (
+															<TextField
+																autoComplete="address-level1"
+																field={field}
+																label="Estado"
+																placeholder="SP"
+																transform={formatUf}
+															/>
+														)}
+													</form.Field>
+												</div>
+											</div>
+										) : null
+									}
+								</form.Subscribe>
 							</div>
-							<CouponField
-								applied={coupon}
-								cartItems={items.map((i) => ({
-									toolId: i.toolId,
-									variantId: i.variantId,
-									quantity: i.quantity,
-								}))}
-								onApplied={setCoupon}
-								onRemoved={() => setCoupon(null)}
-							/>
-							{discount > 0 ? (
-								<div className="flex justify-between">
-									<span className="text-gray-60">Desconto</span>
-									<span>−{fmtBRL(discount)}</span>
-								</div>
-							) : null}
-							<div aria-atomic="true" aria-live="polite" className="space-y-2">
-								<span className="text-gray-60 text-sm">Frete</span>
+						</Panel>
+
+						<Panel title="Frete">
+							<div aria-atomic="true" aria-live="polite">
 								<ShippingOptions
 									onRetry={() => setQuoteNonce((n) => n + 1)}
 									onSelect={setSelectedCarrierId}
@@ -750,18 +641,62 @@ export function CheckoutContent({
 									status={shippingStatus}
 								/>
 							</div>
-						</div>
+						</Panel>
 
-						<Separator />
-
-						<div className="flex justify-between font-bold text-base">
-							<span>Total</span>
-							<span>
-								{selectedShippingCents === null ? "A calcular" : fmtBRL(total)}
-							</span>
-						</div>
-					</div>
+						<Panel title="Revisão">
+							<div className="space-y-1">
+								<form.Field name="acceptTos">
+									{(field) => (
+										<ConsentField
+											checked={field.state.value === true}
+											errors={field.state.meta.errors}
+											id="acceptTos"
+											label="Li e aceito os Termos de Uso"
+											onChange={(v) => field.handleChange(v)}
+											required
+											touched={field.state.meta.isTouched}
+										/>
+									)}
+								</form.Field>
+								<form.Field name="acceptPrivacy">
+									{(field) => (
+										<ConsentField
+											checked={field.state.value === true}
+											errors={field.state.meta.errors}
+											id="acceptPrivacy"
+											label="Li e aceito a Política de Privacidade"
+											onChange={(v) => field.handleChange(v)}
+											required
+											touched={field.state.meta.isTouched}
+										/>
+									)}
+								</form.Field>
+								<form.Field name="acceptMarketing">
+									{(field) => (
+										<ConsentField
+											checked={field.state.value}
+											errors={field.state.meta.errors}
+											id="acceptMarketing"
+											label="Quero receber ofertas e novidades por e-mail"
+											onChange={(v) => field.handleChange(v)}
+											touched={field.state.meta.isTouched}
+										/>
+									)}
+								</form.Field>
+							</div>
+						</Panel>
+					</form>
 				</div>
+
+				<OrderSummary
+					action={submitButton}
+					coupon={coupon}
+					items={items}
+					onCouponApplied={setCoupon}
+					onCouponRemoved={() => setCoupon(null)}
+					shippingCents={selectedShippingCents}
+					subtotalCents={subtotal}
+				/>
 			</div>
 		</div>
 	);
@@ -776,162 +711,4 @@ function formatAddressLabel(addr: ClientAddress): string {
 	const label = addr.label ? ` — ${addr.label}` : "";
 	const def = addr.isDefault ? " ★" : "";
 	return `${parts.join(" · ")}${label}${def}`;
-}
-
-interface FieldShellProps {
-	children: React.ReactNode;
-	errors: ReadonlyArray<{ message?: string } | undefined>;
-	htmlFor: string;
-	label: string;
-}
-
-function FieldShell({ children, errors, htmlFor, label }: FieldShellProps) {
-	const errorId = `${htmlFor}-error`;
-	const hasError = errors.some((e) => e?.message);
-	return (
-		<div className="emach-field">
-			<label className="emach-field__label" htmlFor={htmlFor}>
-				{label}
-			</label>
-			{hasError
-				? React.cloneElement(
-						children as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
-						{
-							"aria-describedby": errorId,
-						}
-					)
-				: children}
-			{errors.map((error, idx) =>
-				error?.message ? (
-					<span
-						aria-live="polite"
-						className="emach-field__error"
-						id={idx === 0 ? errorId : undefined}
-						key={`${error.message}-${idx}`}
-						role="alert"
-					>
-						{error.message}
-					</span>
-				) : null
-			)}
-		</div>
-	);
-}
-
-interface TextFieldProps {
-	autoComplete?: string;
-	// biome-ignore lint/suspicious/noExplicitAny: tanstack form generic
-	form: any;
-	label: string;
-	name: string;
-	placeholder?: string;
-	/** Sanitiza o valor digitado a cada tecla (ex.: só letras, só dígitos). */
-	transform?: (raw: string) => string;
-	type?: string;
-}
-
-function TextField({
-	form,
-	label,
-	name,
-	autoComplete,
-	placeholder,
-	type,
-	transform,
-}: TextFieldProps) {
-	return (
-		<form.Field name={name}>
-			{(field: {
-				state: {
-					value: string;
-					meta: {
-						errors: ReadonlyArray<{ message?: string } | undefined>;
-					};
-				};
-				handleBlur: () => void;
-				handleChange: (v: string) => void;
-			}) => (
-				<FieldShell
-					errors={field.state.meta.errors}
-					htmlFor={name}
-					label={label}
-				>
-					<input
-						autoComplete={autoComplete}
-						className="emach-input"
-						id={name}
-						onBlur={field.handleBlur}
-						onChange={(e) =>
-							field.handleChange(
-								transform ? transform(e.target.value) : e.target.value
-							)
-						}
-						placeholder={placeholder}
-						type={type}
-						value={field.state.value}
-					/>
-				</FieldShell>
-			)}
-		</form.Field>
-	);
-}
-
-interface ConsentFieldProps {
-	checked: boolean;
-	errors: ReadonlyArray<{ message?: string } | undefined>;
-	id: string;
-	label: string;
-	onChange: (v: boolean) => void;
-	required?: boolean;
-}
-
-function ConsentField({
-	checked,
-	errors,
-	id,
-	label,
-	onChange,
-	required = false,
-}: ConsentFieldProps) {
-	const [touched, setTouched] = useState(false);
-	return (
-		<div>
-			<label
-				className="flex cursor-pointer items-center gap-3 text-sm"
-				htmlFor={id}
-			>
-				<Checkbox
-					checked={checked}
-					id={id}
-					onCheckedChange={(v) => {
-						setTouched(true);
-						onChange(v === true);
-					}}
-				/>
-				<span>
-					{label}
-					{required && (
-						<span
-							aria-label="obrigatório"
-							className="ml-1 text-emach-red-hover"
-							role="img"
-						>
-							*
-						</span>
-					)}
-				</span>
-			</label>
-			{touched &&
-				errors.map((error, idx) =>
-					error?.message ? (
-						<p
-							className="mt-1 text-emach-red-hover text-xs"
-							key={`${error.message}-${idx}`}
-						>
-							{error.message}
-						</p>
-					) : null
-				)}
-		</div>
-	);
 }

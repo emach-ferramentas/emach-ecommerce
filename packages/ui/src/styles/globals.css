@@ -51,9 +51,6 @@
 	--placeholder-mid: #d8d8d8;
 	--placeholder-dark: #c8c8c8;
 
-	/* Accent alias used by .emach-qty__btn--plus */
-	--accent: var(--emach-red);
-
 	/* Radii */
 	--radius-xs: 4px;
 	--radius-sm: 8px;
@@ -109,74 +106,84 @@
 
 /* ============================================================
    EMACH Component Styles
-   Ferrari editorial: 2px radii, hairline borders, red focus
    ============================================================ */
 
-/* ---------- Inputs ---------- */
-.emach-input {
+/* Fonte de 16px porque abaixo disso o Safari do iOS dá zoom no foco. */
+.emach-input,
+.emach-select,
+.emach-textarea {
 	width: 100%;
-	height: 44px;
-	padding: 0 14px;
 	font-family: var(--font-sans);
-	font-size: 14px;
+	font-size: 16px;
 	font-weight: 400;
-	color: var(--near-black);
+	color: var(--ink);
 	-webkit-appearance: none;
 	appearance: none;
 	outline: none;
-	background: #fff;
-	border: 1px solid var(--border);
-	border-radius: 2px;
+	background-color: var(--paper);
+	border: 1.5px solid var(--line-strong);
+	border-radius: 3px;
 	transition:
 		border-color 150ms ease,
 		box-shadow 150ms ease;
 }
-.emach-input::placeholder {
-	font-weight: 400;
-	/* gray-55 (#969696) reprovava em contraste (2.96:1); gray-60 (#666) = 5.74:1
-	   sobre #fff, ainda claramente "placeholder" vs texto digitado near-black. */
-	color: var(--gray-60);
+.emach-input,
+.emach-select {
+	height: 48px;
 }
-.emach-input:hover {
-	border-color: var(--gray-50);
+.emach-input {
+	padding: 0 14px;
 }
-.emach-input:focus {
-	border-color: var(--near-black);
-	box-shadow: inset 0 -2px 0 0 var(--emach-red);
+.emach-select {
+	padding: 0 40px 0 14px;
+	cursor: pointer;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2316191d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='1,2 6,7 11,2'/></svg>");
+	background-repeat: no-repeat;
+	background-position: right 14px center;
 }
-.emach-input:disabled {
-	color: var(--gray-55);
+.emach-textarea {
+	min-height: 120px;
+	padding: 12px 14px;
+	line-height: 1.5;
+	resize: vertical;
+}
+.emach-input::placeholder,
+.emach-textarea::placeholder {
+	color: var(--ink-muted);
+}
+.emach-input:hover,
+.emach-select:hover,
+.emach-textarea:hover {
+	border-color: var(--ink-muted);
+}
+/* :read-only fica só nos campos de texto: no <select> ele casa sempre. */
+.emach-input:read-only,
+.emach-textarea:read-only,
+.emach-input:disabled,
+.emach-select:disabled,
+.emach-textarea:disabled {
+	color: var(--ink-muted);
+	background-color: var(--canteiro);
+	border-color: var(--line);
+}
+.emach-input:disabled,
+.emach-select:disabled,
+.emach-textarea:disabled {
 	cursor: not-allowed;
-	background: var(--gray-10);
 }
-
-.emach-input--sm {
-	height: 36px;
-	padding: 0 12px;
-	font-size: 13px;
-	border-radius: 2px;
+.emach-input:focus,
+.emach-select:focus,
+.emach-textarea:focus {
+	/* Transparente na tela; em forced-colors o navegador pinta e o foco aparece. */
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+	border-color: var(--ink);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 18%, transparent);
 }
-.emach-input--lg {
-	height: 52px;
-	padding: 0 16px;
-	font-size: 15px;
-	border-radius: 2px;
-}
-
-.emach-input--dark {
-	color: #fff;
-	background: rgba(255, 255, 255, 0.04);
-	border-color: rgba(255, 255, 255, 0.18);
-}
-.emach-input--dark::placeholder {
-	color: rgba(255, 255, 255, 0.45);
-}
-.emach-input--dark:hover {
-	border-color: rgba(255, 255, 255, 0.35);
-}
-.emach-input--dark:focus {
-	border-color: #fff;
-	box-shadow: inset 0 -2px 0 0 var(--emach-red);
+.emach-input[aria-invalid="true"],
+.emach-select[aria-invalid="true"],
+.emach-textarea[aria-invalid="true"] {
+	border-color: var(--error-text);
 }
 
 /* ---------- Field wrapper ---------- */
@@ -187,252 +194,70 @@
 }
 .emach-field__label {
 	font-family: var(--font-sans);
-	font-size: 11px;
-	font-weight: 700;
-	color: var(--gray-60);
-	text-transform: uppercase;
-	letter-spacing: 0.12em;
-}
-.emach-field__hint {
-	font-size: 12px;
-	color: var(--gray-60);
-}
-.emach-field__error {
-	font-size: 12px;
-	font-weight: 500;
-	/* --warning (#F13A2C) reprova WCAG AA (3.3:1) em texto; mensagem de erro é o
-	   texto que MAIS precisa ser legível. --emach-red-hover (#B01E0A) = 6.29:1. */
-	color: var(--emach-red-hover);
-}
-
-.emach-input-group {
-	position: relative;
-	display: flex;
-	align-items: center;
-}
-.emach-input-group__icon {
-	position: absolute;
-	left: 14px;
-	display: inline-flex;
-	color: var(--gray-50);
-	pointer-events: none;
-}
-.emach-input-group .emach-input {
-	padding-left: 40px;
-}
-
-/* ---------- Select ---------- */
-.emach-select {
-	width: 100%;
-	height: 44px;
-	padding: 0 40px 0 14px;
-	font-family: var(--font-sans);
-	font-size: 14px;
-	color: var(--near-black);
-	-moz-appearance: none;
-	-webkit-appearance: none;
-	appearance: none;
-	cursor: pointer;
-	outline: none;
-	background: #fff;
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23181818' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='1,2 6,7 11,2'/></svg>");
-	background-repeat: no-repeat;
-	background-position: right 14px center;
-	border: 1px solid var(--border);
-	border-radius: 2px;
-	transition:
-		border-color 150ms ease,
-		box-shadow 150ms ease;
-}
-.emach-select:hover {
-	border-color: var(--gray-50);
-}
-.emach-select:focus {
-	border-color: var(--near-black);
-	box-shadow: inset 0 -2px 0 0 var(--emach-red);
-}
-.emach-select--sm {
-	height: 36px;
-	padding: 0 36px 0 12px;
-	font-size: 13px;
-	border-radius: 2px;
-}
-
-/* ---------- Slider (range) ---------- */
-.emach-range {
-	width: 100%;
-	height: 2px;
-	-webkit-appearance: none;
-	appearance: none;
-	cursor: pointer;
-	outline: none;
-	background: var(--gray-20);
-}
-.emach-range::-webkit-slider-thumb {
-	width: 16px;
-	height: 16px;
-	-webkit-appearance: none;
-	appearance: none;
-	cursor: grab;
-	background: var(--near-black);
-	border: 3px solid #fff;
-	border-radius: 50%;
-	box-shadow: 0 0 0 1px var(--near-black);
-	transition: transform 120ms ease;
-}
-.emach-range::-webkit-slider-thumb:hover {
-	transform: scale(1.15);
-}
-.emach-range::-moz-range-thumb {
-	width: 16px;
-	height: 16px;
-	cursor: grab;
-	background: var(--near-black);
-	border: 3px solid #fff;
-	border-radius: 50%;
-	box-shadow: 0 0 0 1px var(--near-black);
-}
-
-/* ---------- Chip / pill button ---------- */
-.emach-chip {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	/* 44px: o chip é alvo de toque de verdade (buscas recentes/sugestões),
-	   não um badge estático. */
-	min-height: 44px;
-	padding: 0 16px;
-	font-family: var(--font-sans);
-	font-size: 13px;
-	font-weight: 500;
-	color: var(--near-black);
-	letter-spacing: 0.02em;
-	cursor: pointer;
-	background: #fff;
-	border: 1px solid var(--border);
-	border-radius: 2px;
-	transition: all 150ms ease;
-}
-.emach-chip:hover {
-	border-color: var(--near-black);
-}
-.emach-chip:active {
-	background: var(--gray-10);
-	border-color: var(--near-black);
-	transition-duration: 75ms;
-}
-.emach-chip--active {
-	color: #fff;
-	background: var(--near-black);
-	border-color: var(--near-black);
-}
-
-/* ---------- Quantity stepper ---------- */
-.emach-qty {
-	display: inline-flex;
-	overflow: hidden;
-	background: #fff;
-	border: 1px solid var(--border);
-	border-radius: 2px;
-}
-.emach-qty__btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 100%;
-	min-height: 38px;
-	font-size: 18px;
-	font-weight: 400;
-	color: var(--near-black);
-	cursor: pointer;
-	background: #fff;
-	border: none;
-	transition: background 120ms ease;
-}
-.emach-qty__btn:hover {
-	background: var(--gray-10);
-}
-.emach-qty__btn--plus {
-	color: #fff;
-	background: var(--emach-red);
-}
-.emach-qty__btn--plus:hover {
-	background: var(--emach-red);
-	filter: brightness(1.08);
-}
-.emach-qty__val {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 44px;
-	height: 100%;
-	min-height: 38px;
-	font-family: var(--font-sans);
 	font-size: 14px;
 	font-weight: 600;
-	font-variant-numeric: tabular-nums;
-	border-right: 1px solid var(--border);
-	border-left: 1px solid var(--border);
+	line-height: 1.3;
+	color: var(--ink);
 }
-
-/* ---------- Divider ---------- */
-.emach-hr {
-	height: 1px;
-	margin: 0;
-	background: var(--border);
-	border: none;
+.emach-field__hint {
+	font-size: 13px;
+	line-height: 1.4;
+	color: var(--ink-muted);
 }
-.emach-hr--dark {
-	background: rgba(255, 255, 255, 0.1);
+.emach-field__error {
+	display: flex;
+	gap: 6px;
+	align-items: flex-start;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	color: var(--error-text);
 }
-
-/* ---------- Card ring (subtle outline) ---------- */
-.emach-ring {
-	box-shadow: inset 0 0 0 1px rgba(24, 24, 24, 0.08);
+.emach-field__error::before {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	margin-top: 2px;
+	content: "";
+	background-color: currentColor;
+	-webkit-mask:
+		url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><line x1='12' x2='12' y1='8' y2='12'/><line x1='12' x2='12.01' y1='16' y2='16'/></svg>")
+		center / contain no-repeat;
+	mask:
+		url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><line x1='12' x2='12' y1='8' y2='12'/><line x1='12' x2='12.01' y1='16' y2='16'/></svg>")
+		center / contain no-repeat;
 }
-
-/* ---------- Button reset helper ---------- */
-.emach-ghost-btn {
-	padding: 0;
-	font: inherit;
-	color: inherit;
-	cursor: pointer;
-	background: transparent;
-	border: none;
-	transition: opacity 150ms ease;
-}
-/* O reset zera o fundo, então a pressão só pode falar por opacidade. */
-.emach-ghost-btn:active {
-	opacity: 0.6;
-	transition-duration: 75ms;
-}
-@media (prefers-reduced-motion: reduce) {
-	.emach-ghost-btn {
-		transition: none;
-	}
+.emach-field__error:empty {
+	display: none;
 }
 
 /* ---------- Toast (sonner) EMACH style ---------- */
 .emach-toast {
-	padding-left: 18px !important;
-	color: #fff !important;
-	background: var(--near-black) !important;
+	color: var(--on-dark) !important;
+	background: var(--grafite) !important;
 	border: none !important;
-	border-radius: 2px !important;
-	/* Barra vermelha via inset shadow, NÃO via ::before — o sonner reserva
-	   ::before/::after do toast para a mecânica de swipe/gap/saída. Usar
-	   pseudo-elemento aqui faz a barra "voar" para fora ao arrastar.
-	   Entrada/saída/empilhamento ficam por conta da animação nativa do sonner. */
-	box-shadow:
-		inset 4px 0 0 var(--emach-red),
-		0 12px 32px rgba(0, 0, 0, 0.25) !important;
+	border-radius: 3px !important;
+	box-shadow: var(--elev-pop) !important;
 }
 .emach-toast__title {
 	font-family: var(--font-sans);
 	font-size: 13px !important;
 	font-weight: 500 !important;
-	color: #fff !important;
+	color: var(--on-dark) !important;
+}
+.emach-toast [data-button] {
+	min-height: 44px !important;
+	padding: 0 14px !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	color: var(--grafite) !important;
+	background: var(--on-dark) !important;
+	border-radius: 3px !important;
+}
+.emach-toast [data-button]:focus-visible {
+	outline: 2px solid var(--on-dark) !important;
+	outline-offset: 2px;
+	box-shadow: none !important;
 }
 
 /* ---------- Cart item transitions ---------- */
@@ -538,76 +363,6 @@
 }
 
 /* ---------- Design system backgrounds ---------- */
-.emach-bg-diagonal {
-	background: repeating-linear-gradient(
-		35deg,
-		transparent 0 40px,
-		rgba(255, 255, 255, 0.02) 40px 80px
-	);
-}
-.emach-bg-diagonal-2 {
-	background: repeating-linear-gradient(
-		40deg,
-		transparent 0 30px,
-		rgba(255, 255, 255, 0.015) 30px 60px
-	);
-}
-.emach-bg-cinema {
-	background: radial-gradient(
-		ellipse at 70% 40%,
-		var(--cinema-1) 0%,
-		var(--cinema-3) 60%,
-		var(--black) 100%
-	);
-}
-.emach-mask-vignette {
-	-webkit-mask-image: radial-gradient(
-		ellipse at center,
-		rgba(0, 0, 0, 1) 55%,
-		rgba(0, 0, 0, 0) 100%
-	);
-	mask-image: radial-gradient(
-		ellipse at center,
-		rgba(0, 0, 0, 1) 55%,
-		rgba(0, 0, 0, 0) 100%
-	);
-}
-.emach-bg-category-overlay {
-	background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.45));
-}
-.emach-bg-category-fallback {
-	background: linear-gradient(135deg, var(--cinema-1), var(--cinema-3));
-}
-.emach-bg-vignette-bottom {
-	background: linear-gradient(
-		to top,
-		rgba(0, 0, 0, 0.85),
-		rgba(0, 0, 0, 0.2) 55%,
-		transparent
-	);
-}
-.emach-bg-card-hover {
-	background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent 52%);
-}
-/* Spotlight de estúdio do category tile: centro iluminado, bordas escuras.
-   A ferramenta (PNG recortado) recebe a "luz" sem ser escurecida por overlay. */
-.emach-bg-tile-spot {
-	background: radial-gradient(
-		ellipse 72% 58% at 50% 36%,
-		#343434 0%,
-		#1d1d1d 55%,
-		#121212 100%
-	);
-}
-/* Degradê escuro ancorado na base do tile — só pro texto, não cobre a ferramenta. */
-.emach-bg-tile-foot {
-	background: linear-gradient(
-		to top,
-		rgba(0, 0, 0, 0.92),
-		rgba(0, 0, 0, 0.45) 55%,
-		transparent
-	);
-}
 .emach-bg-placeholder {
 	background: radial-gradient(
 		ellipse at 50% 55%,
@@ -618,52 +373,6 @@
 }
 .emach-bg-placeholder-shadow {
 	background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3), transparent 70%);
-}
-.emach-bg-login-key {
-	background: radial-gradient(
-		circle at center,
-		rgba(218, 41, 28, 0.55) 0%,
-		rgba(218, 41, 28, 0.18) 35%,
-		transparent 70%
-	);
-	filter: blur(20px);
-}
-.emach-bg-login-rim {
-	background: radial-gradient(
-		circle at center,
-		rgba(157, 34, 17, 0.35) 0%,
-		transparent 65%
-	);
-	filter: blur(20px);
-}
-.emach-bg-login-vignette {
-	background: radial-gradient(
-		ellipse at 30% 60%,
-		transparent 0%,
-		rgba(0, 0, 0, 0.55) 80%
-	);
-}
-
-/* ---------- Scrollbar dark ----------
-   Scrollbar fino para superfícies escuras (ex.: lista de filiais no mapa).
-   Substitui o scrollbar nativo do SO (largo, claro). Cantos retos =
-   precisão (DESIGN.md). Firefox via scrollbar-*, WebKit via pseudo-elementos. */
-.emach-scrollbar-dark {
-	scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
-	scrollbar-width: thin;
-}
-.emach-scrollbar-dark::-webkit-scrollbar {
-	width: 6px;
-	height: 6px;
-}
-.emach-scrollbar-dark::-webkit-scrollbar-track {
-	background: transparent;
-}
-.emach-scrollbar-dark::-webkit-scrollbar-thumb {
-	background-color: rgba(255, 255, 255, 0.18);
-}
-.emach-scrollbar-dark::-webkit-scrollbar-thumb:hover {
-	background-color: rgba(255, 255, 255, 0.32);
 }
 
 /* ---------- Cart badge bounce ---------- */

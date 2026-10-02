@@ -1,9 +1,10 @@
 import { db } from "@emach/db";
 import { getAllToolSlugs } from "@emach/db/queries/tools";
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { Breadcrumb, CATALOG_CRUMB, HOME_CRUMB } from "@/components/breadcrumb";
 import { PhotoGallery } from "@/components/buy/photo-gallery";
 import { SiteHeader } from "@/components/site-header";
 import { specChips } from "@/lib/attribute-format";
@@ -13,7 +14,6 @@ import { sellableVariants } from "@/lib/purchase";
 import { canonicalFor } from "@/lib/seo/canonical";
 import { getServicesForTool } from "@/lib/services";
 
-import { Breadcrumb } from "./_components/breadcrumb";
 import { ProductInfo } from "./_components/product-info";
 import { BreadcrumbJsonLd, ProductJsonLd } from "./_components/product-json-ld";
 import { ProductReviewsSection } from "./_components/product-reviews-section";
@@ -121,8 +121,19 @@ export default async function ProductPage({
 			<main className="max-md:pb-[84px]" id="main-content">
 				<div className="shop-wrap">
 					<Breadcrumb
-						category={detail.primaryCategory}
-						productName={detail.tool.name}
+						current={detail.tool.name}
+						trail={[
+							HOME_CRUMB,
+							CATALOG_CRUMB,
+							...(detail.primaryCategory
+								? [
+										{
+											href: `/catalog/${detail.primaryCategory.slug}` as Route,
+											label: detail.primaryCategory.name,
+										},
+									]
+								: []),
+						]}
 					/>
 					<div className="grid items-start gap-5 pt-1.5 pb-9 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-8 md:pt-3.5 md:pb-12 lg:gap-x-12">
 						<div className="max-md:-mx-4">

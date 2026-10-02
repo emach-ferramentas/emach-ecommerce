@@ -7,17 +7,17 @@
 // Sem margens de fluxo: espaçamento é responsabilidade do placement/pilha.
 import type { Banner } from "@emach/db/schema/banner";
 import { cn } from "@emach/ui/lib/utils";
-import type { VariantProps } from "class-variance-authority";
 import { type MotionValue, m } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import {
-	EmachLinkButton,
-	type emachButtonVariants,
-} from "@/components/emach-button";
+	type HeroCtaVariant,
+	heroCtaVariants,
+} from "@/components/hero/hero-cta-variants";
 import type { ElementKey } from "@/lib/composition/composition-schema";
 import { type CountdownParts, formatCountdown } from "@/lib/countdown";
 import { resolveHeroSpecs } from "@/lib/hero-specs";
@@ -36,11 +36,9 @@ export type HeroElementBanner = Pick<
 
 interface CtaStyle {
 	className?: string;
-	variant: VariantProps<typeof emachButtonVariants>["variant"];
+	variant: HeroCtaVariant;
 }
 
-// Mapeia a variante do banco para a EmachButton. `white` reaproveita primary
-// sobrescrevendo as cores; `ghost` = outline-light (ações sobre dark do DESIGN.md).
 const CTA_VARIANT_MAP: Record<HeroElementBanner["ctaVariant"], CtaStyle> = {
 	red: { variant: "primary" },
 	dark: { variant: "dark", className: "border-white/25" },
@@ -64,16 +62,17 @@ function HeroCta({
 	const style = CTA_VARIANT_MAP[banner.ctaVariant];
 	return (
 		// ctaHref vem como string do banco; typedRoutes não valida em runtime.
-		<EmachLinkButton
-			className={cn(style.className, full && "flex")}
-			full={full}
+		<Link
+			className={cn(
+				heroCtaVariants({ variant: style.variant, full }),
+				style.className,
+				full && "flex"
+			)}
 			href={banner.ctaHref as Route}
-			icon={<ArrowRight className="size-4" />}
-			size="lg"
-			variant={style.variant}
 		>
+			<ArrowRight className="size-4" />
 			{banner.ctaLabel}
-		</EmachLinkButton>
+		</Link>
 	);
 }
 

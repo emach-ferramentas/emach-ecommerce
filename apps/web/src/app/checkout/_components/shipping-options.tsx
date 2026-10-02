@@ -1,8 +1,9 @@
 "use client";
 
-import { Button } from "@emach/ui/components/button";
 import { RadioGroup, RadioGroupItem } from "@emach/ui/components/radio-group";
 
+import { EmachButton } from "@/components/emach-button";
+import { Notice } from "@/components/notice";
 import { fmtBRL } from "@/lib/format";
 import type { ShippingOption } from "@/lib/shipping/types";
 
@@ -30,42 +31,39 @@ export function ShippingOptions({
 }: ShippingOptionsProps) {
 	if (status === "idle") {
 		return (
-			<p className="text-gray-60 text-sm">
+			<p className="text-[15px] text-ink-muted">
 				Informe o CEP para calcular o frete.
 			</p>
 		);
 	}
 	if (status === "loading") {
-		return <p className="text-gray-60 text-sm">Calculando frete…</p>;
+		return <p className="text-[15px] text-ink-muted">Calculando frete…</p>;
 	}
 	if (status === "negotiate") {
 		return (
-			<p className="text-gray-60 text-sm">
+			<Notice>
 				Este pedido contém item de transporte especial. O frete será combinado
 				diretamente — entre em contato para concluir a compra.
-			</p>
+			</Notice>
 		);
 	}
 	if (status === "error") {
 		return (
-			<div className="space-y-2">
-				<p className="text-destructive text-sm" role="alert">
-					Não foi possível calcular o frete.
-				</p>
-				<Button
-					className="h-11 rounded-none"
-					onClick={onRetry}
-					type="button"
-					variant="outline"
-				>
-					Tentar novamente
-				</Button>
-			</div>
+			<Notice
+				action={
+					<EmachButton onClick={onRetry} variant="line">
+						Tentar novamente
+					</EmachButton>
+				}
+				tone="error"
+			>
+				Não foi possível calcular o frete.
+			</Notice>
 		);
 	}
 	if (options.length === 0) {
 		return (
-			<p className="text-gray-60 text-sm">
+			<p className="text-[15px] text-ink-muted">
 				Nenhuma opção de frete para este CEP.
 			</p>
 		);
@@ -78,7 +76,7 @@ export function ShippingOptions({
 		>
 			{options.map((opt) => (
 				<label
-					className="flex cursor-pointer items-center justify-between border border-border p-3 text-sm"
+					className="flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-[3px] border-[1.5px] border-line px-4 py-3 text-[15px] transition-colors hover:border-line-strong has-[[data-checked]]:border-ink"
 					htmlFor={`ship-${opt.carrierId}`}
 					key={opt.carrierId}
 				>
@@ -88,16 +86,17 @@ export function ShippingOptions({
 							value={opt.carrierId}
 						/>
 						<span>
-							<span className="font-medium">{opt.name}</span>{" "}
-							<span className="text-gray-60">
-								·{" "}
+							<span className="font-bold text-ink">{opt.name}</span>
+							<span className="block text-[13.5px] text-ink-muted">
 								{opt.deliveryDays > 0
 									? `${opt.deliveryDays} dia(s)`
 									: "Prazo a confirmar"}
 							</span>
 						</span>
 					</span>
-					<span className="font-medium">{fmtBRL(opt.priceCents)}</span>
+					<span className="font-bold text-ink tabular-nums">
+						{fmtBRL(opt.priceCents)}
+					</span>
 				</label>
 			))}
 		</RadioGroup>

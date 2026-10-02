@@ -10,19 +10,15 @@ import { CartSheet } from "@/components/cart-sheet";
 import { HeaderSearch } from "@/components/header-search";
 import { MobileMenu } from "@/components/mobile-menu";
 import { useCart, useCartSheet } from "@/lib/cart-context";
-import { fmtBRL, numericToCents } from "@/lib/format";
+import { fmtBRL } from "@/lib/format";
 import type { StoreNav } from "@/lib/store-nav";
 
 export function HeaderBar({ nav }: { nav: StoreNav }) {
-	const { items, totalCount } = useCart();
+	const { subtotalCents, totalCount } = useCart();
 	const { open: cartOpen, setOpen: setCartOpen } = useCartSheet();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [pulse, setPulse] = useState(false);
 	const prevCount = useRef(totalCount);
-	const totalCents = items.reduce(
-		(sum, item) => sum + numericToCents(item.priceAmount) * item.quantity,
-		0
-	);
 
 	// A gaveta vive no CartProvider e sobrevive à troca de página. Sem isto, voltar
 	// no histórico com ela aberta a reabre na página anterior com o scroll travado.
@@ -101,7 +97,7 @@ export function HeaderBar({ nav }: { nav: StoreNav }) {
 									Carrinho
 								</b>
 								<small className="block whitespace-nowrap text-[12.5px] text-ink-muted tabular-nums leading-tight max-lg:hidden">
-									{totalCount > 0 ? fmtBRL(totalCents) : "Vazio"}
+									{totalCount > 0 ? fmtBRL(subtotalCents) : "Vazio"}
 								</small>
 							</span>
 						</button>

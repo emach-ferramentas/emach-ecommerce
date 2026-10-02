@@ -16,7 +16,7 @@ export function RequestRefundButton({
 	const [open, setOpen] = useState(false);
 	return (
 		<>
-			<EmachButton onClick={() => setOpen(true)} size="sm" variant="outline">
+			<EmachButton onClick={() => setOpen(true)} size="md" variant="line">
 				Solicitar devolução
 			</EmachButton>
 			<RefundSheet

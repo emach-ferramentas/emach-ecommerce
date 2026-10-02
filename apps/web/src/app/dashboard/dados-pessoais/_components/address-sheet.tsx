@@ -1,10 +1,7 @@
 "use client";
 
 import type { ClientAddress } from "@emach/db/schema/client";
-import { Button } from "@emach/ui/components/button";
 import { Checkbox } from "@emach/ui/components/checkbox";
-import { Input } from "@emach/ui/components/input";
-import { Label } from "@emach/ui/components/label";
 import {
 	Sheet,
 	SheetContent,
@@ -13,7 +10,6 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@emach/ui/components/sheet";
-import { cn } from "@emach/ui/lib/utils";
 import { onlyDigits } from "@emach/validators";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
@@ -24,6 +20,8 @@ import {
 	deleteAddressAction,
 	updateAddressAction,
 } from "@/app/dashboard/dados-pessoais/_actions/addresses";
+import { EmachButton } from "@/components/emach-button";
+import { errorMessages, Field, TextField } from "@/components/field";
 import { useCepAutofill } from "@/lib/use-cep-autofill";
 import {
 	type AddressInput,
@@ -152,14 +150,12 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 			}}
 			open={mode !== null}
 		>
-			<SheetContent className="flex w-full flex-col gap-0 rounded-none sm:max-w-md">
-				<SheetHeader className="border-border border-b p-6">
-					<SheetTitle className="font-semibold text-[20px] text-near-black">
+			<SheetContent className="flex w-full flex-col gap-0 sm:max-w-md">
+				<SheetHeader>
+					<SheetTitle>
 						{isEdit ? "Editar endereço" : "Novo endereço"}
 					</SheetTitle>
-					<SheetDescription className="text-[13px] text-gray-60">
-						Preencha os dados de entrega.
-					</SheetDescription>
+					<SheetDescription>Preencha os dados de entrega.</SheetDescription>
 				</SheetHeader>
 
 				<form
@@ -170,59 +166,61 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 						form.handleSubmit();
 					}}
 				>
-					<div className="space-y-4 p-6">
+					<div className="space-y-4 px-5 py-5">
 						<form.Field name="label">
 							{(field) => (
-								<FieldShell
-									errors={field.state.meta.errors}
-									htmlFor="label"
+								<Field
+									error={errorMessages(field.state.meta.errors)}
+									id="label"
 									label="Apelido (opcional)"
 								>
-									<Input
-										className="mt-2 h-11 rounded-none"
-										id="label"
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="Casa, Trabalho, Galpão..."
-										value={field.state.value ?? ""}
-									/>
-								</FieldShell>
+									{(control) => (
+										<input
+											{...control}
+											className="emach-input"
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											placeholder="Casa, Trabalho, Galpão..."
+											value={field.state.value ?? ""}
+										/>
+									)}
+								</Field>
 							)}
 						</form.Field>
 
 						<div className="grid grid-cols-[140px_1fr] gap-4">
 							<form.Field name="zipCode">
 								{(field) => (
-									<div>
-										<FieldShell
-											errors={field.state.meta.errors}
-											htmlFor="zipCode"
+									<div className="space-y-1">
+										<Field
+											error={errorMessages(field.state.meta.errors)}
+											id="zipCode"
 											label="CEP"
 										>
-											<Input
-												aria-busy={cepAutofill.loading}
-												className="mt-2 h-11 rounded-none"
-												id="zipCode"
-												onBlur={field.handleBlur}
-												onChange={(e) => {
-													const next = maskCep(e.target.value);
-													field.handleChange(next);
-													cepAutofill.maybeLookup(next);
-												}}
-												placeholder="00000-000"
-												value={field.state.value}
-											/>
-										</FieldShell>
+											{(control) => (
+												<input
+													{...control}
+													aria-busy={cepAutofill.loading}
+													className="emach-input"
+													inputMode="numeric"
+													onBlur={field.handleBlur}
+													onChange={(e) => {
+														const next = maskCep(e.target.value);
+														field.handleChange(next);
+														cepAutofill.maybeLookup(next);
+													}}
+													placeholder="00000-000"
+													value={field.state.value}
+												/>
+											)}
+										</Field>
 										{cepAutofill.loading ? (
-											<p
-												aria-live="polite"
-												className="mt-1 text-muted-foreground text-xs"
-											>
+											<p aria-live="polite" className="emach-field__hint">
 												Buscando endereço…
 											</p>
 										) : null}
 										{cepAutofill.notFound ? (
-											<p className="mt-1 text-destructive text-xs" role="alert">
+											<p className="emach-field__error" role="alert">
 												CEP não encontrado — confira o número antes de salvar
 											</p>
 										) : null}
@@ -231,120 +229,58 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 							</form.Field>
 							<form.Field name="street">
 								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="street"
+									<TextField
+										field={field}
 										label="Rua"
-									>
-										<Input
-											className="mt-2 h-11 rounded-none"
-											id="street"
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											placeholder="Rua das Ferramentas"
-											value={field.state.value}
-										/>
-									</FieldShell>
+										placeholder="Rua das Ferramentas"
+									/>
 								)}
 							</form.Field>
 						</div>
 
-						<div className="grid grid-cols-[160px_1fr] gap-4">
+						<div className="grid grid-cols-[140px_1fr] gap-4">
 							<form.Field name="number">
 								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="number"
-										label="Número"
-									>
-										<Input
-											className="mt-2 h-11 rounded-none"
-											id="number"
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											placeholder="123"
-											value={field.state.value}
-										/>
-									</FieldShell>
+									<TextField field={field} label="Número" placeholder="123" />
 								)}
 							</form.Field>
 							<form.Field name="complement">
 								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="complement"
+									<TextField
+										field={field}
 										label="Complemento"
-									>
-										<Input
-											className="mt-2 h-11 rounded-none"
-											id="complement"
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											placeholder="Apto 101 (opcional)"
-											value={field.state.value}
-										/>
-									</FieldShell>
+										placeholder="Apto 101 (opcional)"
+									/>
 								)}
 							</form.Field>
 						</div>
 
 						<form.Field name="neighborhood">
 							{(field) => (
-								<FieldShell
-									errors={field.state.meta.errors}
-									htmlFor="neighborhood"
-									label="Bairro"
-								>
-									<Input
-										className="mt-2 h-11 rounded-none"
-										id="neighborhood"
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="Centro"
-										value={field.state.value}
-									/>
-								</FieldShell>
+								<TextField field={field} label="Bairro" placeholder="Centro" />
 							)}
 						</form.Field>
 
-						<div className="grid grid-cols-[1fr_120px] gap-4">
+						<div className="grid grid-cols-[1fr_100px] gap-4">
 							<form.Field name="city">
 								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="city"
+									<TextField
+										field={field}
 										label="Cidade"
-									>
-										<Input
-											className="mt-2 h-11 rounded-none"
-											id="city"
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											placeholder="São Paulo"
-											value={field.state.value}
-										/>
-									</FieldShell>
+										placeholder="São Paulo"
+									/>
 								)}
 							</form.Field>
 							<form.Field name="state">
 								{(field) => (
-									<FieldShell
-										errors={field.state.meta.errors}
-										htmlFor="state"
+									<TextField
+										className="uppercase"
+										field={field}
 										label="Estado"
-									>
-										<Input
-											className="mt-2 h-11 rounded-none uppercase"
-											id="state"
-											maxLength={2}
-											onBlur={field.handleBlur}
-											onChange={(e) =>
-												field.handleChange(e.target.value.toUpperCase())
-											}
-											placeholder="SP"
-											value={field.state.value}
-										/>
-									</FieldShell>
+										maxLength={2}
+										placeholder="SP"
+										transform={(raw) => raw.toUpperCase()}
+									/>
 								)}
 							</form.Field>
 						</div>
@@ -353,7 +289,7 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 							<form.Field name="isDefault">
 								{(field) => (
 									<label
-										className="flex cursor-pointer items-center gap-3 pt-2 text-[14px] text-near-black"
+										className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px] text-ink"
 										htmlFor="isDefault"
 									>
 										<Checkbox
@@ -368,34 +304,24 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 						)}
 					</div>
 
-					<SheetFooter className="border-border border-t p-6">
-						<div className="flex w-full items-center justify-between gap-2">
+					<SheetFooter className="border-line border-t bg-canteiro px-5">
+						<div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
 							{isEdit ? (
-								<Button
-									className={cn(
-										"rounded-none text-emach-red hover:bg-emach-red/5 hover:text-emach-red",
-										confirmingDelete &&
-											"bg-emach-red text-white hover:bg-emach-red/90 hover:text-white"
-									)}
+								<EmachButton
 									disabled={isDeleting}
+									isLoading={isDeleting}
 									onClick={handleDelete}
-									type="button"
-									variant={confirmingDelete ? "default" : "ghost"}
+									variant={confirmingDelete ? "danger" : "link"}
 								>
 									{deleteButtonLabel(isDeleting, confirmingDelete)}
-								</Button>
+								</EmachButton>
 							) : (
 								<span />
 							)}
-							<div className="flex gap-2">
-								<Button
-									className="rounded-none"
-									onClick={onClose}
-									type="button"
-									variant="outline"
-								>
+							<div className="flex items-center gap-4">
+								<EmachButton onClick={onClose} variant="link">
 									Cancelar
-								</Button>
+								</EmachButton>
 								<form.Subscribe
 									selector={(state) => ({
 										canSubmit: state.canSubmit,
@@ -403,13 +329,14 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 									})}
 								>
 									{({ canSubmit, isSubmitting }) => (
-										<Button
-											className="rounded-none bg-emach-red hover:bg-emach-red/90"
+										<EmachButton
 											disabled={!canSubmit || isSubmitting}
+											isLoading={isSubmitting}
 											type="submit"
+											variant="dark"
 										>
 											{isSubmitting ? "Salvando..." : "Salvar"}
-										</Button>
+										</EmachButton>
 									)}
 								</form.Subscribe>
 							</div>
@@ -421,13 +348,6 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 	);
 }
 
-interface FieldShellProps {
-	children: React.ReactNode;
-	errors: ReadonlyArray<{ message?: string } | undefined>;
-	htmlFor: string;
-	label: string;
-}
-
 function deleteButtonLabel(deleting: boolean, confirming: boolean): string {
 	if (deleting) {
 		return "Removendo...";
@@ -436,25 +356,4 @@ function deleteButtonLabel(deleting: boolean, confirming: boolean): string {
 		return "Confirmar remoção";
 	}
 	return "Remover";
-}
-
-function FieldShell({ children, errors, htmlFor, label }: FieldShellProps) {
-	const error = errors.find((e) => e?.message);
-	return (
-		<div>
-			<Label
-				className={cn(
-					"font-display font-semibold text-[11px] uppercase tracking-[0.14em]",
-					error ? "text-destructive" : "text-gray-60"
-				)}
-				htmlFor={htmlFor}
-			>
-				{label}
-			</Label>
-			{children}
-			{error?.message ? (
-				<p className="mt-1 text-[12px] text-destructive">{error.message}</p>
-			) : null}
-		</div>
-	);
 }

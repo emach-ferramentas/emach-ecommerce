@@ -17,16 +17,12 @@ export function QuickActionCard({
 }) {
 	return (
 		<Link
-			className="flex flex-col gap-2.5 border border-black bg-near-black p-5 text-white transition-colors hover:border-emach-red"
+			className="flex flex-col gap-2 rounded-[5px] border border-line bg-paper p-5 text-ink no-underline transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
 			href={href}
 		>
-			<span className="flex h-[42px] w-[42px] items-center justify-center border border-white/30">
-				<Icon className="h-5 w-5 text-white" strokeWidth={1.6} />
-			</span>
-			<span className="font-display font-semibold text-[19px] text-white">
-				{title}
-			</span>
-			<span className="text-[13px] text-gray-50">{description}</span>
+			<Icon aria-hidden="true" className="mb-1 size-6" strokeWidth={1.6} />
+			<span className="font-extrabold text-[17px]">{title}</span>
+			<span className="text-[14px] text-ink-2">{description}</span>
 			{flag ? <span className="mt-1">{flag}</span> : null}
 		</Link>
 	);

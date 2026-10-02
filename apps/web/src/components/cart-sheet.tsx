@@ -1,12 +1,11 @@
 "use client";
 
-import { ShoppingBag, X } from "lucide-react";
-import Link from "next/link";
+import { X } from "lucide-react";
 
+import { CartEmpty } from "@/components/cart-empty";
 import { CartItemRow } from "@/components/cart-item-row";
-import { emachButtonVariants } from "@/components/emach-button";
+import { CartTotals, itemCountLabel } from "@/components/cart-totals";
 import { useCart } from "@/lib/cart-context";
-import { fmtBRL, numericToCents } from "@/lib/format";
 import { useOverlay } from "@/lib/use-overlay";
 import { useRemoveWithUndo } from "@/lib/use-remove-with-undo";
 
@@ -16,19 +15,13 @@ interface CartSheetProps {
 }
 
 export function CartSheet({ open, onOpenChange }: CartSheetProps) {
-	const { items, setQty } = useCart();
+	const { items, setQty, totalCount } = useCart();
 	const { removing, handleRemove } = useRemoveWithUndo();
 	const close = () => onOpenChange(false);
 	// Overlay próprio (não Base UI Sheet): a transição/unmount da Base UI conflita
 	// com o React Compiler — o sheet abria em opacity:0 sem desmontar, capturando
 	// cliques invisíveis na direita da tela. Mesmo padrão de mobile-menu/filter.
 	const panelRef = useOverlay(open, close);
-
-	const totalItems = items.reduce((s, i) => s + i.quantity, 0);
-	const subtotal = items.reduce(
-		(s, i) => s + numericToCents(i.priceAmount) * i.quantity,
-		0
-	);
 
 	if (!open) {
 		return null;
@@ -45,59 +38,38 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 			<div
 				aria-label="Carrinho"
 				aria-modal="true"
-				className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-popover text-popover-foreground"
+				className="slide-in-from-right absolute inset-y-0 right-0 flex w-[min(440px,100vw)] animate-in flex-col bg-paper text-ink shadow-[-8px_0_28px_-10px_rgba(0,0,0,0.4)] duration-300 ease-out-expo motion-reduce:animate-none"
 				ref={panelRef}
 				role="dialog"
 			>
-				{/* Header escuro com régua vermelha — assinatura do chiaroscuro EMACH */}
-				<div className="gap-0 border-emach-red border-b-2 bg-near-black px-5 py-4">
-					<div className="flex items-center justify-between gap-2">
-						<div className="flex items-center gap-2 font-bold font-display text-[15px] text-white uppercase tracking-[0.14em]">
+				<div className="flex min-h-16 shrink-0 items-center justify-between gap-2.5 border-line border-b py-2 pr-2 pl-5">
+					<div className="flex items-baseline gap-1.5">
+						<h2 className="font-display font-extrabold text-[26px] uppercase leading-none">
 							Carrinho
-							{totalItems > 0 && (
-								<span className="font-medium text-[13px] text-white/55 tracking-[0.08em]">
-									· {totalItems} {totalItems === 1 ? "item" : "itens"}
-								</span>
-							)}
-						</div>
-						<button
-							aria-label="Fechar carrinho"
-							className="-mr-3 flex size-11 cursor-pointer items-center justify-center text-white/60 transition-colors hover:text-white active:text-white/80"
-							onClick={close}
-							type="button"
-						>
-							<X size={18} />
-						</button>
+						</h2>
+						{totalCount > 0 ? (
+							<span className="font-semibold text-[14px] text-ink-muted">
+								{itemCountLabel(totalCount)}
+							</span>
+						) : null}
 					</div>
+					<button
+						aria-label="Fechar carrinho"
+						className="grid size-11 cursor-pointer place-items-center rounded-[3px] hover:bg-canteiro focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
+						onClick={close}
+						type="button"
+					>
+						<X aria-hidden="true" className="size-[22px]" />
+					</button>
 				</div>
 
 				{items.length === 0 ? (
-					<div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
-						<div className="mb-4 flex size-16 items-center justify-center rounded-full bg-gray-10">
-							<ShoppingBag className="text-gray-50" size={28} />
-						</div>
-						<h2 className="font-display font-semibold text-[24px]">
-							Carrinho vazio
-						</h2>
-						<p className="mt-2 max-w-[260px] text-[13px] text-gray-60">
-							Explore nosso catálogo e encontre as ferramentas certas para o seu
-							trabalho.
-						</p>
-						<Link
-							className={emachButtonVariants({
-								className: "mt-6 w-full max-w-[220px]",
-								size: "md",
-								variant: "primary",
-							})}
-							href="/catalog"
-							onClick={close}
-						>
-							Ver catálogo
-						</Link>
+					<div className="flex-1 overflow-y-auto px-5">
+						<CartEmpty onNavigate={close} />
 					</div>
 				) : (
 					<>
-						<div className="flex-1 overflow-y-auto px-5">
+						<div className="flex-1 overflow-y-auto overscroll-contain px-5">
 							{items.map((item) => (
 								<CartItemRow
 									item={item}
@@ -114,44 +86,8 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 								/>
 							))}
 						</div>
-
-						{/* Footer escuro — fecha a drawer com o CTA vermelho em destaque */}
-						<div className="bg-near-black px-5 pt-4 pb-5 text-white">
-							<div className="mb-4 flex items-baseline justify-between">
-								<span className="font-bold font-display text-[13px] uppercase tracking-[0.12em]">
-									Subtotal
-								</span>
-								<span className="font-bold font-display text-[24px] tabular-nums">
-									{fmtBRL(subtotal)}
-								</span>
-							</div>
-
-							{/* Link estilizado com as variantes, não <Link><button> —
-							    botão dentro de âncora é markup inválido e o leitor de
-							    tela anuncia dois controles. */}
-							<Link
-								className={emachButtonVariants({
-									className: "mb-2",
-									full: true,
-									size: "lg",
-									variant: "primary",
-								})}
-								href="/checkout"
-								onClick={close}
-							>
-								Finalizar compra
-							</Link>
-							<Link
-								className={emachButtonVariants({
-									full: true,
-									size: "md",
-									variant: "ghost-light",
-								})}
-								href="/cart"
-								onClick={close}
-							>
-								Ver carrinho
-							</Link>
+						<div className="shrink-0 border-line border-t bg-canteiro px-5 pt-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
+							<CartTotals context="drawer" onNavigate={close} />
 						</div>
 					</>
 				)}

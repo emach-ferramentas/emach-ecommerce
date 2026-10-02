@@ -3,10 +3,11 @@ import { clientAddress } from "@emach/db/schema/client";
 import { desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
+import { ACCOUNT_TRAIL } from "@/app/dashboard/_components/account-trail";
+import { PageHead } from "@/components/page-head";
 import { requireCurrentClient } from "@/lib/session";
 import { AddressesSection } from "./_components/addresses-section";
 import { PersonalDataForm } from "./_components/personal-data-form";
-import { ProfileHeader } from "./_components/profile-header";
 
 export const metadata: Metadata = {
 	title: "Dados pessoais",
@@ -29,9 +30,9 @@ export default async function PersonalDataPage() {
 		.orderBy(desc(clientAddress.isDefault), desc(clientAddress.updatedAt));
 
 	return (
-		<>
-			<ProfileHeader />
-			<div className="px-6 py-8 md:px-10">
+		<div className="pb-12">
+			<PageHead title="Meus dados" trail={ACCOUNT_TRAIL} />
+			<div className="space-y-5">
 				<PersonalDataForm
 					initialData={{
 						name: user.name,
@@ -43,6 +44,6 @@ export default async function PersonalDataPage() {
 				/>
 				<AddressesSection addresses={addresses} />
 			</div>
-		</>
+		</div>
 	);
 }

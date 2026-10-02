@@ -13,6 +13,13 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState, useTransition } from "react";
+import {
+	Breadcrumb,
+	CATALOG_CRUMB,
+	type Crumb,
+	HOME_CRUMB,
+} from "@/components/breadcrumb";
+import { PAGE_TITLE_CLASS } from "@/components/page-head";
 import { ProductCard } from "@/components/product-card";
 import { Shelf as ShelfRow } from "@/components/shelf";
 import type { CardExtrasByTool } from "@/lib/card-data";
@@ -110,55 +117,24 @@ function plural(n: number, one: string, many: string) {
 	return `${n} ${n === 1 ? one : many}`;
 }
 
-const crumbLinkClass =
-	"inline-flex min-h-8 items-center text-ink-2 underline underline-offset-[3px]";
-
-function CatalogBreadcrumb({
-	currentCategory,
-	searchTerm,
-}: {
-	currentCategory: CatalogCurrentCategory | null;
-	searchTerm: string;
-}) {
-	return (
-		<nav
-			aria-label="Você está em"
-			className="pt-2.5 pb-1.5 text-[13.5px] text-ink-muted md:pt-[18px] md:text-[14px]"
-		>
-			<ol className="flex flex-wrap items-center gap-1.5">
-				<li className="inline-flex items-center gap-1.5">
-					<Link className={crumbLinkClass} href="/">
-						Início
-					</Link>
-					<ChevronRight aria-hidden="true" className="size-3.5" />
-				</li>
-				{(currentCategory || searchTerm) && (
-					<li className="inline-flex items-center gap-1.5">
-						<Link className={crumbLinkClass} href="/catalog">
-							Catálogo
-						</Link>
-						<ChevronRight aria-hidden="true" className="size-3.5" />
-					</li>
-				)}
-				{currentCategory?.ancestors.map((crumb) => (
-					<li className="inline-flex items-center gap-1.5" key={crumb.slug}>
-						<Link
-							className={crumbLinkClass}
-							href={`/catalog/${crumb.slug}` as Route}
-						>
-							{crumb.name}
-						</Link>
-						<ChevronRight aria-hidden="true" className="size-3.5" />
-					</li>
-				))}
-				<li>
-					<span aria-current="page">
-						{currentCategory?.name ?? (searchTerm ? "Busca" : "Catálogo")}
-					</span>
-				</li>
-			</ol>
-		</nav>
-	);
+function catalogBreadcrumb(
+	currentCategory: CatalogCurrentCategory | null,
+	searchTerm: string
+): { current: string; trail: Crumb[] } {
+	if (currentCategory) {
+		const ancestors = currentCategory.ancestors.map((crumb) => ({
+			href: `/catalog/${crumb.slug}` as Route,
+			label: crumb.name,
+		}));
+		return {
+			current: currentCategory.name,
+			trail: [HOME_CRUMB, CATALOG_CRUMB, ...ancestors],
+		};
+	}
+	if (searchTerm) {
+		return { current: "Busca", trail: [HOME_CRUMB, CATALOG_CRUMB] };
+	}
+	return { current: "Catálogo", trail: [HOME_CRUMB] };
 }
 
 function CatalogEmpty({
@@ -360,16 +336,11 @@ export function CatalogContent({
 	return (
 		<main className="pb-16" id="main-content">
 			<div className="shop-wrap">
-				<CatalogBreadcrumb
-					currentCategory={currentCategory}
-					searchTerm={searchTerm}
-				/>
+				<Breadcrumb {...catalogBreadcrumb(currentCategory, searchTerm)} />
 
 				<div className="mt-0.5 mb-4 flex flex-wrap items-end justify-between gap-4 md:mt-2">
 					<div className="min-w-0">
-						<h1 className="font-display font-extrabold text-[clamp(2.4rem,1.6rem+2.2vw,3.6rem)] uppercase leading-[0.92]">
-							{title}
-						</h1>
+						<h1 className={PAGE_TITLE_CLASS}>{title}</h1>
 						<p
 							aria-live="polite"
 							className="mt-2 text-[15.5px] text-ink-2 tabular-nums"

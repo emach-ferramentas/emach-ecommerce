@@ -20,6 +20,7 @@ import {
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
 import { fetchFrenetAddress } from "@/lib/frenet/client";
+import { formatOrderNumber } from "@/lib/orders/order-number";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";
 import { hasPrice } from "@/lib/sellable-variant";
 import { quoteShipping } from "@/lib/shipping/quote";
@@ -105,11 +106,6 @@ interface AddressSnapshot {
 	state: string;
 	street: string;
 	zipCode: string;
-}
-
-export function formatOrderNumber(seq: number): string {
-	const year = new Date().getUTCFullYear();
-	return `${year}-${seq.toString().padStart(6, "0")}`;
 }
 
 async function buildAddressSnapshot(params: {

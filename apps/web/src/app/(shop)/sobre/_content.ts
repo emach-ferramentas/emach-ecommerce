@@ -11,7 +11,6 @@ export const aboutPillars = [
 		title: "Escolhidas pra trabalho pesado",
 		description:
 			"Cada ferramenta do catálogo aguenta rotina de obra e indústria, sem item de vitrine",
-		tone: "light",
 	},
 	{
 		id: "atendimento",
@@ -19,7 +18,6 @@ export const aboutPillars = [
 		title: "Suporte de quem entende de ferramenta",
 		description:
 			"A gente ajuda a escolher a ferramenta certa para o serviço e responde as dúvidas de uso",
-		tone: "dark",
 	},
 ] as const;
 

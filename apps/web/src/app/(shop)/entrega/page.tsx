@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import { Suspense } from "react";
 
-import { InstitutionalPage } from "@/components/institutional-page";
+import {
+	INSTITUTIONAL_H2_CLASS,
+	InstitutionalPage,
+} from "@/components/institutional-page";
 import { SiteHeader } from "@/components/site-header";
 import {
 	type BusinessHoursRow,
@@ -53,31 +56,31 @@ async function PickupBranchList() {
 		return null;
 	}
 	return (
-		<section className="scroll-mt-24 py-8" id="filiais">
-			<h2 className="font-display font-medium text-[26px] text-near-black leading-tight tracking-[-0.01em]">
-				Onde nos encontrar
-			</h2>
+		<section className="scroll-mt-6 py-8" id="filiais">
+			<h2 className={INSTITUTIONAL_H2_CLASS}>Onde nos encontrar</h2>
 			<ul className="mt-6 grid gap-4 sm:grid-cols-2">
 				{branches.map((b) => (
-					<li className="border border-border p-5" key={b.id}>
-						<div className="font-bold font-display text-[11px] text-gray-60 uppercase tracking-[0.16em]">
-							Filial
-						</div>
-						<strong className="mt-1 block text-[18px] text-near-black">
+					<li
+						className="rounded-[5px] border border-line bg-paper p-5"
+						key={b.id}
+					>
+						<strong className="block font-extrabold text-[17px] text-ink">
 							{b.name}
 						</strong>
-						<p className="mt-2 text-[14px] text-gray-60 leading-relaxed">
+						<p className="mt-2 text-[14.5px] text-ink-2 leading-relaxed">
 							{b.address}
 						</p>
 						{b.phone && (
-							<p className="mt-1 text-[14px] text-gray-60">{b.phone}</p>
+							<p className="mt-1 text-[14.5px] text-ink-2 tabular-nums">
+								{b.phone}
+							</p>
 						)}
 						{b.hoursRows && (
-							<dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[13px]">
+							<dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[13.5px]">
 								{b.hoursRows.map((row) => (
 									<div className="contents" key={row.label}>
-										<dt className="text-gray-60">{row.label}</dt>
-										<dd className="text-near-black">{row.value}</dd>
+										<dt className="text-ink-muted">{row.label}</dt>
+										<dd className="text-ink tabular-nums">{row.value}</dd>
 									</div>
 								))}
 							</dl>
@@ -95,7 +98,6 @@ export default function DeliveryPage() {
 			<SiteHeader />
 			<InstitutionalPage
 				extraTocItems={[{ id: "filiais", title: "Onde nos encontrar" }]}
-				label="Entrega"
 				lede={DELIVERY_LEDE}
 				sections={deliverySections}
 				title="Entrega e filiais"

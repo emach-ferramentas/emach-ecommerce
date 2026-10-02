@@ -1,20 +1,24 @@
 import type { Route } from "next";
 
-export type NavItem =
-	| {
-			kind: "link";
-			label: string;
-			href: Route;
-	  }
-	| { kind: "soon"; label: string };
+export interface NavItem {
+	exact?: boolean;
+	href: Route;
+	label: string;
+}
 
-export const NAV_ITEMS: NavItem[] = [
-	{ kind: "link", label: "Início", href: "/dashboard" },
-	{ kind: "link", label: "Pedidos", href: "/dashboard/pedidos" },
-	{
-		kind: "link",
-		label: "Reembolso e devoluções",
-		href: "/dashboard/reembolso",
-	},
-	{ kind: "link", label: "Meus dados", href: "/dashboard/dados-pessoais" },
+export const NAV_ITEMS: readonly NavItem[] = [
+	{ label: "Início", href: "/dashboard", exact: true },
+	{ label: "Pedidos", href: "/dashboard/pedidos" },
+	{ label: "Reembolso e devoluções", href: "/dashboard/reembolso" },
+	{ label: "Meus dados", href: "/dashboard/dados-pessoais" },
 ];
+
+export function isAccountNavActive(
+	pathname: string,
+	{ href, exact }: NavItem
+): boolean {
+	if (pathname === href) {
+		return true;
+	}
+	return !exact && pathname.startsWith(`${href}/`);
+}

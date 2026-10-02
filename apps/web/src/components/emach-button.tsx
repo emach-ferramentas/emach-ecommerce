@@ -4,41 +4,53 @@ import { Loader2 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
-// Pressão = afunda 1px + escurece, em 75ms (o release volta nos 180ms do hover).
-// Sem :active o toque não devolve nada — em mobile não existe hover pra suprir.
-const emachButtonVariants = cva(
-	"inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[2px] border border-transparent font-sans font-semibold tracking-[0.04em] transition-all duration-180 focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2 active:translate-y-px active:brightness-90 active:duration-75 disabled:pointer-events-none disabled:opacity-60 aria-busy:pointer-events-none motion-reduce:active:translate-y-0",
+const buttonVariants = cva(
+	"inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[3px] border-[1.5px] font-bold no-underline transition-colors focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-60 aria-busy:pointer-events-none",
 	{
 		variants: {
 			variant: {
-				primary: "bg-emach-red text-white hover:bg-emach-red-hover",
-				outline:
-					"border-near-black bg-transparent text-near-black hover:bg-near-black hover:text-white",
-				"outline-light":
-					"border-white/70 bg-transparent text-white hover:border-white hover:bg-white hover:text-near-black",
-				ghost: "bg-transparent text-near-black hover:bg-gray-10",
-				"ghost-light": "bg-transparent text-white hover:bg-white/10",
-				dark: "bg-near-black text-white hover:bg-black",
+				cta: "border-transparent bg-emach-red text-white hover:bg-emach-red-hover",
+				dark: "border-transparent bg-grafite text-on-dark hover:bg-black",
+				line: "border-line-strong bg-paper text-ink hover:border-ink",
+				danger: "border-error-text bg-paper text-error-text hover:bg-canteiro",
+				link: "border-transparent bg-transparent text-ink-2 underline underline-offset-[3px] hover:text-ink",
 			},
 			size: {
-				sm: "h-9 px-4 text-xs",
-				md: "h-11 px-[22px] text-[13px]",
-				lg: "h-13 px-[30px] text-sm",
+				md: "min-h-11 px-5 text-[15px]",
+				lg: "min-h-[52px] px-7 text-[16px]",
 			},
 			full: {
 				true: "w-full",
 			},
 		},
+		compoundVariants: [{ variant: "link", class: "px-0" }],
 		defaultVariants: {
-			variant: "primary",
 			size: "md",
 		},
 	}
 );
 
+export type ButtonVariant = NonNullable<
+	VariantProps<typeof buttonVariants>["variant"]
+>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
+
+interface ButtonStyle {
+	full?: boolean;
+	size?: ButtonSize;
+	variant: ButtonVariant;
+}
+
+export function emachButtonVariants({
+	className,
+	...style
+}: ButtonStyle & { className?: string }): string {
+	return cn(buttonVariants(style), className);
+}
+
 interface EmachButtonProps
 	extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-		VariantProps<typeof emachButtonVariants> {
+		ButtonStyle {
 	icon?: React.ReactNode;
 	/** Trabalho em curso: troca o ícone por spinner, trava o clique e anuncia aria-busy. */
 	isLoading?: boolean;
@@ -50,21 +62,19 @@ export function EmachButton({
 	size,
 	full,
 	icon,
-	isLoading,
+	isLoading: busy = false,
 	className,
 	onClick,
 	...props
 }: EmachButtonProps) {
 	// aria-busy em vez de `disabled`: o botão segue focável (leitor de tela não
 	// perde o foco no meio da ação) e o rótulo mantém contraste cheio.
-	const busy = isLoading === true;
-
 	return (
 		<button
 			{...props}
 			aria-busy={busy || undefined}
 			aria-disabled={busy || undefined}
-			className={cn(emachButtonVariants({ variant, size, full }), className)}
+			className={cn(buttonVariants({ variant, size, full }), className)}
 			onClick={busy ? undefined : onClick}
 			type={props.type ?? "button"}
 		>
@@ -80,7 +90,7 @@ export function EmachButton({
 
 interface EmachLinkButtonProps
 	extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">,
-		VariantProps<typeof emachButtonVariants> {
+		ButtonStyle {
 	href: Route;
 	icon?: React.ReactNode;
 }
@@ -101,7 +111,7 @@ export function EmachLinkButton({
 	return (
 		<Link
 			{...props}
-			className={cn(emachButtonVariants({ variant, size, full }), className)}
+			className={cn(buttonVariants({ variant, size, full }), className)}
 			href={href}
 		>
 			{icon}
@@ -109,5 +119,3 @@ export function EmachLinkButton({
 		</Link>
 	);
 }
-
-export { emachButtonVariants };

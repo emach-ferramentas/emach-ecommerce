@@ -6,8 +6,11 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@emach/ui/components/tabs";
-import { Copy } from "lucide-react";
+import { Copy, QrCode } from "lucide-react";
 import { toast } from "sonner";
+import { EmachButton } from "@/components/emach-button";
+import { Notice } from "@/components/notice";
+import { Panel, SummaryRow } from "@/components/panel";
 import { fmtNumericBRL } from "@/lib/format";
 
 // TODO(asaas): substituir os dados mock por cobrança real gerada via Asaas
@@ -38,112 +41,124 @@ export function PaymentMethods({
 	};
 
 	return (
-		<div className="grid gap-6 md:grid-cols-[1fr_260px]">
-			<Tabs defaultValue="pix">
-				<TabsList variant="line">
-					<TabsTrigger value="pix">Pix</TabsTrigger>
-					<TabsTrigger value="boleto">Boleto</TabsTrigger>
-					<TabsTrigger value="cartao">Cartão</TabsTrigger>
-				</TabsList>
+		<div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+			<div className="min-w-0 space-y-5">
+				<Notice>Ambiente de demonstração: nenhum pagamento é cobrado.</Notice>
+				<Tabs defaultValue="pix">
+					<TabsList variant="line">
+						<TabsTrigger value="pix">Pix</TabsTrigger>
+						<TabsTrigger value="boleto">Boleto</TabsTrigger>
+						<TabsTrigger value="cartao">Cartão</TabsTrigger>
+					</TabsList>
 
-				<TabsContent className="pt-5" value="pix">
-					<div className="flex flex-col items-center gap-4 border border-border p-6">
-						<div
-							aria-label="QR Code Pix (demonstração)"
-							className="emach-bg-placeholder h-40 w-40"
-							role="img"
-						/>
-						<p className="text-center text-[12px] text-gray-60">
-							Escaneie o QR ou copie o código abaixo
-						</p>
-						<div className="flex w-full gap-2">
-							<code className="min-w-0 flex-1 truncate border border-border bg-gray-10 px-3 py-2 font-mono text-[11px]">
-								{MOCK_PIX}
-							</code>
-							<button
-								aria-label="Copiar código Pix"
-								className="inline-flex items-center gap-1.5 border border-near-black px-3 text-[12px] hover:bg-near-black hover:text-white"
-								onClick={copy(MOCK_PIX, "Código Pix")}
-								type="button"
+					<TabsContent className="pt-5" value="pix">
+						<div className="flex flex-col items-center gap-4 rounded-[5px] border border-line bg-paper p-6">
+							<div
+								aria-label="QR Code Pix (demonstração)"
+								className="flex size-40 items-center justify-center rounded-[3px] bg-well"
+								role="img"
 							>
-								<Copy className="h-3.5 w-3.5" /> Copiar
-							</button>
+								<QrCode
+									aria-hidden="true"
+									className="size-16 text-ink-muted"
+									strokeWidth={1.2}
+								/>
+							</div>
+							<p className="text-center text-[14px] text-ink-2">
+								Escaneie o QR ou copie o código abaixo
+							</p>
+							<CopyLine
+								ariaLabel="Copiar código Pix"
+								onCopy={copy(MOCK_PIX, "Código Pix")}
+								value={MOCK_PIX}
+							/>
 						</div>
-					</div>
-				</TabsContent>
+					</TabsContent>
 
-				<TabsContent className="pt-5" value="boleto">
-					<div className="space-y-4 border border-border p-6">
-						<p className="text-[12px] text-gray-60">
-							Linha digitável (compensação em 1-2 dias úteis):
-						</p>
-						<div className="flex gap-2">
-							<code className="min-w-0 flex-1 truncate border border-border bg-gray-10 px-3 py-2 font-mono text-[12px]">
-								{MOCK_BOLETO}
-							</code>
-							<button
-								aria-label="Copiar linha digitável do boleto"
-								className="inline-flex items-center gap-1.5 border border-near-black px-3 text-[12px] hover:bg-near-black hover:text-white"
-								onClick={copy(MOCK_BOLETO, "Linha digitável")}
-								type="button"
-							>
-								<Copy className="h-3.5 w-3.5" /> Copiar
-							</button>
+					<TabsContent className="pt-5" value="boleto">
+						<div className="space-y-4 rounded-[5px] border border-line bg-paper p-6">
+							<p className="text-[14px] text-ink-2">
+								Linha digitável (compensação em 1-2 dias úteis):
+							</p>
+							<CopyLine
+								ariaLabel="Copiar linha digitável do boleto"
+								onCopy={copy(MOCK_BOLETO, "Linha digitável")}
+								value={MOCK_BOLETO}
+							/>
 						</div>
-					</div>
-				</TabsContent>
+					</TabsContent>
 
-				<TabsContent className="pt-5" value="cartao">
-					<div className="space-y-3 border border-border p-6">
-						<input
-							aria-describedby="card-soon"
-							className="h-10 w-full border border-border px-3 text-[14px]"
-							disabled
-							placeholder="Número do cartão"
-						/>
-						<div className="flex gap-3">
+					<TabsContent className="pt-5" value="cartao">
+						<div className="space-y-3 rounded-[5px] border border-line bg-paper p-6">
 							<input
 								aria-describedby="card-soon"
-								className="h-10 w-full border border-border px-3 text-[14px]"
+								aria-label="Número do cartão"
+								className="emach-input"
 								disabled
-								placeholder="Validade"
+								placeholder="Número do cartão"
 							/>
-							<input
-								className="h-10 w-full border border-border px-3 text-[14px]"
-								disabled
-								placeholder="CVV"
-							/>
+							<div className="flex gap-3">
+								<input
+									aria-describedby="card-soon"
+									aria-label="Validade"
+									className="emach-input"
+									disabled
+									placeholder="Validade"
+								/>
+								<input
+									aria-label="CVV"
+									className="emach-input"
+									disabled
+									placeholder="CVV"
+								/>
+							</div>
+							<p className="text-[13px] text-ink-muted" id="card-soon">
+								Pagamento com cartão estará disponível em breve.
+							</p>
 						</div>
-						<p className="text-[12px] text-gray-60" id="card-soon">
-							Pagamento com cartão estará disponível em breve.
-						</p>
-					</div>
-				</TabsContent>
-			</Tabs>
+					</TabsContent>
+				</Tabs>
+			</div>
 
-			<aside className="h-fit border border-border bg-gray-10 p-4 text-[13px]">
-				<div className="mb-3 font-display font-semibold text-[11px] uppercase tracking-[0.12em]">
-					Resumo
-				</div>
-				<div className="flex justify-between py-1">
-					<span className="text-gray-60">Pedido</span>
-					<span>#{orderNumber}</span>
-				</div>
-				<div className="flex justify-between py-1">
-					<span className="text-gray-60">Subtotal</span>
-					<span>{fmtNumericBRL(subtotal)}</span>
-				</div>
-				<div className="flex justify-between py-1">
-					<span className="text-gray-60">Frete</span>
-					<span>
-						{Number(shipping) === 0 ? "Grátis" : fmtNumericBRL(shipping)}
-					</span>
-				</div>
-				<div className="mt-2 flex justify-between border-near-black border-t pt-2 font-bold">
-					<span>Total</span>
-					<span>{fmtNumericBRL(total)}</span>
-				</div>
-			</aside>
+			<Panel as="aside" title="Resumo" tone="canteiro">
+				<SummaryRow label="Pedido">#{orderNumber}</SummaryRow>
+				<SummaryRow label="Subtotal">{fmtNumericBRL(subtotal)}</SummaryRow>
+				<SummaryRow
+					label="Frete"
+					tone={Number(shipping) === 0 ? "discount" : undefined}
+				>
+					{Number(shipping) === 0 ? "Grátis" : fmtNumericBRL(shipping)}
+				</SummaryRow>
+				<SummaryRow label="Total" total>
+					{fmtNumericBRL(total)}
+				</SummaryRow>
+			</Panel>
+		</div>
+	);
+}
+
+function CopyLine({
+	ariaLabel,
+	onCopy,
+	value,
+}: {
+	ariaLabel: string;
+	onCopy: () => void;
+	value: string;
+}) {
+	return (
+		<div className="flex w-full gap-2">
+			<code className="block min-w-0 flex-1 truncate rounded-[3px] border border-line bg-canteiro px-3 py-3 font-mono text-[13px] text-ink leading-5">
+				{value}
+			</code>
+			<EmachButton
+				aria-label={ariaLabel}
+				icon={<Copy aria-hidden="true" className="size-4" />}
+				onClick={onCopy}
+				variant="line"
+			>
+				Copiar
+			</EmachButton>
 		</div>
 	);
 }

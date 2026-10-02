@@ -1,4 +1,4 @@
-import { AccountSection } from "@/app/dashboard/_components/account-section";
+import { Panel } from "@/components/panel";
 
 interface AddressSnapshot {
 	city?: string;
@@ -22,8 +22,8 @@ export function ShippingAddress({ address }: { address: unknown }) {
 		.join(" · ");
 
 	return (
-		<AccountSection title="Endereço de entrega">
-			<div className="text-[14px] text-white leading-[1.6]">
+		<Panel title="Endereço de entrega">
+			<address className="text-[15px] text-ink not-italic leading-[1.6]">
 				{a.recipient ? (
 					<div className="font-semibold">{a.recipient}</div>
 				) : null}
@@ -40,9 +40,9 @@ export function ShippingAddress({ address }: { address: unknown }) {
 					</div>
 				) : null}
 				{zipLine ? (
-					<div className="text-[12px] text-white/65">{zipLine}</div>
+					<div className="text-[13.5px] text-ink-muted">{zipLine}</div>
 				) : null}
-			</div>
-		</AccountSection>
+			</address>
+		</Panel>
 	);
 }
