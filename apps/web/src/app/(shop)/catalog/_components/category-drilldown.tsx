@@ -36,13 +36,13 @@ export function CategoryDrilldown({
 	const level = deriveDrilldownLevel(tree, activeSlug);
 
 	const rowClass =
-		"flex min-h-11 w-full cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-[14px] text-gray-60 transition-colors hover:text-near-black lg:min-h-9";
+		"flex min-h-11 w-full cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-[15px] text-ink-muted transition-colors hover:text-ink";
 
 	return (
 		<nav aria-label="Categorias" className="flex flex-col">
 			{level.back && (
 				<Link
-					className="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-[13px] text-gray-60 transition-colors hover:text-near-black lg:min-h-9"
+					className="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-[13px] text-ink-muted transition-colors hover:text-ink"
 					href={hrefFor(level.back.slug) as Route}
 					onClick={(e) => {
 						// ctrl/cmd/shift/alt e botão do meio ficam com o browser (nova aba).
@@ -61,20 +61,20 @@ export function CategoryDrilldown({
 			{level.active ? (
 				<div
 					aria-current="page"
-					className="flex min-h-11 items-center bg-[#e6e6e6] px-2 py-1 font-bold text-[14px] text-near-black lg:min-h-9"
+					className="flex min-h-11 items-center rounded-[3px] bg-canteiro px-2 py-1 font-bold text-[15px] text-ink"
 				>
 					<span className="flex-1">{level.active.name}</span>
-					<span className="pl-2 text-[11.5px] text-gray-60 tabular-nums">
+					<span className="pl-2 text-[14px] text-ink-muted tabular-nums">
 						{counts[level.active.id] ?? 0}
 					</span>
 				</div>
 			) : (
 				<div
 					aria-current="page"
-					className="flex min-h-11 items-center bg-[#e6e6e6] px-2 py-1 font-bold text-[14px] text-near-black lg:min-h-9"
+					className="flex min-h-11 items-center rounded-[3px] bg-canteiro px-2 py-1 font-bold text-[15px] text-ink"
 				>
 					<span className="flex-1">Todas</span>
-					<span className="pl-2 text-[11.5px] text-gray-60 tabular-nums">
+					<span className="pl-2 text-[14px] text-ink-muted tabular-nums">
 						{totalCount}
 					</span>
 				</div>
@@ -103,10 +103,10 @@ export function CategoryDrilldown({
 						{row.hasChildren && (
 							<ChevronDown
 								aria-hidden="true"
-								className="size-3 shrink-0 text-gray-60"
+								className="size-3 shrink-0 text-ink-muted"
 							/>
 						)}
-						<span className="pl-1 text-[11.5px] text-gray-60 tabular-nums">
+						<span className="pl-1 text-[14px] text-ink-muted tabular-nums">
 							{counts[row.id] ?? 0}
 						</span>
 					</Link>

@@ -13,50 +13,13 @@ import {
 	getBusinessHoursRows,
 } from "@/lib/branches";
 import { canonicalFor } from "@/lib/seo/canonical";
+import { ABOUT_DESCRIPTION, aboutPillars, sideNotes } from "./_content";
 
 export const metadata: Metadata = {
 	title: "Quem somos",
-	description:
-		"Como escolhemos as ferramentas que vendemos, o suporte que damos antes e depois da compra e onde ficam nossas filiais.",
+	description: ABOUT_DESCRIPTION,
 	alternates: canonicalFor("/sobre"),
 };
-
-const aboutPillars = [
-	{
-		id: "curadoria",
-		label: "Curadoria",
-		title: "Escolhidas pra trabalho pesado",
-		description:
-			"Cada ferramenta do catálogo aguenta rotina de obra e indústria, sem item de vitrine",
-		tone: "light",
-	},
-	{
-		id: "atendimento",
-		label: "Atendimento",
-		title: "Suporte de quem entende de ferramenta",
-		description:
-			"A gente ajuda a escolher e resolve se der problema, da garantia ao reparo",
-		tone: "dark",
-	},
-] as const;
-
-const sideNotes = [
-	{
-		id: "linha-profissional",
-		label: "Linha profissional",
-		text: "Feitas pra trabalhar todo dia, não pro fim de semana",
-	},
-	{
-		id: "presenca-fisica",
-		label: "Presença física",
-		text: "Loja de verdade: você retira, testa e tira dúvida pessoalmente",
-	},
-	{
-		id: "garantia",
-		label: "Garantia",
-		text: "A garantia é nossa, não terceirizada: peça e mão de obra por conta da EMACH",
-	},
-] as const;
 
 interface BranchCardData {
 	address: string;

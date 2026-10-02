@@ -2,23 +2,19 @@ import { env } from "@emach/env/web";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
-import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { Suspense } from "react";
 
 import { NavigationProgress } from "@/components/navigation-progress";
 import Providers from "@/components/providers";
 import "../index.css";
 
-const barlow = Barlow({
+// Fonte variável: o eixo de largura (wdth 62–125) dá os títulos condensados
+// com a mesma família do corpo (ver --font-display em globals.css).
+const archivo = Archivo({
 	subsets: ["latin"],
-	weight: ["400", "500", "600", "700"],
-	variable: "--font-barlow",
-});
-
-const barlowCondensed = Barlow_Condensed({
-	subsets: ["latin"],
-	weight: ["500", "600", "700"],
-	variable: "--font-barlow-condensed",
+	axes: ["wdth"],
+	variable: "--font-archivo",
 });
 
 export const metadata: Metadata = {
@@ -59,7 +55,7 @@ export default function RootLayout({
 	return (
 		<html lang="pt-BR">
 			<body
-				className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
+				className={`${archivo.variable} antialiased`}
 				suppressHydrationWarning
 			>
 				<Providers>{children}</Providers>

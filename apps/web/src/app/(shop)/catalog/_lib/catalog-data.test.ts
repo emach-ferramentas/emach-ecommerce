@@ -26,9 +26,9 @@ describe("fetchCatalogData (integração read-only: composição do catálogo)",
 		expect(data.currentCategory).toBeNull();
 		expect(Array.isArray(data.categoryTree)).toBe(true);
 
-		// voltagesByTool só contém ferramentas da página retornada
+		// cardExtras só contém ferramentas da página retornada
 		const ids = new Set(data.tools.map((t) => t.id));
-		for (const key of data.voltagesByTool.keys()) {
+		for (const key of Object.keys(data.cardExtras)) {
 			expect(ids.has(key)).toBe(true);
 		}
 	});

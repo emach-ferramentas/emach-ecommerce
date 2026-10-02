@@ -1,3 +1,5 @@
+import { ChevronRight } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 
 interface BreadcrumbProps {
@@ -5,51 +7,38 @@ interface BreadcrumbProps {
 	productName: string;
 }
 
-/** Trilha estrutural da PDP; no mobile colapsa pra "‹ Categoria". */
+const linkClass =
+	"inline-flex min-h-8 items-center text-ink-2 underline underline-offset-[3px]";
+
+/** Trilha estrutural da página de produto. */
 export function Breadcrumb({ category, productName }: BreadcrumbProps) {
+	const trail: { href: Route; label: string }[] = [
+		{ href: "/", label: "Início" },
+		{ href: "/catalog", label: "Catálogo" },
+		...(category
+			? [{ href: `/catalog/${category.slug}` as Route, label: category.name }]
+			: []),
+	];
 	return (
-		<nav aria-label="Navegação estrutural" className="text-[12px] text-gray-60">
-			<ol className="hidden flex-wrap items-center gap-1.5 sm:flex">
-				<li>
-					<Link className="transition-colors hover:text-near-black" href="/">
-						Início
-					</Link>
-				</li>
-				<li aria-hidden="true">/</li>
-				<li>
-					<Link
-						className="transition-colors hover:text-near-black"
-						href="/catalog"
-					>
-						Catálogo
-					</Link>
-				</li>
-				{category && (
-					<>
-						<li aria-hidden="true">/</li>
-						<li>
-							<Link
-								className="transition-colors hover:text-near-black"
-								href={`/catalog/${category.slug}`}
-							>
-								{category.name}
-							</Link>
-						</li>
-					</>
-				)}
-				<li aria-hidden="true">/</li>
-				<li aria-current="page" className="font-semibold text-near-black">
-					{productName}
+		<nav
+			aria-label="Você está em"
+			className="pt-2.5 pb-1.5 text-[13.5px] text-ink-muted md:pt-[18px] md:text-[14px]"
+		>
+			<ol className="flex flex-wrap items-center gap-1.5">
+				{trail.map((item) => (
+					<li className="inline-flex items-center gap-1.5" key={item.href}>
+						<Link className={linkClass} href={item.href}>
+							{item.label}
+						</Link>
+						<ChevronRight aria-hidden="true" className="size-3.5" />
+					</li>
+				))}
+				<li className="min-w-0">
+					<span aria-current="page" className="line-clamp-1">
+						{productName}
+					</span>
 				</li>
 			</ol>
-			<div className="sm:hidden">
-				<Link
-					className="font-semibold text-near-black"
-					href={category ? `/catalog/${category.slug}` : "/catalog"}
-				>
-					‹ {category?.name ?? "Catálogo"}
-				</Link>
-			</div>
 		</nav>
 	);
 }

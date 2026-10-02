@@ -1,30 +1,31 @@
 import { db } from "@emach/db";
 import { getCategoryBySlug } from "@emach/db/queries/categories";
 import { getTools, type ToolListItem } from "@emach/db/queries/tools";
-import type { Route } from "next";
 import { ProductCard } from "@/components/product-card";
 import { ProductCardSkeleton } from "@/components/product-card-skeleton";
-import { SectionHeader } from "@/components/section-header";
+import { getCardExtras } from "@/lib/card-data";
+import { PRODUCT_COPY } from "../_lib/product-copy";
 
 interface RelatedProductsProps {
 	categoryPath: string | null;
 	toolId: string;
 }
 
-const RELATED_LIMIT = 5;
-const SKELETON_SLOTS = [0, 1, 2, 3, 4] as const;
+const RELATED_LIMIT = 4;
+const SKELETON_SLOTS = [0, 1, 2, 3] as const;
 
-// Mesma caixa da seção real (SectionHeader md + grid de 5) para a troca
-// skeleton→dados não deslocar a página.
+const sectionClass = "border-line border-t bg-canteiro py-10 md:py-14";
+const gridClass =
+	"mt-[22px] grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4 xl:grid-cols-4";
+
+// Mesma caixa da seção real (título + grade de 4) para a troca skeleton→dados
+// não deslocar a página.
 export function RelatedProductsSkeleton() {
 	return (
-		<section aria-hidden="true" className="pt-16 pb-20">
-			<div className="mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)]">
-				<div className="mb-8 animate-pulse">
-					<div className="h-3 w-36 bg-gray-20" />
-					<div className="mt-2.5 h-7 w-64 bg-gray-20" />
-				</div>
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
+		<section aria-hidden="true" className={sectionClass}>
+			<div className="shop-wrap">
+				<div className="h-10 w-72 animate-pulse bg-canteiro-2" />
+				<div className={gridClass}>
 					{SKELETON_SLOTS.map((slot) => (
 						<ProductCardSkeleton key={slot} />
 					))}
@@ -53,12 +54,10 @@ export async function RelatedProducts({
 		}
 	}
 
-	let rootCategory: { slug: string; name: string } | null = null;
 	const rootSlug = categoryPath?.split("/").filter(Boolean)[0];
 	if (rootSlug) {
 		const root = await getCategoryBySlug(db, rootSlug);
 		if (root) {
-			rootCategory = { slug: root.slug, name: root.name };
 			const { tools } = await getTools(db, {
 				categoryId: root.id,
 				excludeToolId: toolId,
@@ -84,25 +83,25 @@ export async function RelatedProducts({
 		return null;
 	}
 
+	const extras = await getCardExtras(picked.map((t) => t.id));
+
 	return (
-		<section aria-label="Produtos relacionados" className="pt-16 pb-20">
-			{/* Mesma coluna alinhada ao topo (galeria w-1/2 + buy box w-[480px]). */}
-			<div className="mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)]">
-				<SectionHeader
-					label="Continue explorando"
-					link={{
-						href: (rootCategory
-							? `/catalog/${rootCategory.slug}`
-							: "/catalog") as Route,
-						label: "Ver categoria",
-						variant: "arrow",
-					}}
-					title="Você também pode gostar"
-					titleSize="md"
-				/>
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5">
+		<section aria-labelledby="relacionados-titulo" className={sectionClass}>
+			<div className="shop-wrap">
+				<h2
+					className="font-display font-extrabold text-[clamp(1.9rem,1.3rem+1.6vw,2.75rem)] uppercase leading-[0.98]"
+					id="relacionados-titulo"
+				>
+					{PRODUCT_COPY.related}
+				</h2>
+				<div className={gridClass}>
 					{picked.map((tool) => (
-						<ProductCard key={tool.id} tool={tool} />
+						<ProductCard
+							extras={extras[tool.id]}
+							key={tool.id}
+							size="compact"
+							tool={tool}
+						/>
 					))}
 				</div>
 			</div>

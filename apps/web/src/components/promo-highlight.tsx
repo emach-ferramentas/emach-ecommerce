@@ -1,90 +1,70 @@
 import type { PromotionWithTools } from "@emach/db/queries/promotions";
-import type { Voltage } from "@emach/db/schema/tools";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { emachButtonVariants } from "@/components/emach-button";
-import { PageContainer } from "@/components/page-container";
-import { ProductGrid } from "@/components/product-grid";
+
+import { ProductCard } from "@/components/product-card";
 import { PromoCountdown } from "@/components/promo-countdown";
-import { PromoProductCard } from "@/components/promo-product-card";
-import { SectionLabel } from "@/components/section-label";
-import { selectPromoLayout } from "@/lib/promo-card-helpers";
+import type { CardExtrasByTool } from "@/lib/card-data";
 
 interface PromoHighlightProps {
+	extrasByTool?: CardExtrasByTool;
 	promotion: PromotionWithTools;
-	voltagesByTool?: Map<string, Voltage[]>;
 }
 
+/** Faixa da promoção em destaque, com os mesmos cards da vitrine. */
 export function PromoHighlight({
+	extrasByTool,
 	promotion,
-	voltagesByTool,
 }: PromoHighlightProps) {
-	const layout = selectPromoLayout(promotion.tools.length);
-	if (layout === "hidden") {
+	if (promotion.tools.length === 0) {
 		return null;
 	}
 
 	return (
-		<section aria-label="Promoções" className="bg-black text-white">
-			<PageContainer className="px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18">
-				<div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-					<div className="flex flex-col gap-3">
-						<SectionLabel tone="accent">Ofertas</SectionLabel>
-						<h2 className="font-display font-medium text-[clamp(30px,6vw,44px)] text-white leading-[1.02] tracking-[-0.01em]">
+		<section
+			aria-labelledby="ofertas-titulo"
+			className="border-line border-t bg-paper py-10 md:py-14"
+		>
+			<div className="shop-wrap">
+				<div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-ink border-b-2 pb-3">
+					<div>
+						<h2
+							className="font-display font-extrabold text-[clamp(1.9rem,1.3rem+1.6vw,2.75rem)] uppercase leading-[0.98]"
+							id="ofertas-titulo"
+						>
 							{promotion.title}
 						</h2>
+						<p className="mt-1.5 text-[14px] text-ink-muted tabular-nums">
+							{promotion.tools.length}{" "}
+							{promotion.tools.length === 1
+								? "produto em oferta"
+								: "produtos em oferta"}
+						</p>
 					</div>
 					{promotion.endsAt && (
 						<PromoCountdown endsAt={promotion.endsAt.toISOString()} />
 					)}
 				</div>
-
-				<div className="pt-10">
-					{layout === "pair" && (
-						<div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-							{promotion.tools.map((tool, i) => (
-								<PromoProductCard
-									key={tool.id}
-									mirrored={i === 1}
-									tool={tool}
-									voltages={voltagesByTool?.get(tool.id)}
-								/>
-							))}
-						</div>
-					)}
-
-					{layout === "trio" && (
-						<div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-							{promotion.tools.map((tool) => (
-								<PromoProductCard
-									key={tool.id}
-									tool={tool}
-									voltages={voltagesByTool?.get(tool.id)}
-								/>
-							))}
-						</div>
-					)}
-
-					{layout === "grid" && (
-						<ProductGrid
-							surface="elevated"
-							tools={promotion.tools}
-							voltagesByTool={voltagesByTool}
+				<div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+					{promotion.tools.map((tool) => (
+						<ProductCard
+							extras={extrasByTool?.[tool.id]}
+							key={tool.id}
+							size="compact"
+							tool={tool}
 						/>
-					)}
+					))}
 				</div>
-
-				<div className="mt-10 flex justify-center">
+				<p className="mt-6">
 					<Link
-						className={emachButtonVariants({
-							size: "lg",
-							variant: "outline-light",
-						})}
+						className="inline-flex min-h-11 items-center gap-1 font-bold text-[15px] text-ink underline underline-offset-[3px]"
 						href="/catalog?promo=1"
 					>
 						Ver todas as ofertas
+						<ChevronRight aria-hidden="true" className="size-5" />
 					</Link>
-				</div>
-			</PageContainer>
+				</p>
+			</div>
 		</section>
 	);
 }

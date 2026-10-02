@@ -2,20 +2,27 @@
 
 import type { CategoryNode } from "@emach/db/queries/categories";
 import type { ToolListItem } from "@emach/db/queries/tools";
-import type { Voltage } from "@emach/db/schema/tools";
 import { cn } from "@emach/ui/lib/utils";
-import { Grid3x3, List, SlidersHorizontal } from "lucide-react";
+import {
+	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
+	SlidersHorizontal,
+} from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useState, useTransition } from "react";
-import { emachButtonVariants } from "@/components/emach-button";
-import { PageContainer } from "@/components/page-container";
 import { ProductCard } from "@/components/product-card";
-import { ProductImage } from "@/components/product-image";
-import { SectionLabel } from "@/components/section-label";
-import { fmtNumericBRL } from "@/lib/format";
+import { Shelf as ShelfRow } from "@/components/shelf";
+import type { CardExtrasByTool } from "@/lib/card-data";
+import type { Shelves } from "@/lib/shelves";
+import type {
+	CatalogCurrentCategory,
+	CatalogService,
+} from "../_lib/catalog-data";
 import {
+	type ActiveFilter,
 	buildHref,
 	deriveActiveFilters,
 	type FilterState,
@@ -29,11 +36,14 @@ import { ActiveFilters } from "./active-filters";
 import { FilterDrawer } from "./filter-drawer";
 import { FilterPanel } from "./filter-panel";
 
+export interface CatalogShelves extends Shelves {
+	extras: CardExtrasByTool;
+}
+
 interface CatalogContentProps {
+	cardExtras: CardExtrasByTool;
 	categoryTree: CategoryNode[];
-	currentCategoryDescription: string | null;
-	currentCategoryName: string | null;
-	currentCategorySlug: string | null;
+	currentCategory: CatalogCurrentCategory | null;
 	facetCounts: FacetCounts;
 	onlyPromo: boolean;
 	page: number;
@@ -41,14 +51,17 @@ interface CatalogContentProps {
 	priceMax: number | null;
 	priceMin: number | null;
 	query: string;
+	services: CatalogService[];
+	/** Vitrine em prateleiras quando o catálogo abre sem recorte; senão `null`. */
+	shelves: CatalogShelves | null;
 	sort: SortKey;
 	tools: ToolListItem[];
 	total: number;
 	voltages: VoltageKey[];
-	voltagesByTool?: Map<string, Voltage[]>;
 }
 
-const PAGE_LINK_CLASS = emachButtonVariants({ variant: "ghost", size: "sm" });
+const PAGE_LINK_CLASS =
+	"inline-flex min-h-11 items-center gap-1 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-4 font-bold text-[15px] text-ink no-underline hover:border-ink";
 
 // `<a>` real para o crawler seguir a paginação; o clique simples continua na
 // navegação client-side do `navigatePage` (transition + scroll ao topo).
@@ -67,7 +80,10 @@ function PageLink({
 }) {
 	if (disabled) {
 		return (
-			<span aria-disabled="true" className={cn(PAGE_LINK_CLASS, "opacity-60")}>
+			<span
+				aria-disabled="true"
+				className={cn(PAGE_LINK_CLASS, "opacity-45 hover:border-line-strong")}
+			>
 				{children}
 			</span>
 		);
@@ -90,27 +106,146 @@ function PageLink({
 	);
 }
 
+function plural(n: number, one: string, many: string) {
+	return `${n} ${n === 1 ? one : many}`;
+}
+
+const crumbLinkClass =
+	"inline-flex min-h-8 items-center text-ink-2 underline underline-offset-[3px]";
+
+function CatalogBreadcrumb({
+	currentCategory,
+	searchTerm,
+}: {
+	currentCategory: CatalogCurrentCategory | null;
+	searchTerm: string;
+}) {
+	return (
+		<nav
+			aria-label="Você está em"
+			className="pt-2.5 pb-1.5 text-[13.5px] text-ink-muted md:pt-[18px] md:text-[14px]"
+		>
+			<ol className="flex flex-wrap items-center gap-1.5">
+				<li className="inline-flex items-center gap-1.5">
+					<Link className={crumbLinkClass} href="/">
+						Início
+					</Link>
+					<ChevronRight aria-hidden="true" className="size-3.5" />
+				</li>
+				{(currentCategory || searchTerm) && (
+					<li className="inline-flex items-center gap-1.5">
+						<Link className={crumbLinkClass} href="/catalog">
+							Catálogo
+						</Link>
+						<ChevronRight aria-hidden="true" className="size-3.5" />
+					</li>
+				)}
+				{currentCategory?.ancestors.map((crumb) => (
+					<li className="inline-flex items-center gap-1.5" key={crumb.slug}>
+						<Link
+							className={crumbLinkClass}
+							href={`/catalog/${crumb.slug}` as Route}
+						>
+							{crumb.name}
+						</Link>
+						<ChevronRight aria-hidden="true" className="size-3.5" />
+					</li>
+				))}
+				<li>
+					<span aria-current="page">
+						{currentCategory?.name ?? (searchTerm ? "Busca" : "Catálogo")}
+					</span>
+				</li>
+			</ol>
+		</nav>
+	);
+}
+
+function CatalogEmpty({
+	filters,
+	onClearAll,
+	onRemove,
+	searchTerm,
+	services,
+}: {
+	filters: ActiveFilter[];
+	onClearAll: () => void;
+	onRemove: (update: FilterUpdate) => void;
+	searchTerm: string;
+	services: CatalogService[];
+}) {
+	const what = searchTerm
+		? `Nenhum produto da loja combina com “${searchTerm}”${filters.length > 1 ? " e os filtros marcados" : ""}.`
+		: "Nenhum produto da loja atende a todos os filtros marcados.";
+	return (
+		<div className="rounded-[5px] border border-line-strong border-dashed bg-paper px-[18px] py-6 md:px-7 md:py-9">
+			<h2 className="font-display font-extrabold text-[30px] uppercase leading-none">
+				Nada por aqui
+			</h2>
+			<p className="mt-2.5 max-w-[60ch] text-ink-2">
+				{what} Tire um filtro abaixo: às vezes a peça certa tem outro nome.
+			</p>
+			{filters.length > 0 && (
+				<div className="mt-[18px] flex flex-wrap gap-2.5">
+					{filters.map((f) => (
+						<button
+							className="inline-flex min-h-11 cursor-pointer items-center rounded-[3px] border-[1.5px] border-line-strong bg-paper px-4 font-bold text-[15px] text-ink hover:border-ink"
+							key={f.id}
+							onClick={() => onRemove(f.remove)}
+							type="button"
+						>
+							Tirar {f.kind ? `${f.kind.toLowerCase()} ` : ""}
+							{f.value}
+						</button>
+					))}
+					{filters.length > 1 && (
+						<button
+							className="inline-flex min-h-11 cursor-pointer items-center rounded-[3px] bg-grafite px-4 font-bold text-[15px] text-on-dark hover:bg-black"
+							onClick={onClearAll}
+							type="button"
+						>
+							Limpar tudo
+						</button>
+					)}
+				</div>
+			)}
+			{services.length > 0 && (
+				<p className="mt-[22px] flex flex-wrap gap-x-[18px] gap-y-2 text-[15px]">
+					{services.map((s) => (
+						<Link
+							className="inline-flex min-h-11 items-center font-semibold text-ink underline underline-offset-[3px]"
+							href={s.href}
+							key={s.slug}
+						>
+							{s.name}
+						</Link>
+					))}
+				</p>
+			)}
+		</div>
+	);
+}
+
 export function CatalogContent({
-	tools,
-	total,
-	currentCategorySlug,
-	currentCategoryName,
-	currentCategoryDescription,
+	cardExtras,
 	categoryTree,
+	currentCategory,
 	facetCounts,
-	query,
-	sort,
-	voltages,
-	priceMin,
-	priceMax,
 	onlyPromo,
 	page,
 	pageSize,
-	voltagesByTool,
+	priceMax,
+	priceMin,
+	query,
+	services,
+	shelves,
+	sort,
+	tools,
+	total,
+	voltages,
 }: CatalogContentProps) {
 	const router = useRouter();
 	const [isPending, startTransition] = useTransition();
-	const [view, setView] = useState<"grid" | "list">("grid");
 	const [filterOpen, setFilterOpen] = useState(false);
 	const [pminLocal, setPminLocal] = useState<string>(
 		priceMin == null ? "" : String(priceMin)
@@ -120,8 +255,8 @@ export function CatalogContent({
 	);
 
 	const current: FilterState = {
-		currentCategorySlug,
-		currentCategoryName,
+		currentCategorySlug: currentCategory?.slug ?? null,
+		currentCategoryName: currentCategory?.name ?? null,
 		query,
 		sort,
 		voltages,
@@ -130,7 +265,9 @@ export function CatalogContent({
 		onlyPromo,
 	};
 
-	const activeFilters = deriveActiveFilters(current);
+	const activeFilters = deriveActiveFilters(current).map((f) =>
+		f.id === "cat" && currentCategory?.isService ? { ...f, kind: "Serviço" } : f
+	);
 
 	function navigate(updates: FilterUpdate) {
 		const href = buildHref(current, { ...updates, page: null }) as Route;
@@ -187,261 +324,207 @@ export function CatalogContent({
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 	const showFrom = total === 0 ? 0 : (page - 1) * pageSize + 1;
 	const showTo = Math.min(page * pageSize, total);
+	const searchTerm = query.trim();
+	const title =
+		currentCategory?.name ??
+		(searchTerm ? `Busca: “${searchTerm}”` : "Catálogo");
 
-	// Contagem reutilizada na toolbar (desktop) e numa linha própria (mobile),
-	// onde a toolbar não tem largura pra exibi-la sem quebrar.
-	const productCount = (
-		<>
-			<strong className="text-near-black">{total}</strong> produto
-			{total === 1 ? "" : "s"}
-			{total > 0 && (
-				<span className="ml-2">
-					({showFrom}–{showTo})
-				</span>
-			)}
-		</>
-	);
+	let countText = plural(total, "produto", "produtos");
+	if (shelves) {
+		countText += shelves.by === "service" ? ", organizados por serviço" : "";
+	} else if (total > pageSize) {
+		countText += `, mostrando ${showFrom} a ${showTo}`;
+	}
+
+	const panelProps = {
+		activeSlug: currentCategory?.slug ?? null,
+		categoryHrefFor,
+		facetCounts,
+		onApplyPrice: applyPriceFilters,
+		onlyPromo,
+		onPmaxChange: setPmaxLocal,
+		onPminChange: setPminLocal,
+		onSelectCategory: (slug: string | null) => navigate({ cat: slug }),
+		onSelectPriceRange: selectPriceRange,
+		onTogglePromo: (v: boolean) => navigate({ promo: v ? true : null }),
+		onToggleVoltage: toggleVoltage,
+		pmaxValue: pmaxLocal,
+		pminValue: pminLocal,
+		priceMax,
+		priceMin,
+		services,
+		tree: categoryTree,
+		voltages,
+	};
 
 	return (
-		<main className="bg-gray-10" id="main-content">
-			<section className="bg-near-black py-12 text-white">
-				<PageContainer>
-					<div className="mb-3 text-[12px] text-white/55 uppercase tracking-widest">
-						HOME / CATÁLOGO
-						{currentCategoryName
-							? ` / ${currentCategoryName.toUpperCase()}`
-							: ""}
-					</div>
-					<h1 className="text-balance font-display font-medium text-[clamp(36px,5vw,60px)] tracking-[-0.01em]">
-						{currentCategoryName ?? "Catálogo completo"}
-					</h1>
-					{currentCategoryDescription && (
-						<p className="mt-3 max-w-150 text-[16px] text-white/70">
-							{currentCategoryDescription}
+		<main className="pb-16" id="main-content">
+			<div className="shop-wrap">
+				<CatalogBreadcrumb
+					currentCategory={currentCategory}
+					searchTerm={searchTerm}
+				/>
+
+				<div className="mt-0.5 mb-4 flex flex-wrap items-end justify-between gap-4 md:mt-2">
+					<div className="min-w-0">
+						<h1 className="font-display font-extrabold text-[clamp(2.4rem,1.6rem+2.2vw,3.6rem)] uppercase leading-[0.92]">
+							{title}
+						</h1>
+						<p
+							aria-live="polite"
+							className="mt-2 text-[15.5px] text-ink-2 tabular-nums"
+						>
+							{countText}
 						</p>
-					)}
-					{query.trim() && (
-						<div className="mt-4 inline-flex items-center gap-2 rounded-[2px] border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] text-white">
-							Busca: <strong>“{query}”</strong>
-							<button
-								aria-label="Limpar busca"
-								className="relative ml-1 flex size-11 items-center justify-center text-white/60 hover:text-white"
-								onClick={() => navigate({ q: null })}
-								type="button"
-							>
-								×
-							</button>
-						</div>
-					)}
-				</PageContainer>
-			</section>
-
-			<PageContainer className="grid grid-cols-1 gap-0 py-8 lg:grid-cols-[260px_1fr] lg:gap-10">
-				<aside className="hidden lg:block">
-					<div className="pb-4 font-bold font-display text-[12px] uppercase tracking-[0.14em]">
-						FILTROS
+						{currentCategory?.description && (
+							<p className="mt-2 max-w-[68ch] text-[15.5px] text-ink-2">
+								{currentCategory.description}
+							</p>
+						)}
 					</div>
-					<FilterPanel
-						activeSlug={currentCategorySlug}
-						categoryHrefFor={categoryHrefFor}
-						facetCounts={facetCounts}
-						idPrefix="desktop"
-						onApplyPrice={applyPriceFilters}
-						onlyPromo={onlyPromo}
-						onPmaxChange={setPmaxLocal}
-						onPminChange={setPminLocal}
-						onSelectCategory={(slug) => navigate({ cat: slug })}
-						onSelectPriceRange={selectPriceRange}
-						onTogglePromo={(v) => navigate({ promo: v ? true : null })}
-						onToggleVoltage={toggleVoltage}
-						pmaxValue={pmaxLocal}
-						pminValue={pminLocal}
-						priceMax={priceMax}
-						priceMin={priceMin}
-						tree={categoryTree}
-						voltages={voltages}
-					/>
-				</aside>
-
-				<div>
-					<ActiveFilters
-						filters={activeFilters}
-						onClearAll={clearAll}
-						onRemove={(update) => navigate(update)}
-					/>
-					<div className="mb-5 flex flex-wrap items-center gap-3 border-border border-b pb-3">
+					<div className="flex w-full items-center gap-2.5 md:w-auto">
 						<button
 							aria-controls="filter-drawer"
 							aria-expanded={filterOpen}
 							aria-haspopup="dialog"
-							className="flex h-11 cursor-pointer items-center gap-2 border border-border bg-white px-3.5 font-display font-semibold text-[12px] text-near-black uppercase tracking-[0.08em] transition-colors active:bg-gray-10 lg:hidden"
+							className="inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-[18px] font-bold text-[15px] text-ink hover:border-ink md:flex-none lg:hidden"
 							onClick={() => setFilterOpen(true)}
 							type="button"
 						>
-							<SlidersHorizontal size={15} />
+							<SlidersHorizontal aria-hidden="true" className="size-5" />
 							Filtros
 							{activeFilters.length > 0 && (
-								<span className="flex h-4 min-w-4 items-center justify-center bg-emach-red px-1 font-bold text-[10px] text-white">
+								<span className="grid h-5 min-w-5 place-items-center rounded-[10px] bg-grafite px-1.5 text-[12px] text-white">
 									{activeFilters.length}
 								</span>
 							)}
 						</button>
-						<div className="hidden text-[13px] text-gray-60 sm:block">
-							{productCount}
-						</div>
-
-						<div className="ml-auto flex items-center gap-2 sm:gap-4">
-							<select
-								className="emach-select emach-select--sm w-40 sm:w-45"
-								onChange={(e) => navigate({ sort: e.target.value as SortKey })}
-								value={sort}
-							>
-								<option value="relevance">Relevância</option>
-								<option value="price-asc">Menor preço</option>
-								<option value="price-desc">Maior preço</option>
-								<option value="name-asc">A–Z</option>
-								<option value="newest">Mais recentes</option>
-							</select>
-
-							<div className="flex border border-border">
-								<button
-									aria-label="Grade"
-									aria-pressed={view === "grid"}
-									className={cn(
-										"flex size-11 cursor-pointer items-center justify-center border-none transition-colors",
-										view === "grid"
-											? "bg-near-black text-white"
-											: "bg-white text-near-black active:bg-gray-10"
-									)}
-									onClick={() => setView("grid")}
-									type="button"
+						<label className="flex flex-1 items-center gap-2 font-semibold text-[14px] text-ink-muted md:flex-none">
+							<span className="max-md:sr-only">Ordenar por</span>
+							<span className="relative flex-1 md:flex-none">
+								<select
+									className="h-11 w-full cursor-pointer appearance-none rounded-[3px] border-[1.5px] border-line-strong bg-paper pr-[38px] pl-3 font-bold text-[15px] text-ink hover:border-ink md:w-auto"
+									onChange={(e) =>
+										navigate({ sort: e.target.value as SortKey })
+									}
+									value={sort}
 								>
-									<Grid3x3 size={14} />
-								</button>
-								<button
-									aria-label="Lista"
-									aria-pressed={view === "list"}
-									className={cn(
-										"flex size-11 cursor-pointer items-center justify-center border-none transition-colors",
-										view === "list"
-											? "bg-near-black text-white"
-											: "bg-white text-near-black active:bg-gray-10"
-									)}
-									onClick={() => setView("list")}
-									type="button"
-								>
-									<List size={14} />
-								</button>
-							</div>
-						</div>
+									<option value="relevance">Relevância</option>
+									<option value="price-asc">Menor preço</option>
+									<option value="price-desc">Maior preço</option>
+									<option value="name-asc">A a Z</option>
+									<option value="newest">Mais recentes</option>
+								</select>
+								<ChevronDown
+									aria-hidden="true"
+									className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-ink"
+								/>
+							</span>
+						</label>
 					</div>
+				</div>
 
-					<div className="mb-4 text-[13px] text-gray-60 sm:hidden">
-						{productCount}
-					</div>
+				<ActiveFilters
+					filters={activeFilters}
+					onClearAll={clearAll}
+					onRemove={(update) => navigate(update)}
+				/>
+
+				<div className="grid grid-cols-1 items-start gap-9 lg:grid-cols-[250px_minmax(0,1fr)]">
+					<aside aria-label="Filtros" className="sticky top-4 max-lg:hidden">
+						<FilterPanel idPrefix="desktop" {...panelProps} />
+					</aside>
 
 					<div
 						aria-busy={isPending}
-						className={cn(isPending && "pointer-events-none opacity-60")}
+						className={cn(
+							"min-w-0 transition-opacity",
+							isPending && "pointer-events-none opacity-60"
+						)}
 					>
-						{view === "grid" ? (
-							<div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
-								{tools.map((t) => (
-									<ProductCard
-										key={t.id}
-										tool={t}
-										voltages={voltagesByTool?.get(t.id)}
-									/>
+						{shelves && shelves.shelves.length > 0 ? (
+							<div className="grid gap-[34px] md:gap-11">
+								{shelves.shelves.map((shelf) => (
+									<ShelfRow
+										dense
+										headingLevel={2}
+										href={shelf.href}
+										imageSrc={shelf.imageSrc}
+										inStockCount={shelf.inStockCount}
+										itemCount={shelf.items.length}
+										key={shelf.key}
+										productCount={shelf.productCount}
+										title={shelf.title}
+									>
+										{shelf.items.map((tool) => (
+											<ProductCard
+												extras={shelves.extras[tool.id]}
+												key={tool.id}
+												tool={tool}
+											/>
+										))}
+									</ShelfRow>
 								))}
 							</div>
 						) : (
-							<div className="flex flex-col">
-								{tools.map((t) => (
-									<Link
-										className="-mx-3 flex cursor-pointer items-center gap-4 border-gray-20 border-b px-3 py-4 transition-colors duration-200 hover:bg-image-bg motion-reduce:transition-none sm:gap-6 sm:py-5"
-										href={`/product/${t.slug}`}
-										key={t.id}
-									>
-										<div className="relative aspect-square w-24 shrink-0 overflow-hidden bg-image-bg sm:w-35">
-											<ProductImage
-												alt={t.name}
-												categorySlug={t.primaryCategory?.slug ?? ""}
-												sizes="(max-width: 640px) 96px, 140px"
-												src={t.primaryImage?.url}
+							<>
+								{tools.length > 0 && (
+									<div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4 lg:grid-cols-2 xl:grid-cols-3">
+										{tools.map((t) => (
+											<ProductCard
+												extras={cardExtras[t.id]}
+												headingLevel={2}
+												key={t.id}
+												size="compact"
+												tool={t}
 											/>
-										</div>
-										<div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-											<div className="min-w-0">
-												<SectionLabel>
-													{t.primaryCategory?.name ?? ""}
-												</SectionLabel>
-												<div className="mt-1 font-medium text-[15px] sm:text-[18px]">
-													{t.name}
-												</div>
-												<div className="mt-1.5 text-[12px] text-gray-60 sm:text-[13px]">
-													SKU {t.defaultVariant.sku}
-													{t.defaultVariant.voltage
-														? ` · ${t.defaultVariant.voltage}`
-														: ""}
-													{t.hasOtherVariants ? " · mais opções" : ""}
-												</div>
-											</div>
-											<div className="shrink-0 sm:text-right">
-												<div className="font-bold text-[18px] tabular-nums sm:text-[20px]">
-													{fmtNumericBRL(
-														t.defaultVariant.discountedAmount ??
-															t.defaultVariant.priceAmount
-													)}
-												</div>
-												{t.defaultVariant.discountedAmount && (
-													<div className="text-[12px] text-gray-60 tabular-nums line-through">
-														{fmtNumericBRL(t.defaultVariant.priceAmount)}
-													</div>
-												)}
-											</div>
-										</div>
-									</Link>
-								))}
-							</div>
+										))}
+									</div>
+								)}
+
+								{tools.length === 0 && (
+									<CatalogEmpty
+										filters={activeFilters}
+										onClearAll={clearAll}
+										onRemove={navigate}
+										searchTerm={searchTerm}
+										services={services}
+									/>
+								)}
+
+								{totalPages > 1 && (
+									<nav
+										aria-label="Páginas"
+										className="mt-8 flex items-center justify-center gap-2"
+									>
+										<PageLink
+											disabled={page <= 1}
+											href={pageHrefFor(page - 1)}
+											onNavigate={() => navigatePage(page - 1)}
+											rel="prev"
+										>
+											<ChevronLeft aria-hidden="true" className="size-4" />
+											Anterior
+										</PageLink>
+										<span className="px-3 text-[14px] tabular-nums">
+											Página <strong>{page}</strong> de {totalPages}
+										</span>
+										<PageLink
+											disabled={page >= totalPages}
+											href={pageHrefFor(page + 1)}
+											onNavigate={() => navigatePage(page + 1)}
+											rel="next"
+										>
+											Próxima
+											<ChevronRight aria-hidden="true" className="size-4" />
+										</PageLink>
+									</nav>
+								)}
+							</>
 						)}
 					</div>
-
-					{tools.length === 0 && (
-						<div className="py-20 text-center text-gray-60">
-							<div className="font-medium text-[15px]">
-								Nenhum produto encontrado
-							</div>
-							<div className="mt-1.5 text-[13px]">
-								Ajuste os filtros para ver mais resultados.
-							</div>
-						</div>
-					)}
-
-					{totalPages > 1 && (
-						<div className="mt-8 flex items-center justify-center gap-2">
-							<PageLink
-								disabled={page <= 1}
-								href={pageHrefFor(page - 1)}
-								onNavigate={() => navigatePage(page - 1)}
-								rel="prev"
-							>
-								Anterior
-							</PageLink>
-							<span className="px-3 text-[13px] tabular-nums">
-								Página <strong>{page}</strong> de {totalPages}
-							</span>
-							<PageLink
-								disabled={page >= totalPages}
-								href={pageHrefFor(page + 1)}
-								onNavigate={() => navigatePage(page + 1)}
-								rel="next"
-							>
-								Próxima
-							</PageLink>
-						</div>
-					)}
 				</div>
-			</PageContainer>
+			</div>
 
 			<FilterDrawer
 				activeCount={activeFilters.length}
@@ -450,26 +533,7 @@ export function CatalogContent({
 				open={filterOpen}
 				total={total}
 			>
-				<FilterPanel
-					activeSlug={currentCategorySlug}
-					categoryHrefFor={categoryHrefFor}
-					facetCounts={facetCounts}
-					idPrefix="mobile"
-					onApplyPrice={applyPriceFilters}
-					onlyPromo={onlyPromo}
-					onPmaxChange={setPmaxLocal}
-					onPminChange={setPminLocal}
-					onSelectCategory={(slug) => navigate({ cat: slug })}
-					onSelectPriceRange={selectPriceRange}
-					onTogglePromo={(v) => navigate({ promo: v ? true : null })}
-					onToggleVoltage={toggleVoltage}
-					pmaxValue={pmaxLocal}
-					pminValue={pminLocal}
-					priceMax={priceMax}
-					priceMin={priceMin}
-					tree={categoryTree}
-					voltages={voltages}
-				/>
+				<FilterPanel idPrefix="mobile" {...panelProps} />
 			</FilterDrawer>
 		</main>
 	);

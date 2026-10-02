@@ -25,7 +25,7 @@ export function StarRating({ rating, className, size = 13 }: StarRatingProps) {
 						aria-hidden
 						className={
 							isFilled
-								? "fill-emach-red text-emach-red"
+								? "fill-grafite text-grafite"
 								: "fill-transparent text-gray-20"
 						}
 						key={position}

@@ -49,7 +49,7 @@ export function ReviewSort({ current }: ReviewSortProps) {
 			className="flex items-center gap-2"
 			role="status"
 		>
-			<span className="font-display text-[10px] text-gray-60 uppercase tracking-[0.14em]">
+			<span className="font-display text-[10px] text-ink-muted uppercase tracking-[0.14em]">
 				Ordenar
 			</span>
 			<Select onValueChange={handleChange} value={current}>

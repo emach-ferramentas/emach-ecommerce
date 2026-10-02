@@ -117,10 +117,12 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 
 	return (
 		<LazyMotion features={domAnimation} strict>
+			{/* No desktop o hero ocupa o resto da 1ª dobra abaixo do cabeçalho
+			    (barra utilitária 40 + barra principal 85 + departamentos 51 = 176px). */}
 			{/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: parallax decorativo mouse-only na hero; teclado/toque não dependem disto */}
 			<section
 				aria-label="Banner principal"
-				className="relative h-[70svh] min-h-[30rem] w-full overflow-hidden bg-black lg:h-svh lg:min-h-0"
+				className="relative h-[70svh] min-h-[30rem] w-full overflow-hidden bg-black lg:h-[calc(100svh-176px)] lg:min-h-[30rem]"
 				onMouseLeave={handleMouseLeave}
 				onMouseMove={handleMouseMove}
 			>
@@ -136,10 +138,10 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 					opts={{ loop: true, align: "start" }}
 					setApi={setApi}
 				>
-					<CarouselContent className="ml-0 h-[70svh] min-h-[30rem] lg:h-svh lg:min-h-0">
+					<CarouselContent className="ml-0 h-[70svh] min-h-[30rem] lg:h-[calc(100svh-176px)] lg:min-h-[30rem]">
 						{slides.map((banner, index) => (
 							<CarouselItem
-								className="relative h-[70svh] min-h-[30rem] pl-0 lg:h-svh lg:min-h-0"
+								className="relative h-[70svh] min-h-[30rem] pl-0 lg:h-[calc(100svh-176px)] lg:min-h-[30rem]"
 								key={banner.id}
 							>
 								<HeroSlide

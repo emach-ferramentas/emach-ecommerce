@@ -79,6 +79,32 @@
 	--card-ease: cubic-bezier(0.2, 0.6, 0.2, 1);
 	--card-dur: 240ms;
 	--card-dur-image: 400ms;
+
+	/* Prateleira por ofício (redesign H3): canteiro claro, grafite na
+	   estrutura, vermelho só na ação. Tokens novos; os antigos acima seguem
+	   valendo para as telas que ainda não migraram (checkout, conta). */
+	--paper: #ffffff;
+	--canteiro: #f0f0ee;
+	--canteiro-2: #e4e5e2;
+	--well: #f0f0ee;
+	--ink: #16191d;
+	--ink-2: #363b42;
+	--ink-muted: #5a6068;
+	--line: #d8dad7;
+	--line-strong: #aeb2b6;
+	--grafite: #1f2328;
+	--grafite-2: #2d3238;
+	--grafite-deep: #131518;
+	--on-dark: #f2f2f0;
+	--on-dark-muted: #b6bbc1;
+	--line-dark: #3b4148;
+	--ok: #17733a;
+	--off: #6a717b;
+	--error-text: #b3261e;
+	--elev-pop:
+		0 12px 30px -12px rgba(22, 25, 29, 0.34), 0 2px 6px rgba(22, 25, 29, 0.08);
+	--elev-bar: 0 -6px 18px -6px rgba(22, 25, 29, 0.22);
+	--ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ============================================================
@@ -659,32 +685,32 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	/* Fundo do sistema = gray-10 (#f4f4f4), a cor da seção "Novidades" da home.
-	   --image-bg (#ececec) permanece intacto para fundo de imagens. */
-	--background: var(--gray-10);
-	--foreground: oklch(0.209 0 0);
-	--card: var(--gray-10);
-	--card-foreground: oklch(0.209 0 0);
+	/* Fundo do sistema = papel branco do redesign H3; seções alternam com
+	   --canteiro. --image-bg (#ececec) segue para telas não migradas. */
+	--background: var(--paper);
+	--foreground: var(--ink);
+	--card: var(--paper);
+	--card-foreground: var(--ink);
 	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.209 0 0);
-	--primary: oklch(0.529 0.194 26);
+	--popover-foreground: var(--ink);
+	--primary: var(--emach-red);
 	--primary-foreground: oklch(1 0 0);
 	--secondary: oklch(1 0 0);
 	--secondary-foreground: oklch(0.209 0 0);
 	--muted: oklch(0.864 0 0);
-	--muted-foreground: oklch(0.51 0 0);
+	--muted-foreground: var(--ink-muted);
 	--accent: oklch(0.529 0.194 26 / 10%);
 	--accent-foreground: oklch(0.529 0.194 26);
 	--destructive: oklch(0.569 0.2 24);
-	--border: oklch(0.845 0 0);
-	--input: oklch(0.845 0 0);
+	--border: var(--line);
+	--input: var(--line-strong);
 	--ring: oklch(0.529 0.194 26);
 	--chart-1: oklch(0.529 0.194 26);
 	--chart-2: oklch(0.44 0.19 24);
 	--chart-3: oklch(0.4 0.18 23);
 	--chart-4: oklch(0.93 0.21 110);
 	--chart-5: oklch(0.91 0.2 107);
-	--radius: 2px;
+	--radius: 3px;
 	--sidebar: oklch(1 0 0);
 	--sidebar-foreground: oklch(0.209 0 0);
 	--sidebar-primary: oklch(0.529 0.194 26);
@@ -732,8 +758,31 @@
 }
 
 @theme inline {
-	--font-sans: var(--font-barlow), sans-serif;
-	--font-display: var(--font-barlow-condensed), sans-serif;
+	--font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+	--font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+	/* Títulos usam a mesma Archivo no eixo de largura mínimo (62%). */
+	--font-display--font-variation-settings: "wdth" 62;
+	--color-paper: var(--paper);
+	--color-canteiro: var(--canteiro);
+	--color-canteiro-2: var(--canteiro-2);
+	--color-well: var(--well);
+	--color-ink: var(--ink);
+	--color-ink-2: var(--ink-2);
+	--color-ink-muted: var(--ink-muted);
+	--color-line: var(--line);
+	--color-line-strong: var(--line-strong);
+	--color-grafite: var(--grafite);
+	--color-grafite-2: var(--grafite-2);
+	--color-grafite-deep: var(--grafite-deep);
+	--color-on-dark: var(--on-dark);
+	--color-on-dark-muted: var(--on-dark-muted);
+	--color-line-dark: var(--line-dark);
+	--color-ok: var(--ok);
+	--color-off: var(--off);
+	--color-error-text: var(--error-text);
+	--shadow-pop: var(--elev-pop);
+	--shadow-bar: var(--elev-bar);
+	--ease-out-expo: var(--ease-expo);
 	--color-absolute-black: #000000;
 	--color-dark-surface: #303030;
 	--color-silver-gray: #969696;
@@ -817,13 +866,19 @@
 	}
 	body {
 		overflow-x: clip;
+		caret-color: var(--emach-red);
 		@apply bg-background font-sans text-foreground;
+	}
+	::selection {
+		color: #fff;
+		background: var(--grafite);
 	}
 	html {
 		/* Storefront é light por design. Declarar `light` evita que o "Auto Dark
 		   Mode for Web Contents" (Chromium/Brave) force-inverta o site; seções
 		   intencionalmente escuras declaram `color-scheme: dark` localmente. */
 		color-scheme: light;
+		scrollbar-color: var(--line-strong) var(--canteiro);
 		/* Canvas do <html> = superfície clara do sistema (#f4f4f4). Sem isto o
 		   html fica transparente e o browser pinta o canvas de BRANCO (default do
 		   color-scheme: light); em qualquer frame de transição em que o <body> não

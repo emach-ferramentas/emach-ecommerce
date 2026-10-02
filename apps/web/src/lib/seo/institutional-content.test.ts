@@ -1,9 +1,17 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { DELIVERY_LEDE, deliverySections } from "@/app/(shop)/entrega/_content";
 import {
 	PRIVACY_LEDE,
 	privacySections,
 } from "@/app/(shop)/privacidade/_content";
+import { PRODUCT_COPY } from "@/app/(shop)/product/[slug]/_lib/product-copy";
+import {
+	ABOUT_DESCRIPTION,
+	aboutPillars,
+	sideNotes,
+} from "@/app/(shop)/sobre/_content";
 import type { InstitutionalSection } from "@/components/institutional-page";
 
 // Decisão do dono do produto (spec, Track 3): nenhum texto institucional
@@ -58,5 +66,39 @@ describe.each([
 			expect(items.every((t) => t.trim().length > 0)).toBe(true);
 			expect(new Set(items).size).toBe(items.length);
 		}
+	});
+});
+
+describe("sobre", () => {
+	it("não menciona troca, devolução ou garantia", () => {
+		const texts = [
+			ABOUT_DESCRIPTION,
+			...aboutPillars.flatMap((p) => [p.label, p.title, p.description]),
+			...sideNotes.flatMap((n) => [n.label, n.text]),
+		];
+		for (const text of texts) {
+			expect(text).not.toMatch(FORBIDDEN);
+		}
+	});
+});
+
+describe("página de produto", () => {
+	it("os textos fixos não mencionam troca, devolução ou garantia", () => {
+		for (const text of Object.values(PRODUCT_COPY)) {
+			expect(text).not.toMatch(FORBIDDEN);
+		}
+	});
+
+	// A caixa de compra e a barra fixa são onde os selos de garantia moravam:
+	// texto escrito direto no JSX também é pego, não só o de PRODUCT_COPY.
+	it.each([
+		"app/(shop)/product/[slug]/_components/product-info.tsx",
+		"app/(shop)/product/[slug]/_components/sticky-buy-bar.tsx",
+	])("%s não volta a citar troca, devolução ou garantia", (file) => {
+		const source = readFileSync(
+			resolve(import.meta.dirname, "../..", file),
+			"utf8"
+		);
+		expect(source).not.toMatch(FORBIDDEN);
 	});
 });

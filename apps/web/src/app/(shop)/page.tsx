@@ -1,22 +1,23 @@
 import { db } from "@emach/db";
 import { getFeaturedPromotion } from "@emach/db/queries/promotions";
-import { getRecentTools } from "@emach/db/queries/tools";
 import { banner } from "@emach/db/schema/banner";
-import { category } from "@emach/db/schema/categories";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
+import { SlidersHorizontal } from "lucide-react";
 import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
+import Link from "next/link";
 import { Suspense } from "react";
-import { BranchMapSection } from "@/components/branch-map-section";
-import { CategoryGrid } from "@/components/category-grid";
+
 import { HeroCarousel } from "@/components/hero-carousel";
-import { PageContainer } from "@/components/page-container";
-import { ProductCarousel } from "@/components/product-carousel";
+import { ServicePicker } from "@/components/home/service-picker";
+import { ProductCard } from "@/components/product-card";
 import { PromoHighlight } from "@/components/promo-highlight";
-import { SectionHeader } from "@/components/section-header";
+import { Shelf } from "@/components/shelf";
 import { SiteHeader } from "@/components/site-header";
+import { getCardExtras } from "@/lib/card-data";
 import { canonicalFor } from "@/lib/seo/canonical";
-import { getVoltagesByTool } from "@/lib/variant-voltages";
+import { getServices } from "@/lib/services";
+import { getShelves } from "@/lib/shelves";
 
 export const metadata: Metadata = {
 	alternates: canonicalFor("/"),
@@ -32,106 +33,32 @@ function getActiveBanners() {
 		.orderBy(asc(banner.sortOrder));
 }
 
-async function getRootCategories() {
-	return db
-		.select({
-			id: category.id,
-			slug: category.slug,
-			name: category.name,
-			description: category.description,
-		})
-		.from(category)
-		.where(and(isNull(category.parentId), eq(category.isActive, true)))
-		.orderBy(asc(category.sortOrder))
-		.limit(4);
-}
-
-function arrayLiteral<T>(values: T[], castType: string) {
-	return sql`ARRAY[${sql.join(
-		values.map((v) => sql`${v}`),
-		sql`, `
-	)}]::${sql.raw(castType)}`;
-}
-
-async function getCategoryImages(
-	slugs: string[]
-): Promise<Map<string, string>> {
-	if (slugs.length === 0) {
-		return new Map();
-	}
-
-	const owned = await db.execute<{ slug: string; url: string }>(sql`
-		WITH roots AS (
-			SELECT id, slug FROM category WHERE slug = ANY(${arrayLiteral(slugs, "text[]")})
-		),
-		candidates AS (
-			-- Imagem primária (menor sort_order) da 1ª ferramenta ativa
-			-- cadastrada na categoria (menor created_at; id desempata).
-			SELECT r.slug, ti.url,
-			       ROW_NUMBER() OVER (
-			         PARTITION BY r.slug
-			         ORDER BY t.created_at ASC, t.id ASC, ti.sort_order ASC
-			       ) AS rn
-			FROM roots r
-			JOIN category c
-			  ON c.path = '/' || r.slug
-			  OR c.path LIKE '/' || r.slug || '/%'
-			JOIN tool_category tc ON tc.category_id = c.id
-			JOIN tool t ON t.id = tc.tool_id
-			JOIN tool_image ti ON ti.tool_id = tc.tool_id
-			WHERE t.status = 'active'
-		)
-		SELECT slug, url FROM candidates WHERE rn = 1
-	`);
-
-	const map = new Map<string, string>();
-	for (const row of owned.rows) {
-		map.set(row.slug, row.url);
-	}
-
-	return map;
-}
-
-// Dados da home cacheados (ISR 10min, igual ao card de produto na home antes).
-// Reads independentes em paralelo: categoryImages e voltagesByTool dependem só
-// da 1ª wave, então rodam juntos (corte de uma ida sequencial ao banco).
+// Dados da home cacheados (ISR 10min, igual às prateleiras e aos ofícios).
 async function loadHome() {
 	"use cache";
 	cacheLife({ revalidate: 600 });
 
-	const [rootCategories, featuredPromotion, recentTools, banners] =
-		await Promise.all([
-			getRootCategories(),
-			getFeaturedPromotion(db),
-			getRecentTools(db, 8),
-			getActiveBanners(),
-		]);
-
-	const [categoryImages, voltagesByTool] = await Promise.all([
-		getCategoryImages(rootCategories.map((c) => c.slug)),
-		getVoltagesByTool([
-			...recentTools.map((t) => t.id),
-			...(featuredPromotion?.tools.map((t) => t.id) ?? []),
-		]),
+	const [banners, featuredPromotion, services, shelves] = await Promise.all([
+		getActiveBanners(),
+		getFeaturedPromotion(db),
+		getServices(),
+		getShelves(),
 	]);
 
-	return {
-		banners,
-		categoryImages,
-		featuredPromotion,
-		recentTools,
-		rootCategories,
-		voltagesByTool,
-	};
+	const extrasByTool = await getCardExtras([
+		...shelves.shelves.flatMap((s) => s.items.map((t) => t.id)),
+		...(featuredPromotion?.tools.map((t) => t.id) ?? []),
+	]);
+
+	return { banners, extrasByTool, featuredPromotion, services, shelves };
 }
 
 // Fallback do cache-miss (raro: loadHome é 'use cache' 600s). Espelha a caixa
-// do hero (70svh mobile / svh desktop) em preto pra navbar overlay não flutuar
-// sobre flash branco enquanto os dados chegam.
+// do hero pra página não pular quando os dados chegam.
 function HomeSkeleton() {
 	return (
 		<main id="main-content">
-			<div className="h-[70svh] min-h-[30rem] w-full bg-black lg:h-svh lg:min-h-0" />
+			<div className="h-[70svh] min-h-[30rem] w-full bg-black lg:h-[calc(100svh-176px)]" />
 		</main>
 	);
 }
@@ -139,7 +66,7 @@ function HomeSkeleton() {
 export default function HomePage() {
 	return (
 		<>
-			<SiteHeader overlay />
+			<SiteHeader />
 			<Suspense fallback={<HomeSkeleton />}>
 				<HomeContent />
 			</Suspense>
@@ -147,66 +74,98 @@ export default function HomePage() {
 	);
 }
 
-async function HomeContent() {
-	const {
-		banners,
-		categoryImages,
-		featuredPromotion,
-		recentTools,
-		rootCategories,
-		voltagesByTool,
-	} = await loadHome();
+function distinctCounts(lists: { id: string; inStock: boolean }[][]) {
+	const byId = new Map<string, boolean>();
+	for (const list of lists) {
+		for (const tool of list) {
+			byId.set(tool.id, tool.inStock);
+		}
+	}
+	let inStock = 0;
+	for (const value of byId.values()) {
+		if (value) {
+			inStock += 1;
+		}
+	}
+	return { inStock, total: byId.size };
+}
 
-	const rootCategoriesWithImages = rootCategories.map((c) => ({
-		...c,
-		imageUrl: categoryImages.get(c.slug) ?? null,
-	}));
+async function HomeContent() {
+	const { banners, extrasByTool, featuredPromotion, services, shelves } =
+		await loadHome();
+	const byService = shelves.by === "service";
+	const counts = distinctCounts(services.map((s) => s.preview));
 
 	return (
 		<main id="main-content">
 			<HeroCarousel banners={banners} />
 
-			{rootCategories.length > 0 && (
-				<section aria-label="Categorias" className="bg-gray-10">
-					<PageContainer className="px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18">
-						<SectionHeader
-							label="Categorias"
-							link={{
-								href: "/catalog",
-								label: "Ver todas",
-								variant: "arrow",
-							}}
-							title="Explorar por categoria"
-						/>
-						<CategoryGrid categories={rootCategoriesWithImages} />
-					</PageContainer>
+			{services.length > 0 && <ServicePicker services={services} />}
+
+			{shelves.shelves.length > 0 && (
+				<section
+					aria-labelledby="vitrine-titulo"
+					className="border-line border-t bg-canteiro py-9 pb-11 md:py-14 md:pb-16"
+				>
+					<div className="shop-wrap">
+						<div className="mb-[22px] flex flex-wrap items-end justify-between gap-x-6 gap-y-4 md:mb-[30px]">
+							<div>
+								<h2
+									className="font-display font-extrabold text-[clamp(1.9rem,1.3rem+1.6vw,2.75rem)] uppercase leading-[0.98]"
+									id="vitrine-titulo"
+								>
+									{byService
+										? "A loja inteira, por serviço"
+										: "A loja inteira, por categoria"}
+								</h2>
+								{byService && (
+									<p className="mt-2.5 max-w-[60ch] text-[16px] text-ink-2">
+										{counts.total} {counts.total === 1 ? "produto" : "produtos"}
+										, {counts.inStock} em estoque. O que serve em dois serviços
+										aparece nas duas prateleiras.
+									</p>
+								)}
+							</div>
+							<Link
+								className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-[18px] font-bold text-[15px] text-ink no-underline hover:border-ink max-md:w-full"
+								href="/catalog"
+							>
+								<SlidersHorizontal aria-hidden="true" className="size-5" />
+								Abrir catálogo com filtros
+							</Link>
+						</div>
+						<div className="grid gap-[34px] md:gap-11">
+							{shelves.shelves.map((shelf) => (
+								<Shelf
+									href={shelf.href}
+									imageSrc={shelf.imageSrc}
+									inStockCount={shelf.inStockCount}
+									itemCount={shelf.items.length}
+									key={shelf.key}
+									productCount={shelf.productCount}
+									title={shelf.title}
+								>
+									{shelf.items.map((tool) => (
+										<ProductCard
+											extras={extrasByTool[tool.id]}
+											headingLevel={4}
+											key={tool.id}
+											tool={tool}
+										/>
+									))}
+								</Shelf>
+							))}
+						</div>
+					</div>
 				</section>
 			)}
 
-			{featuredPromotion && featuredPromotion.tools.length >= 2 && (
+			{featuredPromotion && (
 				<PromoHighlight
+					extrasByTool={extrasByTool}
 					promotion={featuredPromotion}
-					voltagesByTool={voltagesByTool}
 				/>
 			)}
-
-			{recentTools.length > 0 && (
-				<section
-					aria-label="Novidades"
-					className="bg-gray-10 px-5 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-18"
-				>
-					<PageContainer>
-						<ProductCarousel
-							label="Novidades"
-							title="Recém-chegadas"
-							tools={recentTools}
-							voltagesByTool={voltagesByTool}
-						/>
-					</PageContainer>
-				</section>
-			)}
-
-			<BranchMapSection />
 		</main>
 	);
 }

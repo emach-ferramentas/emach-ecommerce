@@ -9,9 +9,8 @@ import { PageContainer } from "@/components/page-container";
 import { SectionLabel } from "@/components/section-label";
 import { useCart } from "@/lib/cart-context";
 import { fmtBRL, numericToCents } from "@/lib/format";
+import { installmentLabel } from "@/lib/installments";
 import { useRemoveWithUndo } from "@/lib/use-remove-with-undo";
-
-const INSTALLMENTS = 12;
 
 export function CartContent() {
 	const { items, setQty } = useCart();
@@ -108,7 +107,9 @@ export function CartContent() {
 							</span>
 						</div>
 						<div className="mt-0.5 text-right text-[12px] text-white/55">
-							ou {INSTALLMENTS}× de {fmtBRL(total / INSTALLMENTS)} sem juros
+							{installmentLabel(total)
+								? `ou ${installmentLabel(total)} sem juros`
+								: "À vista no Pix, boleto ou cartão"}
 						</div>
 
 						<EmachLinkButton

@@ -35,26 +35,24 @@ export function ReviewCard({
 			<header className="mb-2.5 flex items-center justify-between gap-3">
 				<div className="flex flex-wrap items-center gap-2.5">
 					<StarRating rating={review.rating} />
-					<span className="font-semibold text-[13px] text-near-black">
+					<span className="font-semibold text-[13px] text-ink">
 						{review.clientName}
 					</span>
 					<VerifiedBadge />
 				</div>
 				<time
-					className="font-display text-[11px] text-gray-60 uppercase tracking-[0.08em]"
+					className="font-display text-[11px] text-ink-muted uppercase tracking-[0.08em]"
 					dateTime={review.createdAt.toISOString()}
 				>
 					{formatReviewDate(review.createdAt)}
 				</time>
 			</header>
 			{review.title && (
-				<h3 className="mb-1 font-semibold text-[14px] text-near-black">
+				<h3 className="mb-1 font-semibold text-[14px] text-ink">
 					{review.title}
 				</h3>
 			)}
-			<p className="text-[13.5px] text-near-black/75 leading-relaxed">
-				{review.body}
-			</p>
+			<p className="text-[13.5px] text-ink/75 leading-relaxed">{review.body}</p>
 		</article>
 	);
 }

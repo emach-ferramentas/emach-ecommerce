@@ -1,137 +1,166 @@
 import type { ToolListItem } from "@emach/db/queries/tools";
-import type { Voltage } from "@emach/db/schema/tools";
+import { cn } from "@emach/ui/lib/utils";
+import { Wrench } from "lucide-react";
+import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ProductImage } from "@/components/product-image";
-import { QuickAddButton } from "@/components/quick-add-button";
-import { SectionLabel } from "@/components/section-label";
-import type { CartItemSnapshot } from "@/lib/cart-store";
-import { fmtNumericBRL } from "@/lib/format";
+
+import {
+	CardActionButton,
+	QuickViewButton,
+} from "@/components/product-card-actions";
+import { StockLine } from "@/components/stock-line";
+import {
+	cardAction,
+	listItemSnapshot,
+	voltageSummary,
+} from "@/lib/card-action";
+import type { CardExtras } from "@/lib/card-data";
+import { fmtBRL, fmtNumericBRL } from "@/lib/format";
+import { installmentText } from "@/lib/installments";
+import { listPriceCents } from "@/lib/list-price";
 
 interface ProductCardProps {
-	/** "dark" sobre fundo claro (default); "elevated" (#242424) sobre fundo escuro (promoções). */
-	surface?: "dark" | "elevated";
+	extras?: CardExtras;
+	/** Nível do título: 3 dentro de seção com h2, 4 dentro de prateleira com h3. */
+	headingLevel?: 2 | 3 | 4;
+	/** Primeira dobra: a foto carrega com prioridade. */
+	priority?: boolean;
+	/** Grade densa (2 colunas no celular) encolhe textos e respiros. */
+	size?: "default" | "compact";
 	tool: ToolListItem;
-	/** Voltagens das variantes (selos na imagem). Vazio/ausente = sem variação. */
-	voltages?: Voltage[];
 }
 
-function discountPercent(
-	price: string,
-	discounted: string | null
-): number | null {
-	if (discounted == null) {
-		return null;
-	}
-	const p = Number(price);
-	const d = Number(discounted);
-	if (!(p > 0 && d >= 0) || d >= p) {
-		return null;
-	}
-	return Math.round((1 - d / p) * 100);
-}
+const NO_EXTRAS: CardExtras = { specs: [], voltages: [] };
 
+/**
+ * Card de produto do redesign H3: foto grande em fundo neutro com "Ver rápido",
+ * estoque, nome, chips curtos, preço com parcelas e o botão que muda conforme o
+ * produto (adicionar, escolher voltagem ou avisar quando chegar).
+ */
 export function ProductCard({
-	surface = "dark",
+	extras = NO_EXTRAS,
+	headingLevel = 3,
+	priority = false,
+	size = "default",
 	tool,
-	voltages,
 }: ProductCardProps) {
-	const categorySlug = tool.primaryCategory?.slug ?? "";
-	const categoryName = tool.primaryCategory?.name ?? "";
-	const hasDiscount = tool.defaultVariant.discountedAmount != null;
-	const discount = discountPercent(
-		tool.defaultVariant.priceAmount,
-		tool.defaultVariant.discountedAmount
-	);
-	const surfaceBg =
-		surface === "elevated" ? "bg-surface-elevated" : "bg-near-black";
-
-	const snapshot: CartItemSnapshot = {
-		categoryName: tool.primaryCategory?.name ?? null,
-		categorySlug: tool.primaryCategory?.slug ?? null,
-		imageUrl: tool.primaryImage?.url ?? null,
-		name: tool.name,
-		priceAmount:
-			tool.defaultVariant.discountedAmount ?? tool.defaultVariant.priceAmount,
-		sku: tool.defaultVariant.sku,
-		slug: tool.slug,
-		toolId: tool.id,
-		variantId: tool.defaultVariant.id,
-		voltage: tool.defaultVariant.voltage,
-	};
+	const Heading = `h${headingLevel}` as const;
+	const href = `/product/${tool.slug}` as Route;
+	const priceCents = listPriceCents(tool);
+	const hasDiscount =
+		tool.defaultVariant.discountedAmount != null &&
+		priceCents !== null &&
+		Number(tool.defaultVariant.priceAmount) * 100 > priceCents;
+	const voltageText = voltageSummary(extras.voltages);
+	const specs = [...extras.specs, ...(voltageText ? [voltageText] : [])];
+	const compact = size === "compact";
 
 	return (
-		<div
-			className={`group relative flex h-full flex-col overflow-hidden rounded-[2px] border border-white/14 ${surfaceBg} transition-[transform,border-color] duration-[var(--card-dur)] ease-[var(--card-ease)] hover:-translate-y-1 hover:border-white/30 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
-		>
-			<div className="relative aspect-square shrink-0 overflow-hidden bg-image-bg">
-				<ProductImage
-					alt={tool.name}
-					categorySlug={categorySlug}
-					sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-					src={tool.primaryImage?.url}
-					zoom
-				/>
-
-				{discount != null && (
-					<span className="absolute top-0 right-0 z-10 inline-flex items-center bg-emach-red px-2.5 py-1 font-bold font-display text-lg text-white uppercase tracking-[0.06em]">
-						-{discount}%
-					</span>
-				)}
-
-				{voltages && voltages.length > 0 && (
-					<div className="absolute bottom-2 left-2 z-[2] flex flex-wrap gap-1.5">
-						{voltages.map((v) => (
-							<span
-								className="rounded-[2px] bg-near-black/85 px-2 py-0.5 font-bold font-display text-[11px] text-white uppercase tracking-[0.06em]"
-								key={v}
-							>
-								{v}
-							</span>
-						))}
-					</div>
-				)}
-
-				{tool.inStock ? (
-					<QuickAddButton
-						className="absolute inset-x-0 bottom-0 z-[3] flex min-h-11 pointer-coarse:translate-y-0 translate-y-full items-center justify-center gap-2 bg-emach-red py-2.5 font-bold font-display text-[13px] text-white uppercase tracking-[0.1em] transition-transform duration-[var(--card-dur)] ease-[var(--card-ease)] hover:bg-emach-red-hover group-focus-within:translate-y-0 group-hover:translate-y-0 motion-reduce:transition-none"
-						item={snapshot}
-					/>
-				) : (
-					<div className="absolute inset-0 z-10 flex items-center justify-center bg-near-black/60">
-						<span className="font-display font-semibold text-[12px] text-white uppercase tracking-[0.14em]">
-							Esgotado
-						</span>
-					</div>
-				)}
-			</div>
-
-			<div className="flex flex-1 flex-col gap-1 px-3 py-3.5">
-				<SectionLabel tone="light">{categoryName}</SectionLabel>
-				<p className="mt-1 font-medium text-[14px] text-white leading-tight">
-					{tool.name}
-				</p>
-				<div className="mt-auto pt-2">
-					<div className="flex items-baseline gap-2">
-						<span className="font-bold text-[15px] text-white tabular-nums">
-							{fmtNumericBRL(
-								hasDiscount
-									? tool.defaultVariant.discountedAmount
-									: tool.defaultVariant.priceAmount
+		<article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[5px] border border-line bg-paper transition-colors duration-150 ease-out hover:border-line-strong">
+			<div className="relative aspect-square bg-well">
+				<Link
+					aria-hidden="true"
+					className="absolute inset-0 block"
+					href={href}
+					tabIndex={-1}
+				>
+					{tool.primaryImage ? (
+						<Image
+							alt=""
+							className={cn(
+								"object-contain mix-blend-multiply transition-transform duration-500 ease-out-expo group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
+								compact ? "p-3 sm:p-5" : "p-5",
+								!tool.inStock && "opacity-50 grayscale"
 							)}
+							fill
+							priority={priority}
+							sizes="(min-width: 1296px) 300px, (min-width: 768px) 33vw, 50vw"
+							src={tool.primaryImage.url}
+						/>
+					) : (
+						<span className="grid size-full place-items-center text-ink-muted">
+							<Wrench
+								aria-hidden="true"
+								className="size-1/3"
+								strokeWidth={1.2}
+							/>
 						</span>
-						{hasDiscount && (
-							<span className="text-[11px] text-white/60 tabular-nums line-through">
-								{fmtNumericBRL(tool.defaultVariant.priceAmount)}
-							</span>
-						)}
-					</div>
-				</div>
+					)}
+				</Link>
+				<QuickViewButton name={tool.name} slug={tool.slug} />
 			</div>
 
-			{/* Stretched link: cobre o card pra navegação, fica abaixo do quick-add (z-[3]). */}
-			<Link className="absolute inset-0 z-[1]" href={`/product/${tool.slug}`}>
-				<span className="sr-only">{tool.name}</span>
-			</Link>
-		</div>
+			<div
+				className={cn(
+					"flex flex-1 flex-col",
+					compact
+						? "gap-[5px] p-2.5 pb-3 sm:gap-1.5 sm:p-4 sm:pb-[18px]"
+						: "gap-1.5 p-4 pb-[18px]"
+				)}
+			>
+				<StockLine inStock={tool.inStock} />
+				<Heading
+					className={cn(
+						"line-clamp-3 min-h-[calc(1.35em*3)] font-semibold leading-[1.35]",
+						compact ? "text-[14px] sm:text-[16px]" : "text-[16px]"
+					)}
+				>
+					<Link className="text-ink no-underline hover:underline" href={href}>
+						{tool.name}
+					</Link>
+				</Heading>
+				{specs.length > 0 && (
+					<p
+						className={cn(
+							"text-ink-muted tabular-nums",
+							compact ? "text-[12.5px] sm:text-[13.5px]" : "text-[13.5px]"
+						)}
+					>
+						{specs.join(" · ")}
+					</p>
+				)}
+				<div className="mt-auto pt-2">
+					{priceCents === null ? (
+						<p className="font-bold text-[15px] text-ink-muted">
+							Preço sob consulta
+						</p>
+					) : (
+						<>
+							<p className="flex flex-wrap items-baseline gap-x-2">
+								<span
+									className={cn(
+										"font-extrabold text-ink tabular-nums leading-[1.05] tracking-[-0.01em]",
+										compact ? "text-[20px] sm:text-[27px]" : "text-[27px]"
+									)}
+								>
+									{fmtBRL(priceCents)}
+								</span>
+								{hasDiscount && (
+									<span className="text-[13px] text-ink-muted tabular-nums line-through">
+										<span className="sr-only">Antes </span>
+										{fmtNumericBRL(tool.defaultVariant.priceAmount)}
+									</span>
+								)}
+							</p>
+							<p
+								className={cn(
+									"mt-1 min-h-[1.4em] text-ink-2 tabular-nums",
+									compact ? "text-[12.5px] sm:text-[14px]" : "text-[14px]"
+								)}
+							>
+								{installmentText(priceCents)}
+							</p>
+						</>
+					)}
+				</div>
+				<CardActionButton
+					action={cardAction(tool, extras.voltages)}
+					item={listItemSnapshot(tool)}
+					name={tool.name}
+					slug={tool.slug}
+				/>
+			</div>
+		</article>
 	);
 }

@@ -1,22 +1,16 @@
 "use client";
 
 import { log } from "evlog/next/client";
-import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { useEffect } from "react";
 
 import { EmachButton, emachButtonVariants } from "@/components/emach-button";
 import "../index.css";
 
-const barlow = Barlow({
+const archivo = Archivo({
 	subsets: ["latin"],
-	weight: ["400", "500", "600", "700"],
-	variable: "--font-barlow",
-});
-
-const barlowCondensed = Barlow_Condensed({
-	subsets: ["latin"],
-	weight: ["500", "600", "700"],
-	variable: "--font-barlow-condensed",
+	axes: ["wdth"],
+	variable: "--font-archivo",
 });
 
 // Substitui o root layout inteiro: sem Providers, sem header, sem next/link.
@@ -39,9 +33,7 @@ export default function GlobalError({
 
 	return (
 		<html lang="pt-BR">
-			<body
-				className={`${barlow.variable} ${barlowCondensed.variable} bg-gray-10 antialiased`}
-			>
+			<body className={`${archivo.variable} bg-background antialiased`}>
 				<title>Erro · EMACH</title>
 				<main className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col items-center justify-center px-5 py-32 text-center sm:px-8 lg:px-10">
 					<h1 className="text-balance font-display font-medium text-[clamp(48px,7vw,96px)] text-near-black leading-none tracking-[-0.01em]">

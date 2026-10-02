@@ -2,22 +2,19 @@
 "use client";
 
 import type { CategoryNode } from "@emach/db/queries/categories";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@emach/ui/components/accordion";
-import { RadioGroup, RadioGroupItem } from "@emach/ui/components/radio-group";
 import { Switch } from "@emach/ui/components/switch";
 import { cn } from "@emach/ui/lib/utils";
+import { Check } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
+import type { CatalogService } from "../_lib/catalog-data";
 import type { VoltageKey } from "../_lib/catalog-filters";
 import type { FacetCounts } from "../_lib/facet-counts";
+import { isModifiedClick } from "../_lib/is-modified-click";
 import { matchPriceRange, PRICE_RANGES } from "../_lib/price-ranges";
 import { CategoryDrilldown } from "./category-drilldown";
 
 const VOLTAGE_OPTIONS: VoltageKey[] = ["127V", "220V", "Bivolt", "380V"];
-const FILTER_SECTIONS = ["categoria", "preco", "voltagem"];
 
 interface FilterPanelProps {
 	activeSlug: string | null;
@@ -38,38 +35,55 @@ interface FilterPanelProps {
 	pminValue: string;
 	priceMax: number | null;
 	priceMin: number | null;
+	services: CatalogService[];
 	tree: CategoryNode[];
 	voltages: VoltageKey[];
 }
 
-/** Badge de nº de seleções ativas no header de um grupo. */
-function SectionBadge({ count }: { count: number }) {
-	if (count === 0) {
-		return null;
-	}
+function Group({
+	children,
+	title,
+}: {
+	children: React.ReactNode;
+	title: string;
+}) {
 	return (
-		<span className="ml-2 flex h-4 min-w-4 items-center justify-center bg-near-black px-1 font-bold text-[10px] text-white">
-			{count}
+		<fieldset className="min-w-0 border-ink border-t-2 pt-3 pb-[18px] first:max-lg:border-t-0">
+			<legend className="float-left mb-1 w-full p-0 font-extrabold text-[15px] text-ink">
+				{title}
+			</legend>
+			<div className="clear-both">{children}</div>
+		</fieldset>
+	);
+}
+
+/** Caixa de marcação desenhada (o controle real é o link ou o botão em volta). */
+function Box({ checked }: { checked: boolean }) {
+	return (
+		<span
+			aria-hidden="true"
+			className={cn(
+				"grid size-5 shrink-0 place-items-center rounded-[2px] border-2 border-line-strong bg-paper text-white transition-colors duration-100",
+				checked && "border-grafite bg-grafite"
+			)}
+		>
+			{checked && <Check className="size-3.5" strokeWidth={3} />}
 		</span>
 	);
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-	return (
-		<span className="font-bold font-display text-[11.5px] text-near-black uppercase tracking-[0.14em]">
-			{children}
-		</span>
-	);
-}
+const optionClass =
+	"flex min-h-11 w-full cursor-pointer items-center gap-3 text-left text-[15px] text-ink leading-snug no-underline [&:hover_.label]:underline";
 
 /**
- * Corpo dos filtros do catálogo, compartilhado entre a sidebar desktop
- * (`hidden lg:block`) e o drawer mobile (`Sheet`). `idPrefix` mantém os
- * `htmlFor`/`id` únicos quando ambas as instâncias coexistem no DOM.
+ * Corpo dos filtros do catálogo, compartilhado entre a coluna do desktop e a
+ * gaveta do celular. `idPrefix` mantém os `htmlFor`/`id` únicos quando as duas
+ * instâncias coexistem no DOM.
  */
 export function FilterPanel({
 	idPrefix,
 	tree,
+	services,
 	activeSlug,
 	facetCounts,
 	categoryHrefFor,
@@ -89,173 +103,153 @@ export function FilterPanel({
 }: FilterPanelProps) {
 	const promoId = `${idPrefix}-filter-promo`;
 	const matchedRange = matchPriceRange(priceMin, priceMax);
-	const hasPrice = priceMin !== null || priceMax !== null;
+	const serviceActive = services.some((s) => s.slug === activeSlug);
 
 	return (
 		<div>
-			<Accordion defaultValue={FILTER_SECTIONS} multiple>
-				<AccordionItem value="categoria">
-					<AccordionTrigger className="py-3.5 hover:no-underline">
-						<SectionLabel>Categoria</SectionLabel>
-						<SectionBadge count={activeSlug ? 1 : 0} />
-					</AccordionTrigger>
-					<AccordionContent className="pb-4">
-						<CategoryDrilldown
-							activeSlug={activeSlug}
-							counts={facetCounts.byCategory}
-							hrefFor={categoryHrefFor}
-							onSelect={onSelectCategory}
-							totalCount={facetCounts.total}
-							tree={tree}
-						/>
-					</AccordionContent>
-				</AccordionItem>
-
-				<AccordionItem value="preco">
-					<AccordionTrigger className="py-3.5 hover:no-underline">
-						<SectionLabel>Preço</SectionLabel>
-						<SectionBadge count={hasPrice ? 1 : 0} />
-					</AccordionTrigger>
-					<AccordionContent className="pb-4">
-						<RadioGroup
-							aria-label="Faixa de preço"
-							onValueChange={(value) => {
-								const range = PRICE_RANGES.find((r) => r.key === value);
-								if (range) {
-									onSelectPriceRange(range.pmin, range.pmax);
-								}
-							}}
-							value={matchedRange ?? ""}
-						>
-							{PRICE_RANGES.map((r) => {
-								const id = `${idPrefix}-price-${r.key}`;
-								return (
-									<label
-										className="flex min-h-11 cursor-pointer items-center gap-2.5 text-[14px] lg:min-h-9"
-										htmlFor={id}
-										key={r.key}
-									>
-										<RadioGroupItem
-											className="data-checked:border-near-black data-checked:bg-near-black"
-											id={id}
-											value={r.key}
-										/>
-										<span
-											className={cn(
-												"flex-1",
-												matchedRange === r.key
-													? "font-semibold text-near-black"
-													: "text-gray-60"
-											)}
-										>
-											{r.label}
-										</span>
-										<span className="text-[11.5px] text-gray-60 tabular-nums">
-											{facetCounts.byPriceRange[r.key]}
-										</span>
-									</label>
-								);
-							})}
-						</RadioGroup>
-						<div className="mt-2.5 flex items-center gap-1.5">
-							<input
-								aria-label="Preço mínimo em reais"
-								className="emach-input emach-input--sm w-full"
-								inputMode="numeric"
-								onChange={(e) => onPminChange(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") {
-										onApplyPrice();
+			{services.length > 0 && (
+				<Group title="Serviço">
+					{services.map((service) => {
+						const active = service.slug === activeSlug;
+						return (
+							<Link
+								aria-current={active ? "page" : undefined}
+								className={optionClass}
+								href={categoryHrefFor(active ? null : service.slug) as Route}
+								key={service.slug}
+								onClick={(e) => {
+									if (isModifiedClick(e)) {
+										return;
 									}
+									e.preventDefault();
+									onSelectCategory(active ? null : service.slug);
 								}}
-								placeholder="R$ mín"
-								type="number"
-								value={pminValue}
-							/>
-							<input
-								aria-label="Preço máximo em reais"
-								className="emach-input emach-input--sm w-full"
-								inputMode="numeric"
-								onChange={(e) => onPmaxChange(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") {
-										onApplyPrice();
-									}
-								}}
-								placeholder="R$ máx"
-								type="number"
-								value={pmaxValue}
-							/>
-							<button
-								className="flex h-9 shrink-0 cursor-pointer items-center border border-near-black bg-white px-3 font-bold font-display text-[12px] uppercase tracking-[0.08em] transition-colors hover:bg-near-black hover:text-white"
-								onClick={onApplyPrice}
-								type="button"
 							>
-								OK
-							</button>
-						</div>
-					</AccordionContent>
-				</AccordionItem>
+								<Box checked={active} />
+								<span className="label flex-1">{service.name}</span>
+								<span className="text-[14px] text-ink-muted tabular-nums">
+									{service.productCount}
+								</span>
+							</Link>
+						);
+					})}
+				</Group>
+			)}
 
-				<AccordionItem value="voltagem">
-					<AccordionTrigger className="py-3.5 hover:no-underline">
-						<SectionLabel>Voltagem</SectionLabel>
-						<SectionBadge count={voltages.length} />
-					</AccordionTrigger>
-					<AccordionContent className="pb-4">
-						<div className="grid grid-cols-2 gap-1.5">
-							{VOLTAGE_OPTIONS.map((v) => {
-								const selected = voltages.includes(v);
-								const count = facetCounts.byVoltage[v];
-								const disabled = count === 0 && !selected;
-								return (
-									<button
-										aria-pressed={selected}
-										className={cn(
-											"flex min-h-11 cursor-pointer items-center justify-center gap-1.5 border font-semibold text-[13px] transition-colors lg:min-h-9",
-											selected
-												? "border-near-black bg-near-black text-white"
-												: "border-border bg-white text-near-black hover:border-near-black",
-											disabled &&
-												"cursor-not-allowed opacity-45 hover:border-border"
-										)}
-										disabled={disabled}
-										key={v}
-										onClick={() => onToggleVoltage(v)}
-										type="button"
-									>
-										{v}
-										<span
-											className={cn(
-												"text-[11px] tabular-nums",
-												selected ? "text-white/55" : "text-gray-60"
-											)}
-										>
-											{count}
-										</span>
-									</button>
-								);
-							})}
-						</div>
-					</AccordionContent>
-				</AccordionItem>
-			</Accordion>
-
-			<label
-				className="flex min-h-11 cursor-pointer items-center gap-2.5 border-border border-t py-3.5 lg:min-h-9"
-				htmlFor={promoId}
-			>
-				<Switch
-					checked={onlyPromo}
-					className="data-checked:bg-near-black"
-					id={promoId}
-					onCheckedChange={(v) => onTogglePromo(v === true)}
+			<Group title="Categoria">
+				<CategoryDrilldown
+					activeSlug={serviceActive ? null : activeSlug}
+					counts={facetCounts.byCategory}
+					hrefFor={categoryHrefFor}
+					onSelect={onSelectCategory}
+					totalCount={facetCounts.total}
+					tree={tree}
 				/>
-				<span className="text-[14px]">Apenas em promoção</span>
-				<span className="ml-auto text-[11.5px] text-gray-60 tabular-nums">
-					{facetCounts.promo}
-				</span>
-			</label>
+			</Group>
+
+			<Group title="Voltagem">
+				{VOLTAGE_OPTIONS.map((v) => {
+					const selected = voltages.includes(v);
+					const count = facetCounts.byVoltage[v];
+					const disabled = count === 0 && !selected;
+					return (
+						<button
+							aria-pressed={selected}
+							className={cn(
+								optionClass,
+								disabled && "cursor-not-allowed opacity-45"
+							)}
+							disabled={disabled}
+							key={v}
+							onClick={() => onToggleVoltage(v)}
+							type="button"
+						>
+							<Box checked={selected} />
+							<span className="label flex-1">{v}</span>
+							<span className="text-[14px] text-ink-muted tabular-nums">
+								{count}
+							</span>
+						</button>
+					);
+				})}
+			</Group>
+
+			<Group title="Preço">
+				{PRICE_RANGES.map((r) => {
+					const selected = matchedRange === r.key;
+					return (
+						<button
+							aria-pressed={selected}
+							className={optionClass}
+							key={r.key}
+							onClick={() =>
+								selected
+									? onSelectPriceRange(null, null)
+									: onSelectPriceRange(r.pmin, r.pmax)
+							}
+							type="button"
+						>
+							<Box checked={selected} />
+							<span className="label flex-1">{r.label}</span>
+							<span className="text-[14px] text-ink-muted tabular-nums">
+								{facetCounts.byPriceRange[r.key]}
+							</span>
+						</button>
+					);
+				})}
+				<div className="mt-2 flex items-center gap-1.5">
+					<input
+						aria-label="Preço mínimo em reais"
+						className="h-11 w-full min-w-0 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-2.5 text-[15px] text-ink placeholder:text-ink-muted focus:border-ink focus:outline-none"
+						inputMode="numeric"
+						onChange={(e) => onPminChange(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") {
+								onApplyPrice();
+							}
+						}}
+						placeholder="R$ mín"
+						type="number"
+						value={pminValue}
+					/>
+					<input
+						aria-label="Preço máximo em reais"
+						className="h-11 w-full min-w-0 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-2.5 text-[15px] text-ink placeholder:text-ink-muted focus:border-ink focus:outline-none"
+						inputMode="numeric"
+						onChange={(e) => onPmaxChange(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") {
+								onApplyPrice();
+							}
+						}}
+						placeholder="R$ máx"
+						type="number"
+						value={pmaxValue}
+					/>
+					<button
+						className="h-11 shrink-0 cursor-pointer rounded-[3px] bg-grafite px-3.5 font-bold text-[14px] text-on-dark hover:bg-black"
+						onClick={onApplyPrice}
+						type="button"
+					>
+						Aplicar
+					</button>
+				</div>
+			</Group>
+
+			<Group title="Ofertas">
+				<label className={optionClass} htmlFor={promoId}>
+					<Switch
+						checked={onlyPromo}
+						className="data-checked:bg-grafite"
+						id={promoId}
+						onCheckedChange={(v) => onTogglePromo(v === true)}
+					/>
+					<span className="label flex-1">Só em promoção</span>
+					<span className="text-[14px] text-ink-muted tabular-nums">
+						{facetCounts.promo}
+					</span>
+				</label>
+			</Group>
 		</div>
 	);
 }

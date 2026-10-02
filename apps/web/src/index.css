@@ -1,5 +1,52 @@
 @import "@emach/ui/globals.css";
 
+/* Largura e respiro lateral das telas do redesign H3 (16 / 24 / 32 px). */
+@utility shop-wrap {
+	width: 100%;
+	max-width: 1296px;
+	padding-inline: 16px;
+	margin-inline: auto;
+	@media (width >= 48rem) {
+		padding-inline: 24px;
+	}
+	@media (width >= 64rem) {
+		padding-inline: 32px;
+	}
+}
+
+/* Painel de departamentos: desce por clip-path a partir da barra. */
+@keyframes emach-drop {
+	from {
+		clip-path: inset(0 0 100% 0);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+/* "Ver rápido": janela no desktop, folha de baixo no celular. */
+@keyframes emach-qv-in {
+	from {
+		opacity: 0.4;
+		transform: translateY(14px);
+		clip-path: inset(3% 3% 3% 3% round 8px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+		clip-path: inset(0 0 0 0 round 5px);
+	}
+}
+
+@keyframes emach-sheet-in {
+	from {
+		translate: 0 100%;
+	}
+	to {
+		translate: 0 0;
+	}
+}
+
 /* ============================================================
    Reveal animation — substitui framer-motion nos grids
    Estado de repouso = visível (SSR/no-JS nunca fica em branco)

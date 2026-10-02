@@ -4,12 +4,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { PhotoGallery } from "@/components/buy/photo-gallery";
 import { SiteHeader } from "@/components/site-header";
+import { specChips } from "@/lib/attribute-format";
+import { buildSlots } from "@/lib/gallery-slots";
 import { getProductShell } from "@/lib/product-detail";
+import { sellableVariants } from "@/lib/purchase";
 import { canonicalFor } from "@/lib/seo/canonical";
+import { getServicesForTool } from "@/lib/services";
 
 import { Breadcrumb } from "./_components/breadcrumb";
-import { ProductGallery } from "./_components/product-gallery";
 import { ProductInfo } from "./_components/product-info";
 import { BreadcrumbJsonLd, ProductJsonLd } from "./_components/product-json-ld";
 import { ProductReviewsSection } from "./_components/product-reviews-section";
@@ -18,6 +22,9 @@ import {
 	RelatedProducts,
 	RelatedProductsSkeleton,
 } from "./_components/related-products";
+import { ServiceKit } from "./_components/service-kit";
+
+const PRODUCT_SPEC_CHIPS = 4;
 
 interface ProductPageProps {
 	params: Promise<{ slug: string }>;
@@ -74,7 +81,9 @@ export async function generateMetadata({
 function ReviewsSkeleton() {
 	return (
 		<section className="py-14">
-			<div className="mx-auto h-64 w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)] animate-pulse bg-near-black/5" />
+			<div className="shop-wrap">
+				<div className="h-64 animate-pulse bg-canteiro" />
+			</div>
 		</section>
 	);
 }
@@ -90,12 +99,14 @@ export default async function ProductPage({
 		notFound();
 	}
 
-	const primaryImageUrl = detail.images[0]?.url ?? null;
-	const primaryCategorySlug = detail.primaryCategory?.slug ?? null;
-	const primaryCategoryName = detail.primaryCategory?.name ?? null;
+	const services = await getServicesForTool(detail.tool.id);
+	const attributes = [...detail.attributes].sort(
+		(x, y) => x.sortOrder - y.sortOrder
+	);
 	const video = detail.tool.videoUrl
 		? { url: detail.tool.videoUrl, poster: detail.tool.videoPosterUrl ?? null }
 		: null;
+	const defaultSku = sellableVariants(detail.variants)[0]?.sku ?? null;
 
 	return (
 		<>
@@ -107,39 +118,48 @@ export default async function ProductPage({
 			/>
 			<SiteHeader />
 
-			<main id="main-content">
-				<div className="mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)] pt-6">
+			<main className="max-md:pb-[84px]" id="main-content">
+				<div className="shop-wrap">
 					<Breadcrumb
 						category={detail.primaryCategory}
 						productName={detail.tool.name}
 					/>
+					<div className="grid items-start gap-5 pt-1.5 pb-9 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-8 md:pt-3.5 md:pb-12 lg:gap-x-12">
+						<div className="max-md:-mx-4">
+							<PhotoGallery
+								name={detail.tool.name}
+								priority
+								sizes="(min-width: 1296px) 660px, (min-width: 768px) 55vw, 100vw"
+								slots={buildSlots(detail.images, video)}
+								thumbs="side"
+							/>
+						</div>
+						<ProductInfo
+							activePromotion={detail.activePromotion}
+							product={{
+								categoryName: detail.primaryCategory?.name ?? null,
+								categorySlug: detail.primaryCategory?.slug ?? null,
+								imageUrl: detail.images[0]?.url ?? null,
+								name: detail.tool.name,
+								slug: detail.tool.slug ?? detail.tool.id,
+								toolId: detail.tool.id,
+							}}
+							reviewStats={detail.reviewStats}
+							services={services}
+							specChips={specChips(attributes, PRODUCT_SPEC_CHIPS)}
+							stockByVariant={detail.stockByVariant}
+							tool={detail.tool}
+							variants={detail.variants}
+						/>
+					</div>
 				</div>
 
-				<div className="flex flex-col items-center gap-8 px-5 pt-4 pb-8 sm:px-8 lg:flex-row lg:items-start lg:justify-center lg:gap-10 lg:px-10">
-					<ProductGallery
-						categorySlug={primaryCategorySlug ?? ""}
-						images={detail.images}
-						name={detail.tool.name}
-						video={video}
-					/>
-					<ProductInfo
-						activePromotion={detail.activePromotion}
-						primaryCategoryName={primaryCategoryName}
-						primaryCategorySlug={primaryCategorySlug}
-						primaryImageUrl={primaryImageUrl}
-						reviewStats={detail.reviewStats}
-						stockByVariant={detail.stockByVariant}
-						tool={detail.tool}
-						variants={detail.variants}
-					/>
-				</div>
+				<ServiceKit services={services} toolId={detail.tool.id} />
 
 				<ProductSpecs
 					attributes={detail.attributes}
-					categoryName={primaryCategoryName}
-					images={detail.images}
+					sku={defaultSku}
 					tool={detail.tool}
-					video={video}
 				/>
 
 				<Suspense fallback={<ReviewsSkeleton />}>

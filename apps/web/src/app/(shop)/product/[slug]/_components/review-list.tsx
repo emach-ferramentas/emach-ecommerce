@@ -71,9 +71,9 @@ function buildHref(
 }
 
 const PAGE_BTN =
-	"border border-near-black px-5 py-2 font-display font-semibold text-[11px] text-near-black uppercase tracking-[0.14em] transition-colors hover:bg-near-black hover:text-white";
+	"inline-flex min-h-11 items-center rounded-[3px] border-[1.5px] border-line-strong bg-paper px-5 font-bold text-[15px] text-ink transition-colors hover:border-ink";
 const PAGE_BTN_DISABLED =
-	"border border-border px-5 py-2 font-display font-semibold text-[11px] text-near-black/30 uppercase tracking-[0.14em]";
+	"border border-border px-5 py-2 font-display font-semibold text-[11px] text-ink/30 uppercase tracking-[0.14em]";
 
 export function ReviewList({
 	reviews,
@@ -96,7 +96,7 @@ export function ReviewList({
 	return (
 		<>
 			{reviews.length === 0 ? (
-				<div className="py-12 text-center text-[14px] text-gray-60">
+				<div className="py-12 text-center text-[14px] text-ink-muted">
 					Nenhuma avaliação nesta página.
 				</div>
 			) : (
@@ -126,7 +126,7 @@ export function ReviewList({
 					) : (
 						<span className={PAGE_BTN_DISABLED}>Anterior</span>
 					)}
-					<span className="font-display text-[11px] text-gray-60 uppercase tracking-[0.14em]">
+					<span className="font-display text-[11px] text-ink-muted uppercase tracking-[0.14em]">
 						Página {page} de {totalPages}
 					</span>
 					{nextHref ? (

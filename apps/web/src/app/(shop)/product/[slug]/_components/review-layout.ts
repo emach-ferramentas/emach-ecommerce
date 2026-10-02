@@ -18,8 +18,8 @@ export function lastRowStart(count: number): number {
 	return count % 2 === 0 ? count - 2 : count - 1;
 }
 
-// Sobra ímpar no fim do grid 2-col estica full-width (col-span-2) — mesma
-// regra de sobras da placa técnica (plate-layout.ts); mata a célula fantasma.
+// Sobra ímpar no fim do grid 2-col estica full-width (col-span-2); mata a
+// célula fantasma.
 export function stretchLast(count: number): boolean {
 	return count % 2 === 1;
 }

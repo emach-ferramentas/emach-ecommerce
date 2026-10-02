@@ -9,19 +9,24 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentProps } from "react";
 
-import { PageContainer } from "@/components/page-container";
+import { ContactLink } from "@/components/contact-link";
+import { getStoreNav } from "@/lib/store-nav";
 
-const navLinkClassName =
-	"rounded-[2px] font-display font-medium text-[14px] text-gray-20 uppercase tracking-[0.06em] no-underline transition-colors duration-150 ease-out hover:text-emach-red-on-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3";
+const linkClass =
+	"inline-flex min-h-11 items-center text-on-dark-muted no-underline hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:min-h-9";
 
-const navLinks: { href: Route; label: string }[] = [
-	{ href: "/catalog", label: "Catálogo" },
-	{ href: "/catalog?promo=1" as Route, label: "Ofertas" },
-	{ href: "/catalog?sort=newest" as Route, label: "Novidades" },
-	{ href: "/sobre", label: "Sobre" },
-	{ href: "/entrega", label: "Entrega" },
-	{ href: "/privacidade", label: "Privacidade" },
+const SERVICE_LINKS: { href: Route; label: string }[] = [
+	{ href: "/entrega", label: "Entrega e pagamento" },
 ];
+
+const INSTITUTIONAL_LINKS: { href: Route; label: string }[] = [
+	{ href: "/sobre", label: "Sobre a EMACH" },
+	{ href: "/sobre#filiais" as Route, label: "Nossas filiais" },
+	{ href: "/privacidade", label: "Privacidade" },
+	{ href: "/dashboard", label: "Minha conta" },
+];
+
+const PAYMENT_METHODS = ["Pix", "Boleto", "Cartão de crédito em até 12x"];
 
 const socialNetworkMeta: Record<
 	SocialNetwork,
@@ -68,61 +73,69 @@ function SocialIcon({
 	);
 }
 
+function FooterColumn({
+	children,
+	title,
+}: {
+	children: React.ReactNode;
+	title: string;
+}) {
+	return (
+		<div>
+			<h2 className="mb-2.5 font-extrabold text-[15px] text-white">{title}</h2>
+			<ul>{children}</ul>
+		</div>
+	);
+}
+
 export async function SiteFooter() {
 	"use cache";
 	cacheLife({ revalidate: 3600 });
-	const socialLinks = await getStoreSocialLinks(db);
+	const [socialLinks, nav] = await Promise.all([
+		getStoreSocialLinks(db),
+		getStoreNav(),
+	]);
 
 	return (
-		<footer className="bg-cinema-3 text-gray-60" role="contentinfo">
-			<PageContainer className="py-10">
-				<div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+		<footer
+			className="bg-grafite-deep pt-10 pb-7 text-[14.5px] text-on-dark [color-scheme:dark] md:pt-14"
+			role="contentinfo"
+		>
+			<div className="shop-wrap">
+				<div className="grid grid-cols-1 gap-[26px] md:grid-cols-2 md:gap-10 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))]">
 					<div>
 						<Link
-							aria-label="EMACH"
-							className="-ml-4 inline-flex rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3"
+							aria-label="EMACH Ferramentas, página inicial"
+							className="inline-flex min-h-11 items-center rounded-[3px] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
 							href="/"
 						>
 							<Image
-								alt="EMACH"
-								className="h-7 w-auto"
+								alt=""
+								className="h-auto w-[140px]"
 								height={377}
-								priority={false}
-								src="/emach-logo-red.svg"
+								src="/emach-logo.svg"
 								width={2041}
 							/>
 						</Link>
-						<p className="mt-3.5 max-w-[40ch] text-[13.5px] text-gray-55 leading-relaxed">
-							Ferramentas profissionais que não abandonam você no meio da obra.
+						<p className="mt-4 max-w-[40ch] text-on-dark-muted leading-relaxed">
+							<strong className="font-bold text-on-dark">
+								EMACH Ferramentas
+							</strong>
+							<br />
+							Ferramentas e acessórios para obra, organizados pelo serviço que
+							você vai fazer.
+							<br />
+							CNPJ <span className="tabular-nums">04.128.615/0001-59</span>
 						</p>
-						<p className="mt-4 text-[12px] text-gray-55 leading-relaxed opacity-85">
-							CNPJ 04.128.615/0001-59
-						</p>
-					</div>
-					<div className="flex flex-col gap-5 md:items-end">
-						<nav
-							aria-label="Navegar"
-							className="flex flex-wrap gap-x-7 gap-y-2.5 md:justify-end md:pt-1.5"
-						>
-							{navLinks.map((link) => (
-								<Link
-									className={navLinkClassName}
-									href={link.href}
-									key={link.label}
-								>
-									{link.label}
-								</Link>
-							))}
-						</nav>
 						{socialLinks.length > 0 && (
 							<nav
 								aria-label="Redes sociais"
-								className="-mx-3 flex items-center gap-1"
+								className="-mx-3 mt-3 flex items-center gap-1"
 							>
 								{socialLinks.map(({ network, url }) => (
 									<a
 										aria-label={socialNetworkMeta[network].label}
-										className="inline-flex size-11 items-center justify-center rounded-[2px] text-gray-20 transition-colors hover:text-emach-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emach-red focus-visible:ring-offset-2 focus-visible:ring-offset-cinema-3 active:text-emach-red-hover"
+										className="inline-flex size-11 items-center justify-center rounded-[3px] text-on-dark-muted transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
 										href={url}
 										key={network}
 										rel="noopener noreferrer"
@@ -134,8 +147,61 @@ export async function SiteFooter() {
 							</nav>
 						)}
 					</div>
+
+					{nav.services.length > 0 && (
+						<FooterColumn title="Por serviço">
+							{nav.services.map((s) => (
+								<li key={s.slug}>
+									<Link className={linkClass} href={s.href}>
+										{s.name}
+									</Link>
+								</li>
+							))}
+						</FooterColumn>
+					)}
+
+					<FooterColumn title="Atendimento">
+						{SERVICE_LINKS.map((link) => (
+							<li key={link.label}>
+								<Link className={linkClass} href={link.href}>
+									{link.label}
+								</Link>
+							</li>
+						))}
+						<li>
+							<ContactLink
+								className={`${linkClass} gap-1.5`}
+								iconClassName="size-4"
+							/>
+						</li>
+					</FooterColumn>
+
+					<FooterColumn title="Institucional">
+						{INSTITUTIONAL_LINKS.map((link) => (
+							<li key={link.label}>
+								<Link className={linkClass} href={link.href}>
+									{link.label}
+								</Link>
+							</li>
+						))}
+					</FooterColumn>
 				</div>
-			</PageContainer>
+
+				<div className="mt-10 flex flex-wrap items-center justify-between gap-5 border-line-dark border-t pt-[22px] text-[13.5px] text-on-dark-muted">
+					<div className="flex flex-wrap items-center gap-2">
+						<span>Formas de pagamento:</span>
+						{PAYMENT_METHODS.map((method) => (
+							<span
+								className="inline-flex min-h-[30px] items-center rounded-[3px] border border-line-dark px-2.5 font-semibold text-[13px] text-on-dark"
+								key={method}
+							>
+								{method}
+							</span>
+						))}
+					</div>
+					<p>EMACH Ferramentas · CNPJ 04.128.615/0001-59</p>
+				</div>
+			</div>
 		</footer>
 	);
 }

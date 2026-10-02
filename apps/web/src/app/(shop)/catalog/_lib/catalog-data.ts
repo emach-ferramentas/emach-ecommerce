@@ -5,10 +5,13 @@ import {
 	getCategoryTree,
 } from "@emach/db/queries/categories";
 import { getTools } from "@emach/db/queries/tools";
-import type { Voltage } from "@emach/db/schema/tools";
+import type { Route } from "next";
 import { cacheLife } from "next/cache";
-import { getVoltagesByTool } from "@/lib/variant-voltages";
+import { type CardExtrasByTool, getCardExtras } from "@/lib/card-data";
+import { isServicePath, splitServiceTree } from "@/lib/service-tree";
+import { serviceHref } from "@/lib/services";
 import type { SortKey, VoltageKey } from "./catalog-filters";
+import { ancestorsOf, type CatalogCrumb } from "./category-crumbs";
 import { type FacetCounts, getFacetCounts } from "./facet-counts";
 
 export const CATALOG_PAGE_SIZE = 24;
@@ -25,26 +28,38 @@ export interface CatalogDataInput {
 }
 
 export interface CatalogCurrentCategory {
+	/** Categorias acima da atual, da raiz para baixo (sem a mãe dos ofícios). */
+	ancestors: CatalogCrumb[];
 	description: string | null;
 	id: string;
+	/** A categoria atual é um ofício (filha de `servicos`). */
+	isService: boolean;
 	name: string;
+	slug: string;
+}
+
+export interface CatalogService {
+	href: Route;
+	name: string;
+	productCount: number;
 	slug: string;
 }
 
 type ToolsResult = Awaited<ReturnType<typeof getTools>>;
 
 export interface CatalogData {
+	cardExtras: CardExtrasByTool;
 	categoryTree: CategoryNode[];
 	currentCategory: CatalogCurrentCategory | null;
 	facetCounts: FacetCounts;
+	services: CatalogService[];
 	tools: ToolsResult["tools"];
 	total: number;
-	voltagesByTool: Map<string, Voltage[]>;
 }
 
 // Composição plana e testável (integração read-only em catalog-data.test.ts).
 // A árvore não depende da categoria ativa, então parte antes do lookup de slug;
-// getVoltagesByTool precisa dos ids retornados por getTools (serial inerente).
+// getCardExtras precisa dos ids retornados por getTools (serial inerente).
 export async function fetchCatalogData(
 	input: CatalogDataInput
 ): Promise<CatalogData> {
@@ -52,11 +67,16 @@ export async function fetchCatalogData(
 
 	let currentCategory: CatalogCurrentCategory | null = null;
 	if (input.cat) {
-		const detail = await getCategoryBySlug(db, input.cat);
+		const [detail, fullTree] = await Promise.all([
+			getCategoryBySlug(db, input.cat),
+			treePromise,
+		]);
 		if (detail) {
 			currentCategory = {
+				ancestors: ancestorsOf(fullTree, detail.path),
 				description: detail.description,
 				id: detail.id,
+				isService: isServicePath(detail.path),
 				name: detail.name,
 				slug: input.cat,
 			};
@@ -64,7 +84,7 @@ export async function fetchCatalogData(
 	}
 	const categoryId = currentCategory?.id;
 
-	const [{ tools, total }, categoryTree, facetCounts] = await Promise.all([
+	const [{ tools, total }, fullTree, facetCounts] = await Promise.all([
 		getTools(db, {
 			categoryId,
 			search: input.search,
@@ -87,15 +107,22 @@ export async function fetchCatalogData(
 		}),
 	]);
 
-	const voltagesByTool = await getVoltagesByTool(tools.map((t) => t.id));
+	const cardExtras = await getCardExtras(tools.map((t) => t.id));
+	const { categories, services } = splitServiceTree(fullTree);
 
 	return {
-		categoryTree,
+		categoryTree: categories,
 		currentCategory,
 		facetCounts,
+		services: services.map((s) => ({
+			href: serviceHref(s.slug),
+			name: s.name,
+			productCount: s.productCount,
+			slug: s.slug,
+		})),
 		tools,
 		total,
-		voltagesByTool,
+		cardExtras,
 	};
 }
 

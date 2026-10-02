@@ -14,7 +14,7 @@ interface InstitutionalPageProps {
 	 * (ex.: a lista de filiais em /entrega). Vão depois de `sections`.
 	 */
 	extraTocItems?: Array<{ id: string; title: string }>;
-	/** Rótulo curto acima do título (Barlow Condensed, uppercase). */
+	/** Rótulo curto acima do título (font-display, uppercase). */
 	label: string;
 	lede: string;
 	sections: InstitutionalSection[];

@@ -1,394 +1,286 @@
 "use client";
 
 import type { ToolDetail } from "@emach/db/queries/tools";
-import { cn } from "@emach/ui/lib/utils";
-import {
-	Check,
-	CheckCircle,
-	Share2,
-	ShieldCheck,
-	ShoppingBag,
-	Truck,
-	Zap,
-} from "lucide-react";
+import { HardHat } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { toast } from "sonner";
-import { EmachButton } from "@/components/emach-button";
+import { useRef, useState, useTransition } from "react";
+
+import { QtyStepper } from "@/components/buy/qty-stepper";
+import { VoltagePicker } from "@/components/buy/voltage-picker";
 import { ProductRating } from "@/components/product-rating";
-import { QuantityPicker } from "@/components/quantity-picker";
-import { SectionLabel } from "@/components/section-label";
+import { StockLine } from "@/components/stock-line";
 import { useCartActions } from "@/lib/cart-context";
-import type { CartItemSnapshot } from "@/lib/cart-store";
-import { fmtBRL, fmtNumericBRL, numericToCents } from "@/lib/format";
-import { effectiveAutoDiscountCents } from "@/lib/promotions";
-import { hasPrice } from "@/lib/sellable-variant";
+import { fmtNumericBRL } from "@/lib/format";
+import { installmentLabel, installmentText } from "@/lib/installments";
+import {
+	buildCartItem,
+	type CartItemSource,
+	initialVariantId,
+	sellableVariants,
+	variantPrice,
+	voltageLabel,
+} from "@/lib/purchase";
+import type { ToolService } from "@/lib/services";
+import { PRODUCT_COPY } from "../_lib/product-copy";
 import { StickyBuyBar } from "./sticky-buy-bar";
 
 interface ProductInfoProps {
 	activePromotion: ToolDetail["activePromotion"];
-	primaryCategoryName: string | null;
-	primaryCategorySlug: string | null;
-	primaryImageUrl: string | null;
+	product: CartItemSource;
 	reviewStats: ToolDetail["reviewStats"];
+	services: ToolService[];
+	specChips: string[];
 	stockByVariant: ToolDetail["stockByVariant"];
 	tool: ToolDetail["tool"];
 	variants: ToolDetail["variants"];
 }
 
-function applyDiscount(
-	priceAmount: string,
-	promotion: ToolDetail["activePromotion"]
-): string | null {
-	if (!promotion) {
-		return null;
-	}
-	const baseCents = numericToCents(priceAmount);
-	const discountedCents = effectiveAutoDiscountCents(
-		baseCents,
-		promotion.discountType,
-		promotion.discountValue
-	);
-	if (discountedCents >= baseCents) {
-		return null;
-	}
-	return (discountedCents / 100).toFixed(2);
-}
+const bigButton =
+	"inline-flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-[3px] px-[22px] font-bold text-[16px] disabled:cursor-not-allowed disabled:opacity-45";
 
 export function ProductInfo({
+	activePromotion,
+	product,
+	reviewStats,
+	services,
+	specChips,
+	stockByVariant,
 	tool,
 	variants,
-	activePromotion,
-	stockByVariant,
-	reviewStats,
-	primaryCategoryName,
-	primaryCategorySlug,
-	primaryImageUrl,
 }: ProductInfoProps) {
-	// React Compiler memoiza derivações automaticamente — sem useMemo manual.
-	// Variante sem preço (rascunho do dashboard) não entra na buy box; se
-	// nenhuma sobrar, cai no fallback "indisponível" abaixo.
-	const orderedVariants = variants.filter(hasPrice).sort((a, b) => {
-		if (a.isDefault !== b.isDefault) {
-			return a.isDefault ? -1 : 1;
-		}
-		return a.sortOrder - b.sortOrder;
-	});
-
-	const initialVariant = orderedVariants[0];
-	const [selectedVariantId, setSelectedVariantId] = useState<string>(
-		initialVariant?.id ?? ""
-	);
+	// Variante sem preço (rascunho do dashboard) não entra na compra; se nenhuma
+	// sobrar, cai no aviso de indisponível abaixo.
+	const options = sellableVariants(variants);
+	const [variantId, setVariantId] = useState(() => initialVariantId(options));
 	const [qty, setQty] = useState(1);
-	const [shared, setShared] = useState(false);
-	const [showSticky, setShowSticky] = useState(false);
-	const buyActionsRef = useRef<HTMLDivElement>(null);
+	const [voltageError, setVoltageError] = useState(false);
+	const pickerRef = useRef<HTMLDivElement>(null);
 	const { add, clear, openSheet } = useCartActions();
 	const router = useRouter();
 	// A navegação pro checkout é a maior janela morta da página: sem isso o
 	// usuário aperta, nada muda, e ele aperta de novo.
 	const [isNavigating, startNavigation] = useTransition();
 
-	// Mostra a barra sticky só depois que a buy box inline foi rolada pra cima
-	// (acima do viewport) — não aparece no load nem enquanto ela está à vista.
-	useEffect(() => {
-		const el = buyActionsRef.current;
-		if (!el) {
-			return;
-		}
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				setShowSticky(
-					!entry.isIntersecting && entry.boundingClientRect.top < 0
-				);
-			},
-			{ threshold: 0 }
-		);
-		observer.observe(el);
-		return () => observer.disconnect();
-	}, []);
+	const selected = options.find((v) => v.id === variantId) ?? null;
+	// Sem escolha ainda, o preço mostrado é o da default (1ª da lista).
+	const shown = selected ?? options[0];
 
-	const selected =
-		orderedVariants.find((v) => v.id === selectedVariantId) ?? initialVariant;
-
-	if (!selected) {
+	if (!shown) {
 		return (
-			<div className="w-full space-y-6 lg:w-[480px]">
-				<h1 className="font-display font-medium text-[36px] leading-[1.1] tracking-[-0.01em]">
+			<div className="min-w-0">
+				<h1 className="font-display font-extrabold text-[clamp(2rem,1.4rem+1.4vw,2.7rem)] uppercase leading-[0.98]">
 					{tool.name}
 				</h1>
-				<p className="text-[14px] text-gray-60">
-					Variante indisponível no momento.
+				<p className="mt-4 text-[15px] text-ink-muted">
+					{PRODUCT_COPY.noVariant}
 				</p>
 			</div>
 		);
 	}
 
-	const discounted = applyDiscount(selected.priceAmount, activePromotion);
-	const finalAmount = discounted ?? selected.priceAmount;
-	const inStock = stockByVariant[selected.id] ?? false;
-	const installmentCents = Math.round(numericToCents(finalAmount) / 12);
-	const baseCents = numericToCents(selected.priceAmount);
-	const finalCents = numericToCents(finalAmount);
-	const discountPct =
-		discounted != null && baseCents > 0
-			? Math.round((1 - finalCents / baseCents) * 100)
-			: 0;
-	const savingsCents = baseCents - finalCents;
-	const variantPricesDiffer =
+	const price = variantPrice(shown.priceAmount, activePromotion);
+	const anyInStock = options.some((v) => stockByVariant[v.id]);
+	const inStockVoltages = options
+		.filter((v) => stockByVariant[v.id] && v.voltage)
+		.map((v) => voltageLabel(v.voltage).name);
+	const pricesDiffer =
 		new Set(
-			orderedVariants.map(
-				(v) => applyDiscount(v.priceAmount, activePromotion) ?? v.priceAmount
+			options.map(
+				(v) => variantPrice(v.priceAmount, activePromotion).finalAmount
 			)
 		).size > 1;
+	const installments = installmentLabel(price.finalCents);
 
-	function buildCartItem(): CartItemSnapshot {
-		return {
-			toolId: tool.id,
-			variantId: selected.id,
-			slug: tool.slug ?? tool.id,
-			name: tool.name,
-			sku: selected.sku,
-			voltage: selected.voltage,
-			priceAmount: finalAmount,
-			imageUrl: primaryImageUrl,
-			categoryName: primaryCategoryName,
-			categorySlug: primaryCategorySlug,
-		};
+	/** Variante pronta para o carrinho, ou `null` pedindo a voltagem antes. */
+	function requireVariant() {
+		if (selected && stockByVariant[selected.id]) {
+			return selected;
+		}
+		setVoltageError(true);
+		pickerRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+		pickerRef.current?.querySelector<HTMLInputElement>("input:enabled")?.focus({
+			preventScroll: true,
+		});
+		return null;
+	}
+
+	function cartItem(variant: (typeof options)[number]) {
+		return buildCartItem(
+			product,
+			variant,
+			variantPrice(variant.priceAmount, activePromotion).finalAmount
+		);
 	}
 
 	function handleAddToCart() {
-		if (!inStock) {
-			toast.error("Variante esgotada");
+		const variant = requireVariant();
+		if (!variant) {
 			return;
 		}
-		add(buildCartItem(), qty);
+		add(cartItem(variant), qty);
 		openSheet();
 	}
 
 	function handleBuyNow() {
-		if (!inStock) {
-			toast.error("Variante esgotada");
+		const variant = requireVariant();
+		if (!variant) {
 			return;
 		}
 		clear();
-		add(buildCartItem(), qty);
+		add(cartItem(variant), qty);
 		startNavigation(() => {
 			router.push("/checkout");
 		});
 	}
 
-	async function handleShare() {
-		const url =
-			typeof window === "undefined"
-				? `/product/${tool.slug ?? tool.id}`
-				: window.location.href;
-		const data = {
-			title: `${tool.name} · EMACH`,
-			text: tool.description ?? tool.name,
-			url,
-		};
-		try {
-			if (navigator.share) {
-				await navigator.share(data);
-				return;
-			}
-			await navigator.clipboard.writeText(url);
-			setShared(true);
-			toast.success("Link copiado");
-			window.setTimeout(() => setShared(false), 1600);
-		} catch {
-			// user cancelled or unsupported — noop
-		}
-	}
-
 	return (
-		<div className="w-full space-y-6 lg:w-[480px]">
-			{primaryCategoryName && (
-				<SectionLabel tone="accent">{primaryCategoryName}</SectionLabel>
+		<div className="min-w-0">
+			{services.length > 0 && (
+				<div className="mb-3 flex flex-wrap gap-1.5">
+					{services.map((service) => (
+						<Link
+							className="inline-flex min-h-8 items-center gap-1.5 rounded-[3px] bg-grafite px-2.5 font-bold text-[12.5px] text-on-dark uppercase tracking-[0.04em] no-underline [font-stretch:80%] hover:bg-black"
+							href={service.href}
+							key={service.slug}
+						>
+							<HardHat aria-hidden="true" className="size-[15px]" />
+							{service.name}
+						</Link>
+					))}
+				</div>
 			)}
 
-			<div>
-				<h1 className="mt-3 font-display font-medium text-[36px] leading-[1.1] tracking-[-0.01em]">
-					{tool.name}
-				</h1>
-				<div className="mt-2 text-[13px] text-gray-60">SKU {selected.sku}</div>
-				{reviewStats.count > 0 && reviewStats.avg != null && (
-					<ProductRating average={reviewStats.avg} className="mt-3" />
-				)}
-			</div>
-
-			<div className="border border-border bg-white p-5">
-				<div className="flex items-center gap-3">
-					{discountPct > 0 && (
-						<span className="bg-emach-red px-2 py-1 font-bold font-display text-[14px] text-white tracking-[0.04em]">
-							−{discountPct}%
-						</span>
-					)}
-					<span className="font-bold font-display text-[40px] tabular-nums">
-						{fmtNumericBRL(finalAmount)}
-					</span>
-					{discounted != null && (
-						<span className="text-[16px] text-gray-60 tabular-nums line-through">
-							{fmtNumericBRL(selected.priceAmount)}
-						</span>
-					)}
-				</div>
-				{savingsCents > 0 && (
-					<div className="mt-1.5 font-semibold text-[13px] text-success-text">
-						Você economiza {fmtBRL(savingsCents)}
-					</div>
-				)}
-				<div className="mt-1 text-[13px] text-gray-60">
-					Em até <strong>12× de {fmtBRL(installmentCents)}</strong> sem juros
-				</div>
-
-				{orderedVariants.length > 1 && (
-					<fieldset className="m-0 mt-5 min-w-0 border-0 p-0">
-						<legend className="mb-2.5 font-semibold text-base">Voltagem</legend>
-						<div className="flex flex-wrap gap-2">
-							{orderedVariants.map((v) => {
-								const variantStock = stockByVariant[v.id] ?? false;
-								const isActive = v.id === selectedVariantId;
-								const vPrice =
-									applyDiscount(v.priceAmount, activePromotion) ??
-									v.priceAmount;
-								return (
-									<button
-										aria-pressed={isActive}
-										className={cn(
-											"flex min-w-[120px] flex-col gap-1 border-2 px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2",
-											!variantStock &&
-												"cursor-not-allowed border-gray-20 border-dashed opacity-45",
-											variantStock &&
-												isActive &&
-												"border-emach-red bg-near-black text-white",
-											variantStock &&
-												!isActive &&
-												"border-gray-20 bg-background text-foreground hover:border-foreground"
-										)}
-										disabled={!variantStock}
-										key={v.id}
-										onClick={() => variantStock && setSelectedVariantId(v.id)}
-										type="button"
-									>
-										<span className="flex items-center justify-between gap-2">
-											<span className="font-display font-semibold text-[12px] uppercase tracking-[0.12em] opacity-75">
-												{v.voltage ?? "Padrão"}
-											</span>
-											{!variantStock && (
-												<span className="opacity-100">
-													<span className="border border-emach-red/60 px-1.5 font-display text-[9px] text-emach-red-hover uppercase tracking-[0.08em]">
-														Esgotado
-													</span>
-												</span>
-											)}
-										</span>
-										{variantPricesDiffer && (
-											<span
-												className={cn(
-													"font-bold text-[15px] tabular-nums",
-													!variantStock && "line-through"
-												)}
-											>
-												{fmtNumericBRL(vPrice)}
-											</span>
-										)}
-									</button>
-								);
-							})}
-						</div>
-					</fieldset>
-				)}
-
-				<div className="mt-5 space-y-3" ref={buyActionsRef}>
-					{/* Abaixo de 440px o stepper (132px fixos) + o CTA (rótulo em
-					    whitespace-nowrap) não cabem lado a lado e empurravam a página
-					    pra fora da tela. Empilhar preserva o rótulo inteiro. */}
-					<div className="flex min-w-0 flex-col items-stretch gap-3 min-[440px]:flex-row">
-						<QuantityPicker
-							className="self-start min-[440px]:self-auto"
-							onChange={setQty}
-							value={qty}
-						/>
-						<EmachButton
-							className="min-w-0"
-							disabled={!inStock}
-							full
-							icon={<ShoppingBag size={16} />}
-							onClick={handleAddToCart}
-							size="md"
-							variant="dark"
+			<h1 className="font-display font-extrabold text-[clamp(2rem,1.4rem+1.4vw,2.7rem)] uppercase leading-[0.98]">
+				{tool.name}
+			</h1>
+			<p className="mt-2.5 text-[13.5px] text-ink-muted [overflow-wrap:anywhere]">
+				{tool.manufacturerName &&
+					`${PRODUCT_COPY.brand} ${tool.manufacturerName} · `}
+				{PRODUCT_COPY.code}{" "}
+				<span className="tabular-nums">{selected?.sku ?? shown.sku}</span>
+			</p>
+			{reviewStats.count > 0 && reviewStats.avg != null && (
+				<ProductRating average={reviewStats.avg} className="mt-2.5" />
+			)}
+			{specChips.length > 0 && (
+				<ul className="mt-3.5 flex flex-wrap gap-1.5">
+					{specChips.map((chip) => (
+						<li
+							className="inline-flex min-h-[30px] items-center rounded-[3px] border border-line bg-canteiro px-2.5 font-semibold text-[13.5px] tabular-nums"
+							key={chip}
 						>
-							{inStock ? "Adicionar ao carrinho" : "Esgotado"}
-						</EmachButton>
-					</div>
-					<EmachButton
-						disabled={!inStock}
-						full
-						icon={<Zap size={16} />}
-						isLoading={isNavigating}
-						onClick={handleBuyNow}
-						size="md"
-						variant="primary"
-					>
-						{isNavigating ? "Abrindo checkout" : "Comprar agora"}
-					</EmachButton>
-				</div>
-			</div>
+							{chip}
+						</li>
+					))}
+				</ul>
+			)}
 
-			<div className="flex flex-col border border-border sm:flex-row">
-				<div className="flex flex-1 items-center gap-2.5 border-border border-b px-4 py-3 sm:border-r sm:border-b-0">
-					<Truck size={16} />
-					<div>
-						<div className="font-semibold text-[12px]">Frete Brasil</div>
-						<div className="text-[10.5px] text-gray-60">pelo seu CEP</div>
-					</div>
-				</div>
-				<div className="flex flex-1 items-center gap-2.5 border-border border-b px-4 py-3 sm:border-r sm:border-b-0">
-					<CheckCircle size={16} />
-					<div>
-						<div className="font-semibold text-[12px]">Garantia 2 anos</div>
-						<div className="text-[10.5px] text-gray-60">com a marca</div>
-					</div>
-				</div>
-				<div className="flex flex-1 items-center gap-2.5 px-4 py-3">
-					<ShieldCheck size={16} />
-					<div>
-						<div className="font-semibold text-[12px]">Compra segura</div>
-						<div className="text-[10.5px] text-gray-60">nota fiscal</div>
-					</div>
-				</div>
-			</div>
+			<div className="mt-5 border-line border-t pt-5">
+				<p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+					<span className="font-extrabold text-[34px] tabular-nums leading-none tracking-[-0.02em] md:text-[40px]">
+						{fmtNumericBRL(price.finalAmount)}
+					</span>
+					{price.hasDiscount && (
+						<>
+							<span className="text-[16px] text-ink-muted tabular-nums line-through">
+								<span className="sr-only">Antes </span>
+								{fmtNumericBRL(shown.priceAmount)}
+							</span>
+							<span className="rounded-[3px] bg-grafite px-2 py-0.5 font-bold text-[13px] text-on-dark">
+								−{price.discountPct}%
+							</span>
+						</>
+					)}
+				</p>
+				<p className="mt-2 text-[16px] tabular-nums">
+					{installments ? (
+						<>
+							{PRODUCT_COPY.installmentsLead}{" "}
+							<b className="font-extrabold">{installments}</b>{" "}
+							{PRODUCT_COPY.installmentsTail}
+						</>
+					) : (
+						PRODUCT_COPY.cashOnly
+					)}
+				</p>
+				<p className="mt-1 text-[14px] text-ink-muted">
+					{PRODUCT_COPY.paymentMethods}
+				</p>
 
-			<button
-				aria-label="Compartilhar produto"
-				className="emach-ghost-btn inline-flex items-center gap-2 font-semibold text-[13px] text-gray-60"
-				onClick={handleShare}
-				type="button"
-			>
-				{shared ? (
+				{anyInStock ? (
 					<>
-						<Check className="text-success" size={14} />
-						Link copiado
+						{options.length > 1 && (
+							<div ref={pickerRef}>
+								<VoltagePicker
+									error={voltageError}
+									onChange={(id) => {
+										setVariantId(id);
+										setVoltageError(false);
+									}}
+									options={options.map((v) => ({
+										id: v.id,
+										inStock: stockByVariant[v.id] ?? false,
+										priceLabel: pricesDiffer
+											? fmtNumericBRL(
+													variantPrice(v.priceAmount, activePromotion)
+														.finalAmount
+												)
+											: null,
+										voltage: v.voltage,
+									}))}
+									value={variantId}
+								/>
+							</div>
+						)}
+						<p className="mt-4 text-[14.5px]">
+							<StockLine className="text-[14.5px]" inStock />
+							{options.length > 1 && inStockVoltages.length > 0 && (
+								<span className="font-bold text-ok">
+									{" "}
+									em {inStockVoltages.join(" e ")}
+								</span>
+							)}
+						</p>
+						<div className="mt-3.5 flex gap-2.5">
+							<QtyStepper onChange={setQty} value={qty} />
+							<button
+								className={`${bigButton} flex-1 bg-emach-red text-white hover:bg-emach-red-hover max-md:px-3 max-md:text-[15px]`}
+								onClick={handleAddToCart}
+								type="button"
+							>
+								{PRODUCT_COPY.addToCart}
+							</button>
+						</div>
+						<button
+							aria-busy={isNavigating}
+							className={`${bigButton} mt-2.5 bg-grafite text-on-dark hover:bg-black`}
+							disabled={isNavigating}
+							onClick={handleBuyNow}
+							type="button"
+						>
+							{isNavigating
+								? PRODUCT_COPY.openingCheckout
+								: PRODUCT_COPY.buyNow}
+						</button>
 					</>
 				) : (
 					<>
-						<Share2 size={14} />
-						Compartilhar
+						<p className="mt-4">
+							<StockLine className="text-[14.5px]" inStock={false} />
+						</p>
+						<p className="mt-3.5 rounded-[5px] border border-line-strong border-dashed px-4 py-3.5 text-[14.5px] text-ink-2">
+							{PRODUCT_COPY.outOfStock}
+						</p>
 					</>
 				)}
-			</button>
+			</div>
 
 			<StickyBuyBar
-				categorySlug={primaryCategorySlug ?? undefined}
-				imageUrl={primaryImageUrl}
-				inStock={inStock}
+				inStock={anyInStock}
+				installmentsLabel={installmentText(price.finalCents)}
 				onAdd={handleAddToCart}
-				priceLabel={fmtNumericBRL(finalAmount)}
-				productName={tool.name}
-				variantLabel={selected.voltage ?? "Padrão"}
-				visible={showSticky}
+				priceLabel={fmtNumericBRL(price.finalAmount)}
 			/>
 		</div>
 	);

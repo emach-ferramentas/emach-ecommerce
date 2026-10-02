@@ -3,8 +3,6 @@ import type { Review } from "@emach/db/schema/reviews";
 import { cn } from "@emach/ui/lib/utils";
 import type { ReactNode } from "react";
 
-import { SectionLabel } from "@/components/section-label";
-
 import { formatReviewDate } from "./review-date";
 import { reviewLayoutMode, stretchLast } from "./review-layout";
 import { ReviewList } from "./review-list";
@@ -56,15 +54,15 @@ function SummaryRail({ avg, count, recommend }: SummaryRailProps) {
 		<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-border border-b px-4 py-3.5 sm:px-5 md:flex-col md:items-start md:justify-center md:gap-1.5 md:border-r md:border-b-0 md:py-6">
 			<div className="flex items-baseline gap-1.5 font-display font-medium text-[42px] tabular-nums leading-none">
 				{avg.toFixed(1).replace(".", ",")}
-				<span className="text-[15px] text-gray-60">/ 5</span>
+				<span className="text-[15px] text-ink-muted">/ 5</span>
 			</div>
 			<StarRating rating={avg} size={15} />
-			<div className="text-[12.5px] text-gray-60">
+			<div className="text-[12.5px] text-ink-muted">
 				{count} {count === 1 ? "avaliação" : "avaliações"}
 				{recommend !== undefined && (
 					<>
 						{" · "}
-						<strong className="text-near-black">{recommend}%</strong> recomendam
+						<strong className="text-ink">{recommend}%</strong> recomendam
 					</>
 				)}
 			</div>
@@ -98,7 +96,7 @@ function TestimonialCell({
 			{review.title && (
 				<h3
 					className={cn(
-						"mb-1 font-semibold text-near-black",
+						"mb-1 font-semibold text-ink",
 						size === "lg" ? "text-[16px]" : "text-[14px]"
 					)}
 				>
@@ -107,7 +105,7 @@ function TestimonialCell({
 			)}
 			<p
 				className={cn(
-					"text-near-black leading-relaxed",
+					"text-ink leading-relaxed",
 					size === "lg"
 						? "max-w-[52ch] font-medium text-[19px]"
 						: "max-w-[60ch] text-[15px]"
@@ -116,12 +114,12 @@ function TestimonialCell({
 				{review.body}
 			</p>
 			<footer className="mt-3.5 flex flex-wrap items-center gap-3">
-				<span className="font-display font-semibold text-[12.5px] text-near-black uppercase tracking-[0.1em]">
+				<span className="font-display font-semibold text-[12.5px] text-ink uppercase tracking-[0.1em]">
 					{review.clientName}
 				</span>
 				<VerifiedBadge />
 				<time
-					className="font-display text-[11px] text-gray-60 uppercase tracking-[0.08em]"
+					className="font-display text-[11px] text-ink-muted uppercase tracking-[0.08em]"
 					dateTime={review.createdAt.toISOString()}
 				>
 					{formatReviewDate(review.createdAt)}
@@ -150,22 +148,22 @@ function DistributionBars({
 			{bars.map((b) => (
 				<div
 					aria-label={`${b.star} estrelas: ${b.pct}%`}
-					className="flex items-center gap-3 text-[12.5px] text-near-black"
+					className="flex items-center gap-3 text-[12.5px] text-ink"
 					key={b.star}
 					role="img"
 				>
 					<span aria-hidden="true" className="w-8 flex-none font-semibold">
 						{b.star} ★
 					</span>
-					<span aria-hidden="true" className="h-[6px] flex-1 bg-near-black/10">
+					<span aria-hidden="true" className="h-[6px] flex-1 bg-canteiro-2">
 						<span
-							className="block h-full bg-emach-red"
+							className="block h-full bg-grafite"
 							style={{ width: `${b.pct}%` }}
 						/>
 					</span>
 					<span
 						aria-hidden="true"
-						className="w-10 text-right text-gray-60 tabular-nums"
+						className="w-10 text-right text-ink-muted tabular-nums"
 					>
 						{b.pct}%
 					</span>
@@ -193,7 +191,7 @@ export function ProductReviews({
 	if (firstReview === undefined) {
 		// ?reviewPage fora do alcance com n baixo (URL manipulada).
 		lowCountContent = (
-			<div className="py-12 text-center text-[14px] text-gray-60">
+			<div className="py-12 text-center text-[14px] text-ink-muted">
 				Nenhuma avaliação nesta página.
 			</div>
 		);
@@ -228,15 +226,15 @@ export function ProductReviews({
 
 	return (
 		<section aria-label="Avaliações dos clientes" className="py-14">
-			{/* Largura alinhada ao topo (galeria w-1/2 + buy box w-[480px],
-			    centrados) — replica 50vw + 480px, com teto p/ telas estreitas. */}
-			<div className="mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)]">
+			<div className="shop-wrap">
 				<div className="mb-5 flex items-center justify-between gap-6">
-					<SectionLabel tone="accent">O que dizem os clientes</SectionLabel>
+					<h2 className="font-display font-extrabold text-[clamp(1.9rem,1.3rem+1.6vw,2.75rem)] uppercase leading-[0.98]">
+						Avaliações
+					</h2>
 					{mode === "grid" && <ReviewSort current={sort} />}
 				</div>
 
-				<div className="border border-border">
+				<div className="rounded-[5px] border border-line">
 					{mode === "grid" ? (
 						<>
 							<div className="grid grid-cols-1 border-border border-b md:grid-cols-[240px_1fr]">

@@ -1,8 +1,6 @@
 import { db } from "@emach/db";
 import { getReviewStats, getReviews } from "@emach/db/queries/reviews";
 
-import { SectionLabel } from "@/components/section-label";
-
 import { ProductReviews } from "./product-reviews";
 import type { ReviewSortKey } from "./review-sort";
 
@@ -58,18 +56,20 @@ export async function ProductReviewsSection({
 	if (reviewsResult.total === 0) {
 		return (
 			<section aria-label="Avaliações do produto" className="py-14">
-				<div className="mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)]">
-					<div className="flex flex-col gap-4 bg-near-black px-6 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+				<div className="shop-wrap">
+					<div className="flex flex-col gap-4 rounded-[5px] border border-line bg-canteiro px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 						<div>
-							<SectionLabel tone="accent">Avaliações</SectionLabel>
-							<p className="mt-2 text-[14px] text-white/75">
+							<h2 className="font-display font-extrabold text-[30px] uppercase leading-none">
+								Avaliações
+							</h2>
+							<p className="mt-2 text-[15px] text-ink-2">
 								Este produto ainda não recebeu avaliações. Avaliações vêm de
 								compradores verificados, com nota fiscal.
 							</p>
 						</div>
 						<div
 							aria-hidden="true"
-							className="shrink-0 text-[18px] text-white/35 tracking-[4px]"
+							className="shrink-0 text-[18px] text-line-strong tracking-[4px]"
 						>
 							☆☆☆☆☆
 						</div>
