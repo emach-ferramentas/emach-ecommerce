@@ -44,6 +44,23 @@ vi.mock("next/headers", () => ({
 
 vi.mock("@/lib/client-ip", () => ({ getClientIp: vi.fn(() => null) }));
 
+// O e-mail de pedido recebido (#249) roda em after(): o mock guarda o callback
+// em vez de rodá-lo, para o teste decidir quando (e se) o envio acontece.
+const { afterCallbacks, sendOrderReceivedEmail } = vi.hoisted(() => ({
+	afterCallbacks: [] as Array<() => unknown>,
+	sendOrderReceivedEmail: vi.fn(),
+}));
+
+vi.mock("next/server", () => ({
+	after: vi.fn((cb: () => unknown) => {
+		afterCallbacks.push(cb);
+	}),
+}));
+
+vi.mock("@/lib/orders/order-received-email", () => ({
+	sendOrderReceivedEmail,
+}));
+
 vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
 
 // Mantém inputSchema/OrderError reais; só troca os efeitos colaterais pesados.
@@ -179,5 +196,55 @@ describe("createOrderAction — CEP inexistente na base da Frenet", () => {
 				shippingMethod: "Correios — PAC",
 			})
 		);
+	});
+});
+
+describe("createOrderAction — e-mail de pedido recebido (#249)", () => {
+	beforeEach(() => {
+		afterCallbacks.length = 0;
+		sendOrderReceivedEmail.mockReset();
+		requireCurrentClient.mockReset();
+		requireCurrentClient.mockResolvedValue(sessionWith(true));
+		placeOrder.mockReset();
+		placeOrder.mockResolvedValue({ orderId: "o9", orderNumber: "2026-000009" });
+		resolveDestinationCep.mockResolvedValue(null);
+	});
+
+	it("responde sem esperar o envio, agendado para depois da resposta", async () => {
+		const result = await createOrderAction(VALID_INPUT);
+
+		expect(result.ok).toBe(true);
+		expect(sendOrderReceivedEmail).not.toHaveBeenCalled();
+		expect(afterCallbacks).toHaveLength(1);
+
+		await afterCallbacks[0]?.();
+		expect(sendOrderReceivedEmail).toHaveBeenCalledWith({
+			clientId: "c1",
+			orderId: "o9",
+			to: "maria@example.com",
+			name: "Maria Silva",
+		});
+	});
+
+	it("envio que nunca termina não segura a resposta do checkout", async () => {
+		sendOrderReceivedEmail.mockReturnValue(new Promise(() => undefined));
+		const { after } = await import("next/server");
+		vi.mocked(after).mockImplementationOnce((cb) => {
+			(cb as () => unknown)();
+		});
+
+		const result = await createOrderAction(VALID_INPUT);
+
+		expect(result.ok).toBe(true);
+		expect(sendOrderReceivedEmail).toHaveBeenCalledTimes(1);
+	});
+
+	it("pedido que falha não agenda e-mail", async () => {
+		placeOrder.mockRejectedValue(new Error("boom"));
+
+		const result = await createOrderAction(VALID_INPUT);
+
+		expect(result.ok).toBe(false);
+		expect(afterCallbacks).toHaveLength(0);
 	});
 });

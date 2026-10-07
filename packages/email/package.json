@@ -2,11 +2,16 @@
   "name": "@emach/email",
   "type": "module",
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "preview": "bun scripts/export-preview.tsx",
+    "test": "bun test"
   },
   "exports": {
     "./send": {
       "default": "./src/send.ts"
+    },
+    "./templates/order-received": {
+      "default": "./src/templates/order-received.tsx"
     },
     "./templates/reset-password": {
       "default": "./src/templates/reset-password.tsx"

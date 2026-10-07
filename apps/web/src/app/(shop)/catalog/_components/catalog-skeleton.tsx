@@ -7,7 +7,7 @@ const CARD_SLOTS = [0, 1, 2, 3, 4, 5] as const;
 // loading.tsx (hard nav / segurança) e o fallback do Suspense inline do
 // page.tsx — sob cacheComponents é o inline que o usuário vê na soft nav
 // (o shell prefetchado já inclui este fallback). Trilha, título, coluna de
-// filtros de 250px e grade. SiteHeader fica por conta do caller (page/loading).
+// filtros de 250px e grade.
 export function CatalogSkeleton() {
 	return (
 		<div className="shop-wrap pb-16">

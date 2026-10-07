@@ -1,532 +1,119 @@
-# Design System Inspiration of Ferrari
+# Design da loja: H3 "Prateleira por ofício"
+
+Este arquivo descreve o sistema visual que roda em produção. O código vence quando os dois divergem. Os tokens vivem em `packages/ui/src/styles/globals.css` e a largura das telas em `apps/web/src/index.css`. Os primitivos ficam em `apps/web/src/components/`.
+
+## 1. Regras que não se discutem
+
+- **Vermelho é verbo.** `--emach-red` aparece uma vez por tela, no CTA de compra (variante `cta` do `EmachButton`). Estrutura, seleção e estado ativo usam grafite e `ink`, nunca vermelho. Exceções de sistema: a régua de navegação pendente (`NavigationProgress`), o badge do carrinho com itens e o `caret-color` do `body`. Nenhuma delas conta como o vermelho da tela.
+- **Card se separa do fundo por borda, não por sombra.** Borda `border-line` de 1 px; no hover, `border-line-strong`. Sombra (`shadow-pop`, `shadow-bar`) só em camada que flutua sobre a página.
+- **Sem eyebrow.** Título não leva rótulo pequeno em caixa alta acima dele. O scanner reprova `SectionLabel` e `tracking-[0.`.
+- **Sem borda lateral colorida.** Nada de faixa vermelha à esquerda de item ativo, card ou aviso. O scanner reprova `border-<lado>-emach-red`, `border-emach-red` e `bg-emach-red/`.
+- **Cantos de 3 px em controle, 5 px em card.** Botão, campo, stepper e seta usam `rounded-[3px]`; card, painel e aviso usam `rounded-[5px]`. Círculo (`rounded-full`) só em ponto de status e avatar.
+- **Preço sempre no formato R$ 899,00** (`fmtBRL` de `lib/format.ts`), com `tabular-nums` em coluna de valores.
+- **A loja não fala de troca, devolução nem garantia** em texto de vitrine. `apps/web/src/lib/seo/institutional-content.test.ts` trava isso nas páginas institucionais, na caixa de compra e na barra fixa da página de produto.
+
+## 2. Cores
+
+Tokens do bloco H3 em `:root`. Cada um tem utilitário Tailwind (`bg-paper`, `text-ink`, `border-line` etc.) pelo `@theme inline`.
+
+| Token | Valor | Uso |
+| --- | --- | --- |
+| `--paper` | `#ffffff` | Fundo da página, card, painel, gaveta do carrinho. É o `--background` do sistema. |
+| `--canteiro` | `#f0f0ee` | Faixa alternada da home, rodapé da gaveta, hover de controle, campo somente leitura. |
+| `--canteiro-2` | `#e4e5e2` | Linha de skeleton. |
+| `--well` | `#f0f0ee` | Poço da foto de produto (card, "Ver rápido", galeria, placeholder do `ProductImage`). |
+| `--ink` | `#16191d` | Texto principal, foco, borda do controle selecionado. |
+| `--ink-2` | `#363b42` | Texto secundário, lede, link. |
+| `--ink-muted` | `#5a6068` | Dica, metadado, placeholder. |
+| `--line` | `#d8dad7` | Borda de card e divisória. É o `--border` do sistema. |
+| `--line-strong` | `#aeb2b6` | Borda de controle (campo, botão `line`, stepper). |
+| `--grafite` | `#1f2328` | Botão `dark`, barra utilitária do cabeçalho, toast, seleção de texto. |
+| `--grafite-2` | `#2d3238` | Badge do carrinho vazio. |
+| `--grafite-deep` | `#131518` | Rodapé do site. |
+| `--on-dark` | `#f2f2f0` | Texto sobre grafite. |
+| `--on-dark-muted` | `#b6bbc1` | Texto secundário sobre grafite. |
+| `--line-dark` | `#3b4148` | Divisória sobre grafite. |
+| `--ok` | `#17733a` | "Em estoque", desconto no resumo, passo concluído. |
+| `--off` | `#6a717b` | "Esgotado" e estado indisponível. |
+| `--error-text` | `#b3261e` | Erro de campo, botão `danger`, aviso de erro. |
+| `--emach-red` | `#da291c` | CTA de compra. Hover em `--emach-red-hover` (`#b01e0a`). |
+
+Seção escura (cabeçalho utilitário, rodapé) declara `[color-scheme:dark]` localmente. O `html` declara `color-scheme: light` para o modo escuro automático do Chromium não inverter a loja.
+
+## 3. Tipografia
+
+- Uma família: **Archivo** variável, carregada em `apps/web/src/app/layout.tsx` com o eixo `wdth`.
+- `font-sans` é o corpo. `font-display` é a mesma Archivo com `font-variation-settings: "wdth" 62`, para títulos condensados em caixa alta.
+- Título de página: `PAGE_TITLE_CLASS` (`page-head.tsx`): `font-display`, `font-extrabold`, `uppercase`, tamanho `clamp(2.4rem,1.6rem+2.2vw,3.6rem)` e entrelinha 0.92.
+- Título de seção institucional: `INSTITUTIONAL_H2_CLASS`, `font-display` de 28 px.
+- Título de painel: `font-extrabold text-[17px]` em `font-sans`, sem caixa alta.
+- Corpo entre 14 e 16,5 px. Campo de formulário usa 16 px, porque abaixo disso o Safari do iOS dá zoom no foco.
+- Caixa alta com tracking largo está fora do sistema: o scanner reprova `tracking-[0.`.
+
+## 4. Cantos, elevação e movimento
+
+- `--radius: 3px`. Os raios `--radius-sm` a `--radius-4xl` do `@theme inline`, usados pelos componentes shadcn, calculam a partir dele.
+- `--elev-pop` (`shadow-pop`): popover da busca, seletor de ofício e toast.
+- `--elev-bar` (`shadow-bar`): barra fixa de compra da página de produto (`sticky-buy-bar.tsx`).
+- `--ease-expo` (`ease-out-expo`): entrada de gaveta e zoom da foto do card.
+- Toda animação tem saída em `prefers-reduced-motion`. O bloco final de `globals.css` desliga `animate-pulse`, `animate-spin`, `.emach-shimmer`, o pulo do badge e a saída do item do carrinho.
+
+## 5. Layout
+
+- `shop-wrap` (`apps/web/src/index.css`): largura máxima 1296 px e respiro lateral de 16, 24 e 32 px (base, `md`, `lg`). Toda tela do H3 abre o conteúdo com ele.
+- Breakpoints são os do Tailwind: `md` 768 px, `lg` 1024 px.
+- Alvo de toque mínimo de 44 px (`min-h-11`, `size-11`).
+- `StoreFrame` (`components/store-frame.tsx`) monta cabeçalho, o único `<main id="main-content">` e rodapé. Usam a moldura: `app/(shop)/layout.tsx`, o grupo `app/(auth)`, o layout da conta (`app/dashboard/layout.tsx`) e o `app/not-found.tsx`. Página e `loading.tsx` dentro dela não montam `SiteHeader` nem abrem outro `<main>`; `app/(shop)/layout.frame.test.ts` trava isso.
+
+## 6. Primitivos
+
+Antes de escrever marcação crua, procure aqui.
+
+| Primitivo | Arquivo | Para que serve |
+| --- | --- | --- |
+| `EmachButton`, `EmachLinkButton`, `emachButtonVariants` | `emach-button.tsx` | Botão e link com cara de botão. `variant` é obrigatório e não tem default, para o vermelho nunca sair por omissão: `cta`, `dark`, `line`, `danger`, `link`. Tamanhos `md` (44 px) e `lg` (52 px); `full` ocupa a largura. `isLoading` troca o ícone por spinner, marca `aria-busy` e mantém o foco. CTA que navega usa `EmachLinkButton`, nunca `<Link>` em volta de `<EmachButton>`. |
+| `PageHead` | `page-head.tsx` | Breadcrumb opcional (`trail`), título com `PAGE_TITLE_CLASS`, lede (`children`) e slot à direita (`aside`). |
+| `Breadcrumb`, `HOME_CRUMB`, `CATALOG_CRUMB` | `breadcrumb.tsx` | Trilha "Você está em" com o item atual em `aria-current`. |
+| `Panel`, `SummaryRow` | `panel.tsx` | Bloco com título, borda `line` e canto de 5 px, em tom `paper` ou `canteiro`. `SummaryRow` é a linha de valor do resumo, com `total` e tons `muted` e `discount`. |
+| `Field`, `TextField` | `field.tsx` | Rótulo, dica e erro ligados ao controle por `aria-describedby` e `aria-invalid`. `TextField` encaixa um campo do TanStack Form e troca para `PasswordInput` quando `type="password"`. |
+| `Notice` | `notice.tsx` | Aviso em linha, tons `info` (canteiro) e `error` (borda e texto `error-text`, `role="alert"`), com slot de ação. |
+| `StatusChip` | `status-chip.tsx` | Rótulo de status com ícone, tons `ok`, `off`, `alert` e `neutral`. A cor nunca vem sozinha. |
+| `StockLine` | `stock-line.tsx` | "Em estoque" ou "Esgotado" com o ponto de status. |
+| `StatusScreen` | `status-screen.tsx` | Tela de erro ou de vazio: título, lede, ações e nota. Usada por `error.tsx`, `not-found.tsx` e afins. |
+| `InstitutionalPage` | `institutional-page.tsx` | Página de texto com sumário lateral e data de atualização. |
+| `ProductCard`, `ProductCardSkeleton` | `product-card.tsx`, `product-card-skeleton.tsx` | Card de produto (seção 7). O skeleton espelha a anatomia do card. |
+| `Shelf` | `shelf.tsx` | Prateleira horizontal com setas no desktop, arraste no celular e card final que abre a lista completa. |
+| `QtyStepper` | `buy/qty-stepper.tsx` | Quantidade com `min` 1 por padrão e tamanhos `lg` e `md`. |
+| `VoltagePicker` | `buy/voltage-picker.tsx` | Voltagem como rádios nativos em botões grandes. A opção esgotada fica visível, tracejada e desabilitada. |
+| `ProductImage` | `product-image.tsx` | Foto com fade no carregamento e ícone por categoria em `bg-well` quando não há foto. |
+| `ProductRating` | `product-rating.tsx` | Média em estrelas grafite. |
+
+Formulário cru usa as classes de `globals.css`: `.emach-input`, `.emach-select` e `.emach-textarea` (altura 48 px, borda `line-strong` de 1,5 px, foco em `ink` com anel de 3 px, `aria-invalid` em `error-text`). Toast usa `.emach-toast` sobre grafite.
+
+## 7. Padrões de tela
+
+- **Card de produto.** Fundo `paper`, foto quadrada em `bg-well`, "Ver rápido" sempre visível, `StockLine`, nome, chips curtos, preço com parcelas (`installmentText` de `lib/installments.ts`: parcela mínima de R$ 10, até 12x) e um botão que muda conforme o produto (`cardAction` de `lib/card-action.ts`: adicionar, escolher voltagem no "Ver rápido", avisar quando chegar). Os chips e as voltagens vêm de `getCardExtras` (`lib/card-data.ts`).
+- **Carrinho.** A gaveta (`cart-sheet.tsx`) é `bg-paper` com rodapé `bg-canteiro`. A página `/cart` fecha o resumo num `Panel` com `SummaryRow`. Divisória de item é `border-line`. A gaveta é um overlay próprio (`useOverlay` de `lib/use-overlay.ts`: trava de rolagem, Esc, foco preso e devolvido), assim como `mobile-menu.tsx`, `quick-view.tsx` e o `filter-drawer.tsx` do catálogo.
+- **Cabeçalho e rodapé.** A barra utilitária do cabeçalho é `bg-grafite` e o rodapé é `bg-grafite-deep`, os dois com texto `on-dark`.
+- **Loading.** O skeleton espelha a anatomia da tela real e é o mesmo componente no `loading.tsx` e no fallback do `page.tsx`. Referências: `ProductCardSkeleton` e `catalog/_components/catalog-skeleton.tsx`. Linha de texto pulsa (`animate-pulse` em `bg-canteiro-2`) e tile de imagem varre (`.emach-shimmer`). A chegada de rota entra sem animação de opacidade na página inteira, porque o fade roda em toda navegação e pisca a tela.
+- **Navegação pendente.** `NavigationProgress` desenha uma régua de 2 px em `--emach-red` no topo depois de 150 ms de navegação pendente. A máquina de estados está em `lib/nav-progress.ts`.
+
+## 8. Token antigo e exceções
 
-## 1. Visual Theme & Atmosphere
+O `globals.css` ainda define os tokens anteriores ao H3 (`--near-black`, `--gray-10` a `--gray-90`, `--cinema-*`, `--image-bg`, `--emach-red-on-dark`, `--success-on-dark`, `--amber-on-dark`, `--info-on-dark`). Em `apps/web/src`, só o hero congelado ainda os usa; dentro do próprio `globals.css`, o `.emach-shimmer` varre sobre `--image-bg`. Tela nova não usa nenhum deles.
 
-Ferrari's website is a digital editorial — a curated magazine where the Prancing Horse brand is presented with the gravitas of an art institution and the precision of Italian coachwork. The page opens onto an expanse of absolute black, broken only by the iconic Prancing Horse emblem floating alone in its own atmosphere. Below, the content unfolds in dramatic alternations between inky-dark cinematic sections and crisp white editorial panels. This chiaroscuro rhythm — darkness yielding to light, machinery yielding to human story — feels more like paging through a Ferrari yearbook than scrolling a commercial website. Every section is a curated vignette: a concept car dissolving from shadow, two F1 drivers posed with sculptural stillness, a lineup of production models arranged in a jewel-toned parade.
+`apps/web/src/test/h3-legacy.global.test.ts` varre todo o `apps/web/src` com `scanForLegacyTokens` (padrões em `h3-legacy-scan.ts`) e compara com `LEGACY_EXCEPTIONS`. Hoje a lista tem três arquivos, todos do hero: `components/hero-carousel.tsx`, `components/hero/hero-cta-variants.ts` e `components/hero/hero-element-renders.tsx`. A lista só encolhe: arquivo novo com token antigo falha, e exceção que ficou limpa também falha até a linha sair.
 
-The color language is monastically restrained for a brand built on speed and emotion. Ferrari Red (`#DA291C`) appears with almost surgical sparseness — reserved for the Subscribe CTA and accent moments that need to command immediate attention. The vast majority of the interface lives in black, white, and a carefully calibrated gray scale (from `#303030` dark surfaces through `#8F8F8F` mid-tones to `#D2D2D2` light borders). Two yellows — Racing Yellow (`#FFF200`) and the deeper Modena Yellow (`#F6E500`) — exist in the token system as heritage accents for special contexts, honoring Ferrari's racing provenance. The restraint means that when red does appear, it carries the weight of the entire brand.
+O hero não muda até o dono pedir. Ele usa a cópia congelada do botão antigo em `components/hero/hero-cta-variants.ts` (`heroCtaVariants`), que só `components/hero/*` importa.
 
-Typography relies on FerrariSans — a proprietary sans-serif family with medium-weight headings (500–700) and compact proportions. Display text runs at 24–26px for section titles, while the UI chrome lives at 12–16px in weights ranging from regular to bold. A secondary "Body-Font" custom typeface handles captions and utility text, rendered in uppercase with wide letter-spacing (1px) to create a label-like editorial quality. This two-font system — FerrariSans for narrative authority, Body-Font for structural annotation — gives the site a print-magazine hierarchy. No text decoration is gratuitous. Letter-spacing is tight for headlines and deliberately expanded for labels, creating a visual rhythm that alternates between urgency and composure.
+## 9. Hero carousel (mobile ≠ desktop)
 
-**Key Characteristics:**
-- Chiaroscuro layout alternating between deep black sections and clean white editorial panels
-- Ferrari Red (`#DA291C`) used with extreme sparseness — accent, not atmosphere
-- Prancing Horse emblem as isolated hero element on a void-black field
-- FerrariSans proprietary typeface with compact proportions and medium weights
-- Photo-journalism imagery: concept renders, driver portraits, lineup parades — each section is a story
-- Uppercase Body-Font labels with wide letter-spacing (1px) for editorial annotation
-- Nearly zero border-radius (2px default) reflecting precision engineering aesthetics
-- Dual-framework architecture (PrimeReact + Element Plus) powering 32+ interactive components
-- Carousel-driven hero with editorial slides and arrow/dot navigation
+`components/hero-carousel.tsx` é o carrossel; `components/hero/` tem o slide, os elementos e a pilha segura do mobile. Duas regras de responsividade:
 
-## 2. Color Palette & Roles
+- **A escala por elemento vem de `banner.composition` (#210) e vale nos dois viewports.** Elemento posicionado (desktop sempre; mobile só com override) aplica a própria `scale` pelo transform do placement. Item herdado na pilha segura do mobile (`hero-safe-stack.tsx`) não aplica escala. Composição `NULL` ou inválida vira o mapa legado na hora (`lib/composition/legacy-composition.ts`).
+- **No mobile o fundo do desktop cai.** A arte de banner é widescreen com título e specs queimados na imagem e corta no retrato. Banner mobile usa `backgroundMobileMode` igual a `none` ou `custom`, nunca `inherit` (valores do enum `bannerBackgroundMobileMode`). O glow só pulsa no desktop, porque o blur por frame trava o celular. Banner mobile sem produto fica vazio.
 
-### Primary
-- **Ferrari Red** (`#DA291C`): The iconic Rosso Corsa — primary accent and CTA color. Used for the Subscribe button, key action triggers, and brand moments where maximum visual authority is needed. The single most important color in the system (--f-color-accent-100)
-- **Pure White** (`#FFFFFF`): Navigation text on dark backgrounds and button fills (e.g. outline buttons that invert). **Not** the page/card surface — that role belongs to Light Surface `#F4F4F4` (see Surface Standard below). Pure white is reserved for form controls/overlays that must read as raised above the surface (--f-color-ui-0)
+## 10. Armadilhas de overlay
 
-### Secondary & Accent
-- **Dark Red** (`#B01E0A`): Deeper variant of Ferrari Red for hover/pressed states and high-contrast contexts — adds dimensionality to the brand color without introducing a new hue (--f-color-accent-90)
-- **Deep Red** (`#9D2211`): The most saturated dark red — used for active states and extra emphasis where even Dark Red needs more weight (--f-color-accent-80)
-- **Racing Yellow** (`#FFF200`): Heritage accent from Ferrari's racing livery — reserved for special highlights and motorsport-related contexts (--f-color-yellow-hypersail)
-- **Modena Yellow** (`#F6E500`): Slightly warmer and more golden than Racing Yellow — used for secondary heritage accents and category markers (--f-color-yellow)
-
-### Surface Standard (P1 — único padrão de superfície clara)
-- **Light Surface** (`#F4F4F4`, token `--gray-10`): **A única cor de fundo clara do sistema.** É o valor de `--background` e `--card` — vale para `<body>`, páginas (catálogo, conta, checkout, auth, sobre) e cards de conteúdo. Cards de conteúdo (pedido, endereço, reembolso, product-card, section-block, empty states) usam `bg-gray-10` e se separam do fundo **só por borda hairline** (`border-border`, #d2d2d2) e divisórias internas — **nunca** por uma cor de fundo diferente. ⚠️ A hairline é sempre `border-border`; **nunca** `border-gray-10`/`border-card` — esses são a *própria cor do fundo*, então a divisória fica **invisível** sobre superfície clara (custou retrabalho nas linhas do carrinho, pego no code-review). Foi a decisão de unificar o "branco do sistema": antes havia `#fff` (body/cards) misturado com `#f4f4f4` (seções), criando dois brancos perceptíveis.
-  - **Exceções que permanecem `#fff` (não são superfície de fundo, e sim controles/realces que devem "flutuar"):** inputs (`.emach-input`), search overlay e popovers, toast, badges, avatar, botões com fill branco (outline/toggle grid-lista, chips de filtro), e o **card de compra da PDP** (bloco transacional preço→CTAs em bg-white + border-border — exceção deliberada do redesign 2026-07-03; não usar como precedente pra outros cards de conteúdo).
-  - **Image background** (`#ECECEC`, token `--image-bg`): fundo de área de imagem/thumbnail — **mantido intacto**, intencionalmente um tom abaixo do surface para emoldurar o produto.
-  - **Status colors não são branco:** `#FFF5F5` (linha de rejeição de reembolso) é cor semântica e permanece.
-- **Absolute Black** (`#000000`): Hero sections, cinematic backgrounds, and the dominant dark surface — the void that makes imagery and the Prancing Horse emblem float
-- **Dark Surface** (`#303030`): Secondary dark surface for footer regions, newsletter sections, and layered dark panels — slightly lifted from pure black for depth differentiation (--f-color-ui-90)
-- **Light Gray Surface** (`#D2D2D2`): Subtle alternate surface for dividers and border treatments on white panels (--f-color-ui-20)
-- **Overlay Dark** (`hsla(0, 0%, 7%, 0.8)`): Semi-transparent near-black for modal overlays and image caption backgrounds (--f-color-overlay-darker)
-
-### Neutrals & Text
-- **Near Black** (`#181818`): Primary body text color on light surfaces — slightly softened from absolute black for better readability (link default color)
-- **Dark Gray** (`#666666`): Secondary text and subdued UI labels — used where text needs to recede from the primary hierarchy (--f-color-black-60)
-- **Mid Gray** (`#8F8F8F`): Tertiary text for metadata, timestamps, and supportive content (--f-color-black-50)
-- **Silver Gray** (`#969696`, `--gray-55`): texto de campo desabilitado (`.emach-input:disabled`) e texto secundário do footer escuro (`site-footer`, `checkout-footer`). Não é placeholder: o placeholder usa `--gray-60` (#666666, 5.74:1 sobre branco), porque `#969696` dá 2.96:1 (--f-color-black-55)
-
-### Semantic & Accent
-- **Warning Red** (`#F13A2C`): Accessible warning state — brighter and more orange-shifted than Ferrari Red to differentiate semantic alerts from brand expression (--f-color-accessible-warning)
-- **Success Green** (`#16A34A`): Confirmation and positive status indicators. EMACH uses a brighter, more modern green than the original Ferrari token (`#03904A`) for better legibility on both light and dark surfaces (--emach-success)
-- **Info Blue** (`#4C98B9`): Informational callouts, tooltips, and neutral status messaging (--f-color-accessible-info)
-- **Link Hover Blue** (`#3860BE`): Interactive hover state for text links — a dignified navy-blue that signals interactivity without competing with Ferrari Red
-
-### Gradient System
-- No explicit gradients in the token system
-- Depth is achieved through photography and the binary contrast between black and white surfaces
-- The overlay darker color (`hsla(0, 0%, 7%, 0.8)`) creates depth through transparency layering over imagery
-- Occasional photographic gradients (light falloff in studio shots) provide atmospheric depth within image content
-
-## 3. Typography Rules
-
-### Font Family
-- **Barlow** (`--font-sans`, wired via `next/font` in `apps/web/src/app/layout.tsx`): Primary typeface for headings, navigation, buttons, and editorial content. Loaded with weights 400, 500, 600 and 700; default heading voice runs at 500. Barlow was chosen as the open-source counterpart to FerrariSans — compact x-height, slight condensation, precise counters. CSS stack: `var(--font-barlow), sans-serif`
-- **Barlow Condensed** (`--font-display`, wired via `next/font`): Secondary typeface for captions, labels, category tags and all `SectionLabel` usage. Always rendered in uppercase with wide letter-spacing (0.12–0.14em). Also powers oversized display headings on the hero (`clamp(44px, 6vw, 84px)`), where its narrower proportions keep long product copy in-bounds. Weights 500, 600 and 700 (there is no 400; never use `font-normal` on it)
-- **System fallback**: `sans-serif` (pilha de `--font-sans`/`--font-display` em `globals.css`), used only as the ultimate fallback when the custom fonts fail to load
-
-> **Note**: The original Ferrari design references `FerrariSans` + `Body-Font`. EMACH substitutes Barlow / Barlow Condensed one-to-one because FerrariSans is proprietary and unlicensable. All weight/tracking rules below still apply.
-
-### Hierarchy (EMACH — actual implementation)
-
-The EMACH catalog needs a much wider display range than the original Ferrari spec because it markets oversized editorial hero copy. The table below reflects what is implemented in `apps/web`; any new screen **must** pick a size from this scale.
-
-| Role | Size | Weight | Font | Notes / Where |
-|------|------|--------|------|---------------|
-| Hero Display | `clamp(44px, 6vw, 84px)` | 500 | Barlow Condensed | Título do banner do hero (`h1` no primeiro banner com título visível; `h2` nos demais; `h1 sr-only` quando nenhum banner tem título visível) |
-| Hero Headline (secondary) | `clamp(48px, 7vw, 96px)` | 500 | Barlow Condensed | 404 page and large error screens |
-| Section Title — XL | 48px | 500 | Barlow Condensed | Editorial banners (home), cart empty state |
-| Section Title — L | 44px | 500 | Barlow Condensed | Home sections ("Explorar por categoria", "Promoções"), catalog hero `clamp(36px, 5vw, 60px)` |
-| Page Title | 40px | 500 | Barlow Condensed | Cart page `<h1>` |
-| PDP Price | 40px | 700 | Barlow Condensed | Preço final no card de compra da PDP |
-| Product Title | 36px | 500 | Barlow Condensed | Product detail, empty states |
-| Subsection Title | 32px | 500 | Barlow Condensed | Stat numbers in editorial banner |
-| Related / Block Title | 28px | 500 | Barlow Condensed | "Você também pode gostar" |
-| Modal / Sheet Heading | 24px | 600 e 700 | Barlow Condensed | Estado vazio da drawer ("Carrinho vazio", 600) e subtotal da drawer (700); o título "Carrinho" da drawer é label 15px 700 uppercase tracking 0.14em |
-| UI Heading | 18px | 500 | Barlow | Product list title in catalog list view |
-| Subheading | 17px | 400 | Barlow | Hero subtitle |
-| Body Large | 16px | 400–600 | Barlow | Product card title, editorial body |
-| Body | 15px | 400 | Barlow | Product short description |
-| Card Price | 15px | 700 | Barlow | Preço no `ProductCard` (riscado 11px `white/60`) |
-| Body Small | 14px | 400–600 | Barlow | Cart item name, form labels (`emach-field`) |
-| Nav Link | 12–13px | 600 | Barlow | Primary nav + footer links; letter-spacing `0.04em` |
-| Caption | 12–13px | 400 | Barlow | Metadata, SKU hints |
-| Label Upper | 12px | 600 | Barlow Condensed | `SectionLabel`, category tags — uppercase, tracking `0.14em` |
-| Micro Label | 11px | 600 | Barlow Condensed | Smallest editorial annotation, trust strips — uppercase, tracking `0.12–0.20em` |
-| Mini | 10–11px | 700 | Barlow | Cart badge count, EmachBadge |
-
-### Principles
-- **Proprietary identity**: FerrariSans is exclusive to Ferrari — it cannot be substituted without losing brand recognition. The font's compact proportions and medium weight default (500) convey engineering precision
-- **Two-register system**: FerrariSans handles narrative voice (headings, content, buttons) while Body-Font handles structural annotation (labels, tags, micro-captions) — this mirrors print magazine conventions of editorial text vs. technical labels
-- **Uppercase as emphasis tool**: Body-Font captions use `text-transform: uppercase` with expanded letter-spacing (1px) to create a visually distinct label layer that reads as "informational overlay" rather than primary content
-- **Compact line-heights**: Headlines use tight line-heights (1.00–1.30) creating dense, impactful text blocks, while body text opens to 1.50 for comfortable reading — the contrast between compressed headers and relaxed body text creates visual tension
-- **Weight range 400–700**: Four weights active in the system (400, 500, 600, 700) — significantly more range than Tesla but still controlled. 500 is the default "voice," 700 is for emphasis, 400 for body, 600 for navigation
-
-## 4. Component Stylings
-
-### Buttons — EMACH `EmachButton`
-Canonical implementation: `apps/web/src/components/emach-button.tsx`. All EMACH pages use `EmachButton` instead of shadcn `<Button>`. The component is built on `cva` with `variant` × `size` × `full`.
-
-**Shared base:**
-- Radius: `2px` (razor precision)
-- Font: Barlow Sans, weight 600, tracking `0.04em`
-- Transition: `180ms` ease on all properties
-- Disabled: `pointer-events-none opacity-60`
-
-**Sizes:**
-| Size | Height | Padding X | Font size |
-|------|--------|-----------|-----------|
-| `sm` | 36px | 16px | 12px |
-| `md` (default) | 44px | 22px | 13px |
-| `lg` | 52px | 30px | 14px |
-
-**Variants:**
-
-| Variant | Default | Hover | Primary use |
-|---------|---------|-------|-------------|
-| `primary` | `bg-emach-red`, text white | `bg-emach-red-hover` | High-priority CTAs: "Adicionar ao carrinho", "Finalizar compra", "Ver catálogo" |
-| `outline` | `border-near-black`, text near-black, transparent bg | `bg-near-black`, text white (inverts) | Secondary actions on light surfaces: "Página inicial", "Continuar comprando" |
-| `outline-light` | `border-white/70`, text white, transparent bg | `bg-white`, text near-black (inverts) | Actions overlaid on dark cinematic sections (hero, editorial banners) |
-| `ghost` | Transparent, text near-black | `bg-gray-10` | Tertiary link-like buttons, cart sheet secondary action |
-| `ghost-light` | Transparente, texto branco | `bg-white/10` | Ação terciária em superfície escura (footer da drawer, resumo do `/cart`) |
-| `dark` | `bg-near-black`, text white | `bg-black` | Attached buttons (coupon "Aplicar") that need a darker fill |
-
-**Usage rule:** One `primary` (red) button per viewport fold. Outline/ghost variants carry secondary actions so Ferrari Red keeps its authority.
-
-**Estados e helpers:** pressionar afunda 1px e escurece (`active:translate-y-px active:brightness-90`, 75 ms; sem translate em `motion-reduce`). `isLoading` troca o ícone por spinner, ignora o clique e marca `aria-busy` (o botão continua focável). CTA que navega usa `EmachLinkButton` (o `<a>` recebe o visual; nunca `<Link><EmachButton/></Link>`). Fonte: Barlow (`font-sans`).
-
-**Text link (inline)**:
-- Text `text-emach-red-hover` (#B01E0A, contraste AA) for "Esqueci a senha" / destructive-leaning links in forms
-- Text `text-gray-60 underline` for "Remover" inside cart rows
-- Standard link color on light surfaces: `text-near-black`; on dark: `text-white`
-- Hover: Link Hover Blue (`--link-hover`) reserved for body-copy anchors (not in use yet; slot reserved)
-
-### Cards & Containers
-
-**Editorial Card** (Content sections):
-- Background: white
-- Border: none
-- Shadow: none
-- Layout: image above, heading + caption below
-- Image treatment: full-width within card, no rounded corners on image
-- Text: FerrariSans heading (16–24px) + Body-Font caption (12–13px uppercase)
-
-**Dark Cinematic Card** (Hero/feature sections):
-- Background: `#000000` (Absolute Black)
-- Full-bleed imagery with text overlay
-- No border, no shadow — the darkness IS the container
-- Text: white, positioned with careful negative space
-
-**Vehicle Lineup** (Model carousel):
-- Horizontal scrollable row of vehicle thumbnails
-- Each vehicle on a neutral/white background
-- Navigation: arrow buttons + dot indicators
-- Background shifts to showcase the selected model's color context
-
-### Inputs & Forms
-
-**Newsletter Input** (Footer section):
-- Background: transparent on dark surface
-- Text: white
-- Border: 1px solid `#CCCCCC`
-- Placeholder: `#969696` (Silver Gray)
-- Focus: border color transitions (standard browser focus ring)
-- Label: Body-Font uppercase, 12px, 1px letter-spacing
-
-**Cookie Consent** (Modal):
-- Background: white
-- Border radius: 8px (dialog)
-- Shadow: `rgb(153, 153, 153) 1px 1px 1px 0px`
-- Buttons: oversized (45px Arial), white bg with black border
-- Uses standard PrimeReact/Element Plus modal framework
-
-### Navigation (EMACH)
-- Header `h-14` fundo `#000`, `sticky top-0` (z-30) nas páginas internas; na home o header é `fixed` transparente e ganha fundo preto ao rolar ou abrir o menu (`site-header.tsx`).
-- Mobile: menu em overlay próprio (`mobile-menu.tsx`, `useOverlay`).
-- Skip link "Pular para o conteúdo" como primeiro elemento focável.
-- Footer: ver `site-footer.tsx`. (O bloco abaixo, com logo centralizado e sem sticky, descreve o site de referência da Ferrari.)
-
-### Navigation (referência Ferrari)
-- **Desktop**: Prancing Horse logo centered at top of page, primary navigation below — not a traditional horizontal nav bar but a full-width header block on black background
-- **Logo**: Centered Prancing Horse emblem (44×42px) on absolute black — the single most prominent UI element
-- **Links**: FerrariSans, 13px, weight 600, white text on dark backgrounds
-- **Mobile**: Hamburger collapse to vertical navigation drawer
-- **Footer**: Multi-column layout on `#303030` (Dark Surface) with category links in Body-Font uppercase
-- **No sticky nav behavior** observed — the page scrolls naturally with the header moving off-screen
-
-### Image Treatment
-- **Hero**: Full-width editorial photography on black backgrounds — concept cars in atmospheric studio lighting, editorial portraits with cinematic composition
-- **Aspect ratios**: Mixed — landscape (16:9) for hero sections, near-square for portrait/driver imagery, wide panoramic for vehicle lineups
-- **Full-bleed vs padded**: Hero images are full-bleed edge-to-edge; editorial content images are padded within white containers
-- **Lazy loading**: Below-fold sections use progressive loading (PrimeReact framework handles this)
-- **Image quality**: High-resolution photography with studio lighting — no user-generated or lifestyle imagery. Every image is art-directed
-
-### Carousel Component
-- Editorial carousel with multiple slides
-- Dot indicators for slide position
-- Arrow navigation (left/right) at slide edges
-- Auto-advancing with manual override
-- Content: mixed editorial — event recaps, model launches, racing highlights
-
-## 5. Layout Principles
-
-### Spacing System
-- **Base unit**: 8px (detected system base)
-- **Scale**: 1px, 2px, 4px, 5px, 6px, 9px, 10px, 11.2px, 12px, 13px, 15px, 16px, 19px, 20px, 25px
-- **Button padding**: 12px vertical, 10px horizontal — compact and precise
-- **Section padding**: Generous vertical spacing (40–80px estimated) between major content blocks
-- **Card gaps**: 16–20px between grid items
-- **Footer padding**: 25px horizontal sections within the dark footer block
-
-### Grid & Container
-- **Max width**: 1440px (`PageContainer`; `bleed` remove o teto). Padding lateral 20px (base), 32px (`sm`), 40px (`lg`).
-- **Hero**: Full-bleed on black, content centered
-- **Editorial sections**: 2-column layouts with image + text, alternating sides
-- **Vehicle lineup**: Horizontal scroll/carousel, 5–6 models visible at desktop width
-- **Footer**: 4-column grid for link categories
-
-### Whitespace Philosophy
-Ferrari treats white space as a gallery wall. Each section — whether a concept car render on black void or a pair of F1 drivers on neutral gray — is given its own "room" of breathing space. The alternating black/white sections create a pacing rhythm: dark = immersive moment, white = editorial content, dark = immersive moment. This cadence makes scrolling feel like turning pages in a luxury publication. White space between editorial cards is moderate (not Tesla-extreme) because Ferrari is telling stories, not exhibiting single objects.
-
-### Border Radius Scale
-| Value | Context |
-|-------|---------|
-| 1px | Subtle softening on small inline elements (spans) |
-| 2px | Default for buttons, inputs, and interactive elements — barely perceptible, razor-precision |
-| 8px | Modal dialogs and overlay containers — the "softest" structural radius |
-| 50% | Circular elements: carousel dots, slider handles (avatar usa 2px — ver §10) |
-
-## 6. Depth & Elevation
-
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Level 0 (Flat) | No shadow, no border | Default state for all content sections and cards |
-| Level 1 (Subtle) | `rgb(153, 153, 153) 1px 1px 1px 0px` | Rare — cookie consent dialogs and dropdown menus |
-| Level 2 (Overlay) | `hsla(0, 0%, 7%, 0.8)` backdrop | Modal overlays and image caption backgrounds |
-| Level 3 (Border) | `1px solid #CCCCCC` | Input fields, form containers — depth through delineation not shadow |
-
-### Shadow Philosophy
-Ferrari's approach to elevation is nearly as flat as Tesla's, but with a different rationale. Where Tesla avoids shadows for minimalism, Ferrari avoids them because the editorial photography provides all the visual depth needed. The single shadow token (`rgb(153, 153, 153) 1px 1px 1px 0px`) is extremely subtle — a 1-pixel whisper used only in utilitarian contexts like consent dialogs. The site communicates hierarchy through three strategies:
-1. **Surface color contrast**: Black sections vs. white sections create unmistakable layering
-2. **Overlay transparency**: The `--f-color-overlay-darker` at 80% opacity creates depth without shadow
-3. **Photographic depth**: Studio-lit car imagery with reflections, ground shadows, and atmospheric haze provides all the visual dimensionality
-
-### Decorative Depth
-- No UI gradients, no glows, no blur effects on interface elements
-- The Prancing Horse logo on black creates a "floating in void" effect through pure contrast — no glow or shadow needed
-- Dark-to-light section transitions are hard cuts, not gradient blends — reinforcing the editorial page-turn metaphor
-
-## 7. Do's and Don'ts
-
-### Do
-- Use Ferrari Red (`#DA291C`) sparingly — only for primary CTAs and brand-critical moments. Its power comes from restraint
-- Alternate between black cinematic sections and white editorial sections to create the signature chiaroscuro rhythm
-- Use FerrariSans at weight 500 as the default heading voice — it's the typographic equivalent of the engine note
-- Apply Body-Font in uppercase with 1px letter-spacing for all labels, category tags, and structural annotations
-- Keep border-radius at 2px for all interactive elements — razor precision, not rounded friendliness
-- Let photography carry the emotional weight — every image should be art-directed studio quality
-- Use the Prancing Horse emblem as a standalone hero element on black — never crowd it with adjacent content
-- Maintain the 12px/10px button padding ratio — compact, purposeful, no excess
-- Use `#181818` (Near Black) for body text instead of pure `#000000` — the subtle warmth improves readability
-- Reserve the yellow accents (`#FFF200`, `#F6E500`) strictly for motorsport and racing heritage contexts
-
-### Don't
-- Scatter Ferrari Red across the interface as decoration — it's a CTA signal, not a theme color
-- Use rounded-pill buttons or large border-radii — the 2px precision is non-negotiable
-- Add box-shadows to cards or content containers — depth comes from surface color contrast and photography
-- Mix FerrariSans and Body-Font within the same text block — they serve separate hierarchical functions
-- Use colorful backgrounds (blue, green, etc.) for sections — the palette is exclusively black/white/gray with red and yellow accents
-- Apply text transforms to FerrariSans headings — uppercase is reserved for Body-Font labels only
-- Display low-quality or user-generated imagery — every photograph must meet editorial standards
-- Use the Link Hover Blue (`#3860BE`) for anything other than interactive hover states — it's not a brand color
-- Create busy layouts with multiple competing focal points — each section should have one clear story
-- Override the semantic color system (warning, success, info) with brand colors — `#F13A2C` warning is deliberately different from `#DA291C` brand red
-
-## 8. Responsive Behavior
-
-### Breakpoints (EMACH)
-Tailwind padrão: `sm` 640px, `md` 768px, `lg` 1024px (fronteira desktop/mobile do hero, da PDP e do header), `xl` 1280px (quase sem uso). A tabela abaixo é a referência do site da Ferrari e não vale como contrato.
-
-### Breakpoints (referência Ferrari)
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Mobile Small | ≤375px | Single-column, minimal padding (12px), stacked navigation, hero text scales to ~18px, full-width CTAs |
-| Mobile | 376–600px | Single-column, slightly larger padding (16px), hamburger nav, body text at 13px |
-| Tablet Small | 601–768px | 2-column editorial grid begins, hero images maintain full-width, footer switches to 2-column |
-| Tablet | 769–960px | Full 2-column layout, carousel shows 3 vehicles, padding increases to 20px |
-| Desktop | 961–1280px | Full navigation, 2-column editorial with larger imagery, vehicle lineup shows 5 models |
-| Large Desktop | 1281–1920px | Maximum content width, generous whitespace, hero photography at full cinematic scale |
-
-### Touch Targets
-- Primary CTA buttons: minimum 44px height with 12px vertical padding (meets WCAG AAA 44×44px target)
-- Navigation links: 13px text with 1.50 line-height and adequate spacing between items
-- Carousel arrows: 44px+ touch targets at viewport edges
-- Footer links: grouped with sufficient vertical spacing (16–20px) for touch accuracy
-
-### Collapsing Strategy
-- **Navigation**: Full horizontal nav collapses to centered Prancing Horse logo + hamburger menu on mobile
-- **Editorial sections**: 2-column image+text layouts collapse to single-column with image stacking above text
-- **Vehicle lineup**: Horizontal carousel maintains scroll behavior but reduces visible models from 5 to 2–3
-- **Footer**: 4-column link grid collapses to 2-column on tablet, single-column accordion on mobile
-- **Hero carousel**: Full-width at all breakpoints, dot indicators and arrows scale proportionally
-- **Spacing reduction**: Section padding reduces from 40–80px (desktop) to 20–40px (mobile), maintaining proportional breathing room
-
-### Image Behavior
-- Hero images: full-bleed at all breakpoints, using `object-fit: cover` to maintain cinematic composition
-- Editorial images: responsive within their containers, maintaining aspect ratio
-- Vehicle lineup: thumbnail size scales but maintains consistent car-to-frame proportions
-- Art direction: mobile crops may tighten on vehicle subjects, reducing environmental context
-- Lazy loading: PrimeReact handles progressive image loading for below-fold content
-
-## 9. Agent Prompt Guide
-
-### Quick Color Reference
-- Primary CTA: "Ferrari Red (#DA291C)"
-- Background Light: "Pure White (#FFFFFF)"
-- Background Dark: "Absolute Black (#000000)"
-- Secondary Dark Surface: "Dark Surface (#303030)"
-- Heading text (light bg): "Near Black (#181818)"
-- Body text: "Dark Gray (#666666)"
-- Tertiary text: "Mid Gray (#8F8F8F)"
-- Border: "Border Gray (#CCCCCC)"
-- Button Hover: "Teal (#1EAEDB)"
-- Link Hover: "Link Blue (#3860BE)"
-
-### Example Component Prompts
-- "Create a hero section on Absolute Black (#000000) background with a centered logo emblem at the top, generous vertical spacing (80px+), and a single editorial headline in FerrariSans at 26px weight 500 in white, with a small Body-Font uppercase caption (12px, 1px letter-spacing) in Silver Gray (#969696) below"
-- "Design a Subscribe section on Dark Surface (#303030) with a left-aligned headline in white FerrariSans (24px/500), a subtitle in Mid Gray (#8F8F8F, 13px), an email input with transparent background and 1px #CCCCCC border, and a Ferrari Red (#DA291C) Subscribe button with white text, 2px border-radius, and 12px 10px padding"
-- "Build an editorial card on white background with a full-width image (16:9 ratio) above, a FerrariSans heading (16px/700, Near Black #181818) below, and a Body-Font uppercase label (11px, 1px letter-spacing, Mid Gray #8F8F8F) as the category tag — no border, no shadow, no border-radius"
-- "Create a vehicle lineup carousel showing 5 car thumbnails in a horizontal scroll on white background, with left/right arrow navigation, dot indicators below, and a FerrariSans model name (16px/500) beneath each vehicle"
-- "Design a dark cinematic section with full-bleed studio photography of a concept car on Absolute Black, a white FerrariSans headline (26px/500) positioned in the lower-left with generous padding (40px), and a Ghost Button (transparent bg, 1px white border, white text, 2px radius) as the CTA"
-
-### Iteration Guide
-When refining existing screens generated with this design system:
-1. Focus on ONE component at a time — Ferrari's editorial rhythm means each section is a self-contained vignette
-2. Reference specific color names and hex codes from this document — the palette is small but each color has a precise role
-3. Use natural language descriptions, not CSS values — "razor-sharp 2px corners" conveys intent better than "border-radius: 2px"
-4. Describe the desired "feel" alongside specific measurements — "editorial magazine page-turn between sections" communicates the layout philosophy better than "margin-bottom: 80px"
-5. Always maintain the chiaroscuro contrast — if a section feels flat, check whether it needs to be on black or white to maintain the alternating rhythm
-6. Reserve Ferrari Red for ONE element per screen — if red appears in more than one place, it loses its authority
-
-## 10. EMACH Custom Components & Tokens
-
-### Token additions (`packages/ui/src/styles/globals.css`)
-
-Brand tokens live in `:root` **and** are registered in `@theme inline` so Tailwind utilities (`bg-emach-red`, `text-gray-60`, `bg-image-bg`, etc.) are generated automatically.
-
-**Brand palette**:
-`--emach-red` (#DA291C), `--emach-red-hover` (#B01E0A), `--emach-red-deep` (#9D2211), `--near-black` (#181818), `--gray-10/20/50/55/60/90`, `--warning` (#F13A2C), `--success` (#16A34A), `--success-text` (#0F7A33, verde de texto sobre superfície clara, 4.95:1), `--info` (#4C98B9), `--link-hover` (#3860BE).
-
-**`*-on-dark` — variantes claras p/ detalhe pequeno no escuro** (`--emach-red-on-dark` #F39B92, `--success-on-dark` #7FDFA0, `--info-on-dark` #8FD0E8, `--amber-on-dark` #F9C77E; do #74).
-
-> **Regra de vermelho sobre superfície escura (cinema-3 / near-black / black):** o **`--emach-red` puro continua a cor principal**, inclusive no escuro — tudo que é **protagonista** usa vermelho vivo: kickers de seção (`SectionLabel tone="accent"`), CTAs/botões `primary`, dígitos de countdown, © e links de destaque do footer, selos, pins e bordas/réguas. `--emach-red-on-dark` (#F39B92) é **exceção, só para detalhe pequeno/secundário** onde o vermelho puro (~4:1, sub-AA) prejudicaria a leitura e o elemento **não** é protagonista — ex.: a **UF da filial** na lista do branch map, badges de status (`AccountBadge` família `red` + `tone="dark"`, #74). Nunca usar on-dark num elemento principal "só pra passar no contraste"; se é protagonista, é vermelho vivo.
-
-**Surface / gradient stops** (supplementing brand palette):
-`--black` (#000), `--surface-elevated` (#242424, superfície escura elevada, usada por `ProductCard surface="elevated"` e `PromoProductCard`), `--image-bg` (#ECECEC — product placeholder tile), `--cinema-1/2/3` (#2A2A2A / #1A1A1A / #0A0A0A — cinematic hero gradients), `--placeholder-light/mid/dark` (#F6F6F6 / #D8D8D8 / #C8C8C8 — radial used when product has no image).
-
-**Radii**: `--radius-xs` 4px → `--radius-full` 9999px. Default shadcn `--radius: 2px` applied to all components.
-
-**Spacing scale**: `--space-1` 4px → `--space-20` 80px (8px base).
-
-**Motion (interações de card)**: `--card-ease` (`cubic-bezier(0.2,0.6,0.2,1)`), `--card-dur` (240ms — movimento/cor/hover) e `--card-dur-image` (400ms — zoom de imagem). Compartilhados por `ProductCard`, `ProductImage` e `CategoryTile` para uma linguagem de movimento única (consumidos via `duration-[var(--card-dur)] ease-[var(--card-ease)]`).
-
-### Design-system utility classes (backgrounds that would be ugly as arbitrary values)
-
-Only use these for their named intent — do not inline equivalents:
-
-| Class | Purpose |
-|-------|---------|
-| `.emach-bg-cinema` | Hero radial gradient `#2a2a2a → #0a0a0a → #000` |
-| `.emach-bg-diagonal` / `.emach-bg-diagonal-2` | Editorial repeating stripe overlays (hero + category tiles) |
-| `.emach-mask-vignette` | Radial mask on hero product photo |
-| `.emach-bg-vignette-bottom` | Bottom-anchored darken for tiles over imagery |
-| `.emach-bg-category-overlay` | Slight darken used on category tile with image |
-| `.emach-bg-category-fallback` | Dark fallback for category tile without image |
-| `.emach-bg-card-hover` | Bottom gradient that fades in on product card hover |
-| `.emach-bg-tile-spot` | Spotlight radial de estúdio do CategoryTile (centro claro, bordas escuras) |
-| `.emach-bg-tile-foot` | Degradê escuro na base do CategoryTile (legibilidade do nome) |
-| `.emach-bg-placeholder` / `.emach-bg-placeholder-shadow` | Radial + shadow for product icon placeholder |
-| `.emach-bg-login-vignette` | Vinheta do painel de marca do login (`login-brand-panel.tsx`) |
-
-Sem uso hoje no app (candidatas a remoção): `.emach-bg-cinema`, `.emach-bg-diagonal(-2)`, `.emach-mask-vignette`, `.emach-bg-vignette-bottom`, `.emach-bg-category-overlay`, `.emach-bg-category-fallback`, `.emach-bg-card-hover`, `.emach-bg-login-key`, `.emach-bg-login-rim`. Não usar como precedente sem reavaliar.
-
-### Radius philosophy (final)
-Default: **2px** on all interactive elements (buttons, inputs, cards, chips, badges). Nearly imperceptible — reinforces the "precision engineering" aesthetic. Avatars also use **2px** (square) so the user chrome matches the rest of the system — `Avatar` Root/Image/Fallback in `packages/ui/src/components/avatar.tsx`. The `<Checkbox>` uses `border-radius: 0` (razor-square). Only exception: circular indicators (carousel dots, slider handles) use 50%.
-
-### Form controls
-All form controls use `.emach-*` CSS classes defined in globals.css. Do NOT use shadcn Input/Select for EMACH-branded pages.
-- `.emach-input` — hairline border, red `inset 0 -2px` focus underline, 2px radius
-- `.emach-select` — custom chevron SVG, same focus treatment
-- `.emach-chip` / `.emach-chip--active` (pills de sugestão no `search-overlay`)
-- `.emach-qty` (legado, sem uso; o stepper é o componente `QuantityPicker`)
-- `.emach-field`, `.emach-field__label`, `.emach-field__error` — label wrapper
-- `.emach-input--sm` (altura 36px, filtro do catálogo); `.emach-field__hint` (texto de apoio do campo, checkout)
-- `.emach-ghost-btn` (reset de `<button>`/link sem estilo: login, PDP, busca)
-- `.emach-toast` / `.emach-toast__title` (skin do Sonner, `providers.tsx`)
-- `.emach-shimmer`, `.emach-nav-progress`, `.emach-cart-item`, `.emach-cart-badge` (feedback e animação, ver §Loading e §Cart)
-- `.emach-reveal-item` (entrada escalonada de grid, definida em `apps/web/src/index.css`, não em `globals.css`)
-- Sem uso hoje: `.emach-input--dark`, `.emach-input--lg`, `.emach-input-group`, `.emach-range`, `.emach-hr`, `.emach-ring`.
-
-**Checkbox** — componente React `<Checkbox>` (`packages/ui/src/components/checkbox.tsx`), **não** classe CSS. Estilo monocromático: marcado preto (`near-black`), cantos retos (`border-radius: 0`), check branco, foco com ring vermelho fino. Usado em filtros (voltagem, "apenas em promoção"), login e checkout. As classes legadas `.emach-check`/`.emach-radio` foram removidas (#60); o filtro de **categoria** virou navegação hierárquica (lista com barra vermelha no item ativo + `aria-current`), sem radio.
-
-### ProductCard (dark) + quick-add
-Card de produto **escuro** e flat (sem box-shadow). Borda hairline branca (`border-white/14`, acende para `white/30` no hover); o card sobe levemente (`-translate-y-1`). **Surface contextual** via prop `surface`: `dark` (`bg-near-black`, #181818 — default) sobre fundo claro (home/novidades, catálogo); `elevated` (#242424) sobre fundo escuro — `PromoHighlight` passa `surface="elevated"` via `ProductGrid`. A área de imagem mantém o tile claro (`bg-image-bg`): a foto recortada é a âncora de luz e dá zoom `1.04` no hover. Texto branco — categoria via `SectionLabel tone="light"`, nome/preço brancos, riscado `white/60` (11px). Badge `-15%` vermelho no topo-direito. O card é um **stretched link** (`<Link>` absoluto `inset-0`, nome em `sr-only`) — permite ter o quick-add como irmão clicável. Componente: `src/components/product-card.tsx`.
-
-**Selos de voltagem** (prop `voltages`): no canto inferior-esquerdo da imagem (`bg-near-black/85`, Barlow Condensed bold, cantos 2px) listam as voltagens de **todas as variantes vendáveis** (visíveis no site e com preço), na ordem 127V · 220V · 380V · Bivolt. Produtos sem variante (manuais, discos) **não exibem selo**, e o corpo do card (categoria · nome · preço) permanece idêntico → **mesma altura em todos**, sem espaço vazio. Substituem o antigo "Mais opções de voltagem". No hover, o quick-add desliza por cima dos selos (estado normal mostra os selos; hover mostra a ação).
-
-**Variantes hoje = voltagem.** `tool_variant` tem uma única dimensão (`voltage`); não há variação por cor/tamanho (cor existe só como *atributo descritivo*, não variante vendável). O `ToolListItem` (`packages/db/src/queries/catalog-helpers.ts`, reexportado por `queries/tools.ts`, owned-by-dashboard) só traz a voltagem da variante default + `hasOtherVariants`, então as voltagens dos selos são agregadas por um helper **storefront-owned** — `src/lib/variant-voltages.ts > getVoltagesByTool`, lido em `(shop)/page.tsx` e em `catalog/_lib/catalog-data.ts` (`fetchCatalogData`) e passado como `voltagesByTool` por `ProductGrid`/`ProductCarousel`/`CatalogContent`/`PromoHighlight`. **Não editar `tools.ts`/`catalog-helpers.ts` pra isso** (dashboard-owned). Suportar variantes genéricas (cor/tamanho) seria um épico de schema no dashboard — fora de escopo.
-
-**Quick-add** (`src/components/quick-add-button.tsx`, client): botão vermelho full-width que desliza de baixo da imagem no hover (`translateY(100%)→0`), ícone lucide `Plus`. Fica acima do stretched link (`z-[3]`) e dá `preventDefault`+`stopPropagation` — adiciona o item da variante default ao carrinho (`useCartActions().add`) com toast, sem navegar. No desktop revela no `:hover` e no foco de teclado (`group-focus-within`); em ponteiro grosso (touch) fica sempre visível, com alvo mínimo de 44px (`pointer-coarse:translate-y-0`, `min-h-11`). Só renderiza quando `inStock`; sem estoque o card mostra o overlay `bg-near-black/60` com "Esgotado".
-
-### CategoryTile (dark, home)
-Tile **escuro cinematográfico** (`.emach-bg-tile-spot` — spotlight radial de estúdio), aspect `4/5`, borda hairline branca. A ferramenta (PNG recortado, fundo transparente) flutua centralizada com **cor plena** (`object-contain`), **sem overlay** por cima — o degradê escuro (`.emach-bg-tile-foot`) fica só na base, pra legibilidade do nome. Número-índice **marca d'água** monumental (`text-[220px]`, outline branco → vermelho no destaque) sangrando o canto inferior direito. Régua vermelha (fade-in) + seta `ArrowRight` (desloca) reagem no destaque; "Explorar" fica branco. **Auto-cycle** (`category-grid.tsx`): o destaque percorre os tiles automaticamente (~2,6s) pra revelar a interação — pausa quando o mouse entra no grid (aí o `:hover` real assume) e desliga em `prefers-reduced-motion`. O estado de destaque (`data-active`) espelha o `:hover` via `group-data-[active=true]:`. Sem imagem, o tile mostra o ícone lucide da categoria raiz (`acessorios→Disc3`, `equipamentos→HardHat`, `ferramentas-eletricas→Drill`, `ferramentas-manuais→Wrench`, padrão `Wrench`) em `white/16`, que acende para `white/30` no destaque. O destaque também sobe 3px (`-translate-y-[3px]`) e acende a borda (`white/32`). O mapa de ícones do tile é diferente do de `ProductImage` (slugs de categoria raiz vs. slugs de seção), apesar do comentário em `category-tile.tsx:7` dizer que espelha.
-
-### Branch map — seção "Onde estamos" (PR #71)
-Seção **dark cinematográfica** (`bg-cinema-3` #0A0A0A) com **borda vermelha de 2px só em cima** (`border-t-2 border-t-emach-red`) e hairline `white/10` embaixo, acento Ferrari de abertura, dentro da regra "vermelho é verbo". Grid 36%/64%: à esquerda o copy (`SectionLabel` "Onde estamos" + h2 + CTA `outline-light` "Ver filiais"), à direita o **mapa do Brasil + lista de filiais**.
-
-**Render do mapa (decisões não-óbvias):**
-- O mapa base é uma **`<img>` com SVG data-URI** (`lib/branch-map/map-svg.ts > buildMapSvgDataUri`), não SVG inline — fundo `#0A0A0A` (= a seção, sem "quadrado"), estados em branco translúcido (`fill-opacity` 0.05 / 0.13 nos destacados) sobre o preto = a silhueta cinza com a diferenciação dos estados.
-- Uma **`mask-image`** no formato da silhueta (`buildMapMaskDataUri`) recorta o retângulo, garantindo que nada de fundo "vaze" além do Brasil.
-- Os **pins são overlay HTML** (`<a>` posicionados por `left/top` % das coords projetadas), **não** elementos SVG — permite hover/click nativos e fica imune ao tratamento de imagem do navegador. Círculo vermelho pequeno (`h-2.5`, cresce no destaque) + glow.
-- Os paths dos estados vêm de `brazil-states.ts` (gerado offline). **Geração tem gotcha crítico** — ver `CLAUDE.md > Gotchas` (projeção manual, nunca `geoPath`).
-
-**Interação:** **auto-cycle** (`branch-map.tsx`, ~2,2s) percorre as filiais destacando pin + card da lista (mesmo padrão do `CategoryTile`); **pausa** quando o mouse entra (o hover real assume) e **desliga** em `prefers-reduced-motion`. Hover no pin ↔ destaque do card é sincronizado; no desktop (`md+`) a lista tem teto de 440px com scroll interno; quando há overflow, a filial ativa é centralizada por `scrollTo` sem mover a página. No mobile a lista corre inteira. Click no pin/card → Google Maps ("Como chegar"). Componentes: `branch-map-section.tsx` (server) + `branch-map.tsx` (client).
-
-**Dados:** as coordenadas vêm de `lib/branch-map/geocode.ts > cityToXY` (tabela `municipios.json`). Filial sem cidade/UF resolvível não gera pin (log `branch_map_geocode_miss`); sem nenhum pin a seção não renderiza. Seção cacheada 600 s (`use cache`). CTA "Ver filiais →" leva a `/sobre`.
-
-**Cor (aplica a regra de vermelho-no-escuro acima):** kicker "Onde estamos" (`SectionLabel tone="accent"`), pins, bordas/régua e selos em `--emach-red` puro — são protagonistas. Só a **UF** ao lado do nome da filial usa `--emach-red-on-dark` (detalhe pequeno legível no escuro). O kicker "Ofertas" (`PromoHighlight`) segue a mesma lógica: vermelho puro.
-
-### Hero carousel (mobile ≠ desktop)
-`src/components/hero-carousel.tsx` (carrossel) + `src/components/hero/` (slide, elementos, pilha segura). Banner full-bleed (embla) + parallax mouse-only (desktop), glow vermelho de fundo e produto flutuante. **Duas regras não-óbvias de responsividade:**
-
-- **A escala por elemento vem de `banner.composition` (#210) e vale nos dois viewports.** `productScale`/`ctaScale` legados viram `composition` on-the-fly (`lib/composition/legacy-composition.ts`; `NULL`/inválida usa o mapa legado). Elemento **posicionado** (desktop sempre; mobile só com override) aplica a própria `scale` pelo transform do placement (`placementToStyle`); item **herdado na pilha segura mobile** não aplica escala (`hero-safe-stack.tsx`, caixa fixa). Não existe mais gate `lg:` de escala nem `LAYOUT_CONFIG`; o renderer é único em `components/hero/`.
-- **No mobile o bg desktop é derrubado.** As artes de banner são composições widescreen com título/specs/subtítulo **queimados na imagem** — `object-cover` no retrato corta tudo. Banner mobile usa `backgroundMobileMode='none'` (backdrop preto + glow + produto, estilizado aqui) ou `'custom'` (imagem mobile dedicada); **nunca `'inherit'`** (= arte desktop cortada). O glow só pulsa no desktop (repaint de `blur(40px)`/frame trava o mobile). Banner sem produto + `none` = mobile vazio (só glow+CTA) → todo banner mobile precisa de produto ou imagem mobile.
-
-### ProductImage
-Lucide icon placeholder per category slug: `eletricas→Drill`, `manuais→Wrench`, `medicao→Ruler`, `seguranca→Shield`, `acessorios→Disc3`. Radial gradient background. Zoom `group-hover:scale-[1.04]` (zoom-**in**) quando `zoom` ativo. Component: `src/components/product-image.tsx`.
-
-### Cart state
-Client-side cart via React Context + localStorage (`emach:cart:v2`). Provider in `src/lib/cart-context.tsx`. Store helpers in `src/lib/cart-store.ts` (`removeFromCart`/`updateQty` filtram por `variantId`; `qty < 1` remove). Cart count badge in SiteHeader updates reactively. Dois hooks: `useCart()` (itens + ações) e `useCartActions()` (só ações; use em quem só despacha, como `QuickAddButton`, buy box da PDP e `RebuyButton`, para não re-renderizar a cada mudança do carrinho). O snapshot guarda `priceAmount` por `variantId`; `reconcilePrices` (`cart-store.ts`) alinha esse preço ao atual na revalidação do checkout, antes do place-order.
-
-**Drawer (`cart-sheet.tsx`) = chiaroscuro** (espelha `AccountHero` + corpo claro): header `bg-near-black` com **régua vermelha** inferior (`border-emach-red border-b-2`) e título/contagem brancos; corpo claro com a lista de itens (`CartItemRow variant="compact"`); footer `bg-near-black` com subtotal branco + CTA `primary` (Finalizar compra) + `ghost-light` (Ver carrinho). **No escuro, nunca `ghost`/`outline`** (texto/borda `near-black`, somem) — use `primary`, `dark`, ou `ghost-light` (`bg-transparent text-white hover:bg-white/10`, **sem borda**, criada pra isso). A drawer é um **overlay próprio** (`useOverlay`: scroll-lock, Esc, focus-trap e restauração de foco), não o `Sheet` da Base UI: a transição/unmount da Base UI conflita com o React Compiler (abria em `opacity:0` e capturava cliques). O botão de fechar (`X` em `white/60` que acende para branco no hover, alvo 44px) fica no próprio header escuro. Mesmo padrão em `mobile-menu`, `search-overlay` e no filtro do catálogo (`filter-drawer`). **SKU não aparece no carrinho** (drawer nem `/cart`): `CartItemRow` mostra só categoria (label) + voltagem (meta) — SKU não serve ao cliente final. Na drawer (`variant="compact"`) o `QuantityPicker` (`min={0}`) fica à direita abaixo do preço e **decrementar abaixo de 1 remove o item** (sem botão "Remover"); a `/cart` (`variant="full"`) mantém qty + "Remover". A página **`/cart`** segue o mesmo chiaroscuro: título claro + itens claros, e o **Resumo do pedido é um card `bg-near-black`** (label vermelho, total branco, CTA `primary` + `ghost-light`).
-
-**Gotcha — gutter da scrollbar + overlay (`globals.css`):** o Base UI seta `scrollbar-gutter: stable` **inline no `<html>`** durante o scroll-lock de `Dialog`/`Sheet` (hoje: sheets de avaliação, reembolso e endereço da conta; viewer de vídeo da placa técnica na PDP; evita layout-shift). Mas o gutter reservado (~15px) fica descoberto à direita — elementos `position: fixed` (backdrop + drawer) param na borda do content-box, e o `body` claro vazava como **faixa à direita da drawer**. Fix: `html:has(body[style*="overflow: hidden"]), html:has(body[style*="overflow-y: hidden"]) { scrollbar-gutter: auto !important }` (fora de `@layer`, `!important` p/ vencer o inline; casa shorthand **e** longhand, os dois code-paths do Base UI). Troca a faixa por um micro re-centramento (~7px) do fundo, que fica sob o overlay.
-
-**Segundo caminho (popups ancorados):** `DropdownMenu`, `Select` e `Popover` caem no branch "inset scrollbar" do `useScrollLock`, que seta `width: calc(100vw - <scrollbar>)` no `<body>` e `overflow-y: scroll` no `<html>`; no Chromium isso subtrai a scrollbar duas vezes e deixa ~15px vazios à direita. Fix: `html[data-base-ui-scroll-locked] body { width: 100% !important }` (o atributo só é setado nesse branch).
-
-### Shared layout primitives (`apps/web/src/components/`)
-
-New DRY helpers. Prefer composing these over raw markup when the pattern applies:
-
-- **`<PageContainer>`** — `mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-10`. Aceita `as="div|section|main"` (padrão `div`) e `bleed` (remove o `max-w`, mantém o padding). Substitui todo `mx-auto max-w-[1440px]`.
-- **`<SectionHeader>`** — `SectionLabel + <h2> + link opcional`. Props: `label`, `title`, `titleSize="md|lg"` (padrão `lg`; `clamp(22px,5vw,28px)` ↔ `clamp(30px,6vw,44px)`), `tone="default|accent"` (padrão `accent`, cor do label), `link` (`{href, label, variant: "underline"|"arrow"}`) e `actions` (slot à direita, ex. setas de carrossel). Move todo header de seção da home e o de produtos relacionados da PDP; reviews e ficha técnica da PDP montam o header com `SectionLabel` direto.
-- **`<QuantityPicker>`** (`quantity-picker.tsx`) — stepper − / valor / + (componente React sobre `<Button>`, **não** a classe legada `.emach-qty`). Células fixas de 44px (`size-11`) em todo lugar; sem prop `size`. Botão `+` sempre vermelho. Props `min` (padrão 1) e `max` (padrão 99), `value`, `onChange`. Com `min={0}` o `−` desce até 0; a **política de remover-ao-zerar mora no caller** (`CartSheet` trata `next < 1 → handleRemove`), **não** no componente — `QuantityPicker`/`CartItemRow` continuam display puro (regra de negócio fica num lugar só).
-- **`<CartItemRow>`** — Single source of truth for cart rows. `variant="compact"` for the drawer, `variant="full"` for the cart page.
-
-### Brand components refactored to cva
-
-`EmachButton`, `EmachBadge`, `SectionLabel` now follow the same `cva` pattern as shadcn primitives (`buttonVariants`, `badgeVariants`). Variant names and resulting CSS are **identical** to before — the refactor is internal DX only. Consumers pass `variant="..."` and optionally `className` to override.
-
-### shadcn components now adopted
-
-| shadcn | Replaces | Notes |
-|--------|----------|-------|
-| `<Tabs variant="line">` | Manual `border-b active` tab strips | Emits a **red** underline (`after:bg-emach-red`) on the active trigger — this is a **shadcn override** baked into `packages/ui/src/components/tabs.tsx` (EMACH is law). Consumers pass `className="h-auto flex-1 border-none px-0 py-3.5 text-[13px]/[14px] font-semibold ..."` to match the EMACH chrome |
-| `<Dialog>` | Modal custom do viewer de vídeo | O `Dialog` fornece focus trap, Esc e scroll-lock. Usado no viewer de vídeo da placa técnica (`plate-media.tsx`) com `className="border-none bg-black/95 p-0 ring-0"`. O zoom da galeria principal é `react-inner-image-zoom` (`product-gallery.tsx`), não `Dialog` |
-| `<Separator>` | `<hr>` / `<div className="h-px bg-border" />` | Usado no divisor do total do resumo do carrinho, no divisor "ou" do login, no resumo do checkout e no detalhe público do pedido (`pedidos/[number]`) |
-
-### Typography utilities
-
-Use the size scale from §3 "Hierarchy (EMACH — actual implementation)" via Tailwind arbitrary values (`text-[14px]`, etc.) combined with `font-sans` (Barlow) or `font-display` (Barlow Condensed). The legacy `.h1/.h2/.h3/.subheading/.body/.label/.micro-label/.price` utility classes have been removed from `globals.css` — never reintroduce them.
-
-### Página de produto (`product/[slug]`) — redesign 2026-07-03 (spec em docs/superpowers/specs/)
-
-Editorial claro: breadcrumb (desktop trilha completa; mobile "‹ Categoria") → galeria (painel `bg-image-bg` full-width na metade esquerda, thumbs em chips brancos overlay no canto inferior esquerdo, ativa `border-emach-red`) → buy box com **card branco de compra** (única superfície `#fff` de conteúdo do sistema — exceção registrada no §2; contém preço/economia/parcelas/voltagem/qty/CTAs; frete, trust strip e share ficam fora) → **placa técnica** → avaliações → relacionados (kicker "Continue explorando" + "Ver categoria", via `SectionHeader`).
-
-- **Container alinhado ao topo (galeria + buy box):** o topo da PDP não é containerizado — a galeria é `w-1/2` (50vw) e o buy box `w-[480px]`, centrados via `justify-center`. Toda seção abaixo usa `mx-auto w-[calc(50%_+_480px)] max-w-[calc(100%_-_2.5rem)]` — **não** usar `max-w` fixo (desalinha).
-- **Placa técnica** (`product-specs.tsx` + `plate-layout.ts`): grade de células hairline (`divide-x/y divide-border`, moldura `border-border`) na superfície `gray-10`; célula = label uppercase Condensed + valor (numérico: Condensed bold 30–36px + unidade; textual: Barlow semibold 16px). **Mídia** (vídeo → 2ª foto) é célula 2×2 no canto direito (desktop); **sem mídia a placa é uniforme** — sem célula-âncora (decisão do dono: número sozinho num 2×2 vira ar morto). Sobras da última linha esticam (1→linha horizontal full-width, 2→metades, 3→terços). Algoritmo em `buildPlateLayout` (função pura, unit-testada N=0..12 × mídia × cols). **Proibido na ficha:** hero-cards escuros, linhas institucionais (garantia/SKU/NF — vivem na trust strip/título), título editorial sintético.
-- **Avaliações nunca somem:** 0 reviews → faixa `bg-near-black` fina (kicker "Avaliações" + copy de compradores verificados + estrelas outline) — único eco escuro da seção. Com reviews, a placa clara abaixo.
-- **Avaliações = placa clara (2026-07-03; revoga o "bloco preto único" do #180 — decisão do dono):** moldura `border border-border` sobre `gray-10`, gramática da placa técnica. Anatomia adaptativa por N (`review-layout.ts`, espelha `plate-layout.ts`): **n=1** trilho `[240px_1fr]` (nota 42px Condensed + estrelas + "1 avaliação" seco) + depoimento 19px **sem estrelas na célula** (a nota do trilho já é a dela; verificação só no selo — estrelas 2× e "verificado" no contador foram rejeitados pelo dono); **n=2–3** células de depoimento com estrelas individuais, 3ª estica full-width; **n≥4** linha de resumo (trilho com "% recomendam" + barras `bg-emach-red`) + grid 2-col compacto + paginação (botões outline `near-black`, hover fill) — review ímpar final estica (`col-span-2`, sem célula fantasma). `ReviewSort` vive no header da seção (linha do `SectionLabel`), visível só em n≥4; trigger no vocabulário claro default. Selo "✓ Compra verificada" (`verified-badge.tsx`) em toda review — `review.orderId NOT NULL`, verdadeiro por construção.
-- **Linhas edge-to-edge:** dentro de painéis/listas as divisórias correm de borda a borda — padding vai nas **células**, não no container. (Na placa, o padrão vive nos `divide-*`; na lista de reviews, nas regras acima.)
-- **Barra de compra fixa (mobile)** (`sticky-buy-bar.tsx`): `fixed bottom-0` `bg-near-black`, `lg:hidden`, respeita `safe-area-inset-bottom`. Aparece só depois que as ações do buy box rolam para cima da viewport (`IntersectionObserver`, `top < 0`); oculta, fica `inert`. O botão vermelho dela não é segundo CTA na mesma tela: só aparece quando o CTA do card de compra saiu por cima. (Aviso: `IntersectionObserver` não dispara em aba `hidden`, ver CLAUDE.md.)
-- **SKU não entra na ficha**: é por-variante (`selected.sku`, muda com a voltagem, client-side) e vive sob o título no buy box.
-
-### Conta do cliente (`/dashboard/**`) — sistema visual
-
-Redesign que trouxe o chiaroscuro da home às telas da conta (Overview, Pedidos, Reembolso, Dados Pessoais). **Ao refatorar o detalhe do pedido (`pedidos/[id]`) ou qualquer tela nova da conta, reusar estes componentes e padrões — não reinventar.**
-
-**Componentes compartilhados** (`apps/web/src/app/dashboard/_components/`):
-- `AccountHero` — header escuro full-bleed por tela (`bg-near-black` + régua vermelha inferior). Props `{kicker?, title, subtitle?, children?}`. `ProfileHeader` (dados-pessoais) é a variante com avatar de iniciais.
-- `AccountSection` — painel **escuro** (`bg-near-black text-white`, `border border-black`) com barra de título (`border-white/12` inferior) + corpo, na mesma família do card de pedido, para o conteúdo "saltar" sobre o fundo `gray-10` da página. Props `{title, id?, rightSlot?, bodyClassName?, children}`. É o bloco de conteúdo do detalhe do pedido **e** de dados-pessoais. `bodyClassName="p-0"` quando o corpo é uma grade/lista com divisores próprios (campos de dados-pessoais, lista de endereços).
-- `AccountBadge` — badge de status fill-suave + dot, por **família semântica** `{family, tone?: "light"|"dark", children, className?}`. Famílias: **âmbar**=precisa de atenção · **azul**=em processamento · **verde**=concluído/ok · **vermelho**=problema · **cinza**=encerrado. Mapeamento status→família vive em `order-status-badge.tsx`/`refund-status-badge.tsx` (`TONE_TO_FAMILY`). Order `warning` (refunded/returned) → cinza (terminal, não atenção); `muted` (canceled) ganha `line-through` via className.
-- `StatusStepper` — stepper com ícones lucide. Estados `done|current|upcoming|ok`. **Trilha vermelha**: `done`=outline vermelho (ícone vermelho), `current`=vermelho cheio + glow, `ok`=verde cheio (estado final entregue/reembolsado), `upcoming`=outline cinza; **linhas percorridas vermelhas**, futuras cinza. Dados das fases: `pedidos/_components/order-steps.ts` (💳→📦→🚚→🏠) e `reembolso/_components/refund-steps.ts` (📄→🔍→✅→💵). Lógica de estado em `lib/orders/status.ts > orderStepDisplayState` e `lib/refunds/status.ts > refundStepDisplayState` (testados).
-- `AccountAvatar`, `QuickActionCard` (Overview), `DashboardChrome` (guarda de sessão sob Suspense + sidebar `dashboard-sidebar.tsx` e `dashboard-nav-mobile.tsx`, itens em `nav-items.ts`). `StatusStepper` aceita `tone="light"|"dark"` (os cards de lista e o header do detalhe usam `dark`); `AccountHero` tem `kicker` padrão "Minha conta".
-
-**Cards** (`order-card.tsx`, `refund-card.tsx`): **todos escuros** (`bg-near-black text-white`), formando uma lista cinematográfica. O "precisa de atenção" se distingue por badge âmbar + CTA vermelho, não por cor de card. Refund `rejected` continua escuro com `opacity-85` e total riscado. Terminais negativos de pedido (canceled/refunded/returned) ficam escuros com opacidade cheia, **sem stepper**, e liberam "Comprar novamente".
-
-**Gotchas (custaram retrabalho — não repetir):**
-- **Não combinar `.emach-bg-diagonal` (nem `.emach-bg-*` que usam `background:` shorthand) com `bg-near-black`** — o shorthand reseta `background-color` para transparent e a superfície "escura" vira clara com texto branco invisível. Usar `bg-near-black` puro.
-- **Em superfície escura, botão = `EmachButton variant="outline-light"`** (ou `primary`). `outline`/`ghost` têm texto/borda `near-black` → invisíveis no escuro. `RebuyButton`/`CancelOrderButton` aceitam prop `variant` justamente por serem usados no card escuro (lista) e no detalhe claro.
-- **`StatusStepper`: nodes têm largura fixa (`w-[88px]`), nunca `w-[25%]`** — com 4 nodes a 25% somam 100% e espremem as linhas conectoras (`flex-1`) a 0px (somem).
-- Token **`--amber`** (`#d97706`) + `--amber-text` (`#b45309`) foram adicionados em globals.css (`:root` + `@theme inline`) — foi o primeiro token de marca novo do redesign.
-
-**Detalhe do pedido (`pedidos/[id]`) — feito (commit `e755299`).** Mesmo padrão: hero escuro full-bleed (`order-detail-header`) com o `StatusStepper` (trilha vermelha, `buildOrderSteps`) embutido — o stepper saiu do `order-tracking` (que agora só mostra código de rastreio + histórico colapsável). Terminal-negativo → aviso sem stepper. Sections são escuras (`AccountSection`, `bg-near-black`), como os cards de lista; o fundo da página continua `gray-10`. Itens ganharam model/sku/fabricante (`MetaChips`); novo bloco `OrderDocuments` (NF-e número + DANFE + XML + status, comprovante de pagamento). A NF-e saiu de `OrderActions` (que ficou só com cancelar/pagar/recomprar).
-
-**Dados pessoais (`dados-pessoais`) — feito (commit `afb3262`).** "Seus dados" e "Endereço de entrega" viraram `AccountSection`. Campos são **células flat com divisores internos** (`bodyClassName="p-0"` + grade 2-col com `border-b`/`sm:border-r` por `nth-child`), não cards com box-in-box — espelha a listagem flat do detalhe (ex.: "Comprador"). Endereços = lista dividida (`divide-y`), padrão por tag "PADRÃO" (não por borda). Conteúdo travado em `max-w-[920px]`. CPF vazio sinaliza por label/ação vermelha + tint sutil, sem card de alerta.
-
-**Pendente (próximo ciclo):**
-- `pedidos/[id]/pagar` (stub de pagamento Asaas) ainda usa estilo antigo — refatorar quando o pagamento real entrar (roadmap #4).
-- **`OrderDocuments` não expõe `orderAttachment`** (anexos do pedido) porque a tabela não tem flag cliente-vs-interno — expor todos arriscaria vazar documento interno do staff. Precisa de coluna `isCustomerVisible` que **nasce no dashboard** (ADR-0009), depois sincroniza e entra no bloco Documentos.
-
-### Loading & feedback de navegação (2026-08-12)
-
-Contrato de loading do storefront — toda rota/tela nova segue isto:
-
-- **Skeleton fiel obrigatório.** O fallback de Suspense espelha a anatomia real da tela (mesmas caixas, mesmas superfícies): hero escuro, sidebar, cards escuros com tile de imagem claro. **Proibido** retângulo cego genérico (`h-[70vh] bg-near-black/5` foi o anti-exemplo do catálogo). Referência: `catalog/_components/catalog-skeleton.tsx` + `ProductCardSkeleton` (espelha o `ProductCard` real). Sob `cacheComponents`, o `loading.tsx` é só um Suspense comum — **o fallback inline do `page.tsx` é o que o usuário vê na soft nav**; os dois devem compartilhar o MESMO componente de skeleton (nunca divergir).
-- **Pendências conhecidas (fora do contrato):** na PDP, o `product/[slug]/loading.tsx` usa retângulos genéricos em grade 2-col que não espelham a página (galeria `lg:w-1/2` + buy box `lg:w-[480px]`), e o `ReviewsSkeleton` do `page.tsx` é um retângulo cego (`h-64 bg-near-black/5`). Migrar para skeleton fiel antes de citar a PDP como referência.
-- **Texto pulsa, imagem varre.** Linhas de texto = `animate-pulse`; tiles de imagem = `.emach-shimmer` (varredura sobre `--image-bg`). Ambos neutralizados no safety net de `prefers-reduced-motion`.
-- **⛔ NUNCA animar opacidade de página inteira na chegada de rota** (mistake 2026-08-12, revertido no mesmo dia): um wrapper `opacity 0→1` no conteúdo da página roda em TODA soft nav (até cache-hit instantâneo) e esconde o hero escuro por frames — o `gray-10` do body vaza como **flash claro** a cada navegação. Chegada de rota entra direta, sem animação. Fade só em elemento pequeno que não cobre superfície escura (ex.: imagem de card sobre o próprio tile).
-- **Hairline de navegação global** (`NavigationProgress`, montada no root layout): régua de 2px `--emach-red` fixa no topo, varredura com `--card-ease`. Aparece só após **150ms** de navegação pendente (nunca pisca), completa e some na chegada, teto de segurança de 8s. Sinal de início = `onRouterTransitionStart` (`instrumentation-client.ts` — único evento global do App Router); sinal de fim = mudança de `pathname`/`searchParams` (não existe evento nativo de fim). Máquina de estados testada em `lib/nav-progress.ts`. **Não** conta como o "vermelho da tela" (é feedback transitório de sistema, não CTA).
-- **Imagens de card** (`ProductImage`): fade-in de 300ms no `onLoad` sobre o tile `--image-bg` — exceto `priority` (LCP renderiza visível direto).
-- **Dados de rota cacheados por padrão.** Query de listagem/leitura vai atrás de `use cache` + `cacheLife({ revalidate: 600 })` (padrão home/PDP/catálogo — `catalog/_lib/catalog-data.ts` cacheia a composição inteira por combinação de filtros). Fallback bonito não substitui dado rápido: primeiro cache, depois skeleton.
+- O Base UI seta `scrollbar-gutter: stable` inline no `<html>` durante a trava de rolagem de `Dialog` e `Sheet`. O gutter deixa uma faixa clara à direita dos elementos `position: fixed`. O `globals.css` anula o gutter com `html:has(body[style*="overflow: hidden"])` e `html:has(body[style*="overflow-y: hidden"])`, cobrindo os dois caminhos da lib.
+- Popup ancorado (`DropdownMenu`, `Select`, `Popover`) cai em outro caminho da trava, que subtrai a barra de rolagem duas vezes da largura do `<body>`. O `globals.css` corrige com `width: 100% !important` no seletor `html[data-base-ui-scroll-locked] body`.

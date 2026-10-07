@@ -5,7 +5,12 @@ import { stockLevel } from "@emach/db/schema/inventory";
 import { order, orderItem } from "@emach/db/schema/orders";
 import { promotion } from "@emach/db/schema/promotions";
 import { tool, toolVariant } from "@emach/db/schema/tools";
-import { isValidCpfCnpj, isValidPhone, onlyDigits } from "@emach/validators";
+import {
+	isValidCpfCnpj,
+	isValidPhone,
+	normalizeDocument,
+	onlyDigits,
+} from "@emach/validators";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -64,7 +69,7 @@ export const inputSchema = z.object({
 		.refine(isValidPhone, "Telefone inválido"),
 	document: z
 		.string()
-		.transform((v) => onlyDigits(v))
+		.transform((v) => normalizeDocument(v))
 		.refine(isValidCpfCnpj, "Documento inválido"),
 	addressId: z.string().nullable(),
 	newAddress: newAddressSchema.nullable(),

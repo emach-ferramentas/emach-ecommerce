@@ -1,5 +1,5 @@
 import { SiteJsonLd } from "@/components/seo/site-json-ld";
-import { SiteFooter } from "@/components/site-footer";
+import { StoreFrame } from "@/components/store-frame";
 
 export default function ShopLayout({
 	children,
@@ -7,10 +7,9 @@ export default function ShopLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<div className="flex min-h-screen flex-col">
+		<StoreFrame>
 			<SiteJsonLd />
-			<div className="flex-1">{children}</div>
-			<SiteFooter />
-		</div>
+			{children}
+		</StoreFrame>
 	);
 }

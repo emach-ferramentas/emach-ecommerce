@@ -5,6 +5,7 @@ import {
 	isValidCpfCnpj,
 	maskCpfCnpj,
 	maskPhone,
+	normalizeDocument,
 	onlyDigits,
 } from "@emach/validators";
 import { CircleAlert, CircleCheck, Plus } from "lucide-react";
@@ -21,7 +22,7 @@ import { authClient } from "@/lib/auth-client";
 type AccountType = "PF" | "PJ";
 
 const detectAccountType = (document: string | null): AccountType =>
-	document && onlyDigits(document).length === 14 ? "PJ" : "PF";
+	document && normalizeDocument(document).length === 14 ? "PJ" : "PF";
 
 interface InitialData {
 	document: string | null;
@@ -446,16 +447,16 @@ function DocumentCard({
 			setError(accountType === "PJ" ? "CNPJ inválido" : "CPF inválido");
 			return;
 		}
-		const digits = onlyDigits(value);
+		const document = normalizeDocument(value);
 		setIsSaving(true);
 		await authClient.updateUser(
 			{
-				document: digits || undefined,
+				document: document || undefined,
 			} as Parameters<typeof authClient.updateUser>[0],
 			{
 				onSuccess: () => {
 					toast.success("Documento atualizado");
-					onSaved(digits || null);
+					onSaved(document || null);
 					setMode("read");
 					router.refresh();
 				},
@@ -479,10 +480,11 @@ function DocumentCard({
 				/>
 				<input
 					aria-invalid={error ? true : undefined}
+					autoCapitalize={accountType === "PJ" ? "characters" : undefined}
 					autoFocus
 					className="emach-input"
 					id="document-input"
-					inputMode="numeric"
+					inputMode={accountType === "PJ" ? "text" : "numeric"}
 					onChange={(e) => setValue(maskCpfCnpj(e.target.value))}
 					placeholder={
 						accountType === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"

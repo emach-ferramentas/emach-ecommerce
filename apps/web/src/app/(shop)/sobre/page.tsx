@@ -5,7 +5,6 @@ import { Fragment, Suspense } from "react";
 
 import { HOME_CRUMB } from "@/components/breadcrumb";
 import { PageHead } from "@/components/page-head";
-import { SiteHeader } from "@/components/site-header";
 import {
 	type BusinessHoursRow,
 	branchMapsUrl,
@@ -91,66 +90,63 @@ const SECTION_TITLE_CLASS =
 
 export default function AboutPage() {
 	return (
-		<>
-			<SiteHeader />
-			<main className="bg-paper pb-16 md:pb-24" id="main-content">
-				<div className="shop-wrap">
-					<PageHead
-						current="Quem somos"
-						title="Ferramenta profissional, e quem responde por ela"
-						trail={[HOME_CRUMB]}
-					>
-						<p className="max-w-[65ch] leading-relaxed">{ABOUT_DESCRIPTION}</p>
-					</PageHead>
-
-					<ul className="border-line border-t">
-						{aboutPillars.map((pillar) => (
-							<li
-								className="grid gap-2 border-line border-b py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8"
-								key={pillar.id}
-							>
-								<h2 className="font-extrabold text-[17px] text-ink">
-									{pillar.label}
-								</h2>
-								<div className="max-w-[65ch]">
-									<p className="font-bold text-[20px] text-ink leading-snug">
-										{pillar.title}
-									</p>
-									<p className="mt-2 text-[16px] text-ink-2 leading-relaxed">
-										{pillar.description}
-									</p>
-								</div>
-							</li>
-						))}
-						{sideNotes.map((note) => (
-							<li
-								className="grid gap-2 border-line border-b py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8"
-								key={note.id}
-							>
-								<h2 className="font-extrabold text-[17px] text-ink">
-									{note.label}
-								</h2>
-								<p className="max-w-[65ch] font-bold text-[20px] text-ink leading-snug">
-									{note.text}
-								</p>
-							</li>
-						))}
-					</ul>
-				</div>
-
-				<section
-					aria-labelledby="filiais-titulo"
-					className="mt-12 scroll-mt-6 bg-canteiro py-12 md:mt-16 md:py-16"
-					id="filiais"
+		<div className="bg-paper pb-16 md:pb-24">
+			<div className="shop-wrap">
+				<PageHead
+					current="Quem somos"
+					title="Ferramenta profissional, e quem responde por ela"
+					trail={[HOME_CRUMB]}
 				>
-					<div className="shop-wrap">
-						<Suspense fallback={<BranchesSkeleton />}>
-							<Branches />
-						</Suspense>
-					</div>
-				</section>
-			</main>
-		</>
+					<p className="max-w-[65ch] leading-relaxed">{ABOUT_DESCRIPTION}</p>
+				</PageHead>
+
+				<ul className="border-line border-t">
+					{aboutPillars.map((pillar) => (
+						<li
+							className="grid gap-2 border-line border-b py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8"
+							key={pillar.id}
+						>
+							<h2 className="font-extrabold text-[17px] text-ink">
+								{pillar.label}
+							</h2>
+							<div className="max-w-[65ch]">
+								<p className="font-bold text-[20px] text-ink leading-snug">
+									{pillar.title}
+								</p>
+								<p className="mt-2 text-[16px] text-ink-2 leading-relaxed">
+									{pillar.description}
+								</p>
+							</div>
+						</li>
+					))}
+					{sideNotes.map((note) => (
+						<li
+							className="grid gap-2 border-line border-b py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8"
+							key={note.id}
+						>
+							<h2 className="font-extrabold text-[17px] text-ink">
+								{note.label}
+							</h2>
+							<p className="max-w-[65ch] font-bold text-[20px] text-ink leading-snug">
+								{note.text}
+							</p>
+						</li>
+					))}
+				</ul>
+			</div>
+
+			<section
+				aria-labelledby="filiais-titulo"
+				className="mt-12 scroll-mt-6 bg-canteiro py-12 md:mt-16 md:py-16"
+				id="filiais"
+			>
+				<div className="shop-wrap">
+					<Suspense fallback={<BranchesSkeleton />}>
+						<Branches />
+					</Suspense>
+				</div>
+			</section>
+		</div>
 	);
 }
 

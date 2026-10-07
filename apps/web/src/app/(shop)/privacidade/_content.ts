@@ -21,7 +21,7 @@ export const privacySections: InstitutionalSection[] = [
 			"Só o necessário para vender, entregar e atender. Nada de formulário com dez campos que ninguém usa.",
 		],
 		bullets: [
-			"Cadastro: nome, e-mail, telefone e CPF ou CNPJ. O documento é guardado só com os dígitos e serve para emitir a nota fiscal.",
+			"Cadastro: nome, e-mail, telefone e CPF ou CNPJ. O documento é guardado sem pontuação e serve para emitir a nota fiscal.",
 			"Endereços de entrega que você cadastra na sua conta.",
 			"Login com Google: recebemos nome, e-mail e foto do perfil. Não recebemos sua senha do Google.",
 			"Sessão: um cookie de login (ecommerce.session_token), com endereço IP e navegador registrados para segurança.",

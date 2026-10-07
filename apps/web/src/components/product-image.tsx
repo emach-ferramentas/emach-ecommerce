@@ -66,18 +66,12 @@ export function ProductImage({
 	return (
 		<div
 			className={cn(
-				"emach-bg-placeholder flex items-center justify-center",
+				"flex items-center justify-center bg-well text-ink-muted",
 				WRAPPER_BASE,
 				zoom && ZOOM_ON_HOVER
 			)}
 		>
-			<div className="flex size-[58%] items-center justify-center text-cinema-2 opacity-[0.82]">
-				<Icon className="h-full w-full" strokeWidth={1.2} />
-			</div>
-			<div
-				aria-hidden="true"
-				className="emach-bg-placeholder-shadow absolute right-[20%] bottom-[8%] left-[20%] h-4 blur-sm"
-			/>
+			<Icon aria-hidden="true" className="size-[58%]" strokeWidth={1.2} />
 		</div>
 	);
 }

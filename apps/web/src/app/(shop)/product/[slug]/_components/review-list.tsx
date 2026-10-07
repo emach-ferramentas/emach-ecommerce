@@ -73,7 +73,7 @@ function buildHref(
 const PAGE_BTN =
 	"inline-flex min-h-11 items-center rounded-[3px] border-[1.5px] border-line-strong bg-paper px-5 font-bold text-[15px] text-ink transition-colors hover:border-ink";
 const PAGE_BTN_DISABLED =
-	"border border-border px-5 py-2 font-display font-semibold text-[11px] text-ink/30 uppercase tracking-[0.14em]";
+	"inline-flex min-h-11 items-center rounded-[3px] border-[1.5px] border-line bg-canteiro px-5 font-bold text-[15px] text-ink-muted";
 
 export function ReviewList({
 	reviews,
@@ -117,7 +117,7 @@ export function ReviewList({
 			{totalPages > 1 && (
 				<nav
 					aria-label="Paginação de avaliações"
-					className="flex items-center justify-center gap-3 border-border border-t px-6 py-5"
+					className="flex items-center justify-center gap-3 border-line border-t px-6 py-5"
 				>
 					{prevHref ? (
 						<Link className={PAGE_BTN} href={prevHref} scroll={false}>
@@ -126,7 +126,7 @@ export function ReviewList({
 					) : (
 						<span className={PAGE_BTN_DISABLED}>Anterior</span>
 					)}
-					<span className="font-display text-[11px] text-ink-muted uppercase tracking-[0.14em]">
+					<span className="text-[13px] text-ink-muted tabular-nums">
 						Página {page} de {totalPages}
 					</span>
 					{nextHref ? (

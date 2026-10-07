@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { SiteHeader } from "@/components/site-header";
 import { canonicalFor } from "@/lib/seo/canonical";
 import { CatalogResults } from "./_components/catalog-results";
 import { CatalogSkeleton } from "./_components/catalog-skeleton";
@@ -22,13 +21,10 @@ export const metadata: Metadata = {
 
 export default function CatalogPage({ searchParams }: CatalogPageProps) {
 	return (
-		<>
-			<SiteHeader />
-			<Suspense fallback={<CatalogSkeleton />}>
-				{/* `?cat=` legado é redirecionado no proxy (308); aqui é ignorado
+		<Suspense fallback={<CatalogSkeleton />}>
+			{/* `?cat=` legado é redirecionado no proxy (308); aqui é ignorado
 				    de propósito pra nunca servir conteúdo duplicado. */}
-				<CatalogResults searchParams={searchParams} />
-			</Suspense>
-		</>
+			<CatalogResults searchParams={searchParams} />
+		</Suspense>
 	);
 }

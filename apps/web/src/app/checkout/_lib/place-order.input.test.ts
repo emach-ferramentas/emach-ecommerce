@@ -39,6 +39,22 @@ describe("inputSchema", () => {
 		]);
 	});
 
+	it("aceita CNPJ alfanumérico e grava em maiúsculas sem pontuação", () => {
+		const parsed = inputSchema.parse({
+			...BASE_INPUT,
+			document: "12.abc.345/01de-35",
+		});
+		expect(parsed.document).toBe("12ABC34501DE35");
+	});
+
+	it("grava CPF só com dígitos", () => {
+		const parsed = inputSchema.parse({
+			...BASE_INPUT,
+			document: "529.982.247-25",
+		});
+		expect(parsed.document).toBe("52998224725");
+	});
+
 	it("não exige e-mail (o pedido usa o e-mail da conta)", () => {
 		const parsed = inputSchema.safeParse(BASE_INPUT);
 		expect(parsed.success).toBe(true);

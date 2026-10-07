@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import z from "zod";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { EmachLinkButton } from "@/components/emach-button";
+import { TextField } from "@/components/field";
 import { authClient } from "@/lib/auth-client";
 import { AuthColumn } from "../../_components/auth-column";
 
@@ -80,47 +81,23 @@ export function ResetPasswordForm() {
 			>
 				<form.Field name="password">
 					{(field) => (
-						<label className="emach-field" htmlFor={field.name}>
-							<span className="emach-field__label">Nova senha</span>
-							<input
-								className="emach-input"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="••••••••"
-								type="password"
-								value={field.state.value}
-							/>
-							{field.state.meta.errors.map((error) => (
-								<span className="emach-field__error" key={error?.message}>
-									{error?.message}
-								</span>
-							))}
-						</label>
+						<TextField
+							field={field}
+							label="Nova senha"
+							placeholder="••••••••"
+							type="password"
+						/>
 					)}
 				</form.Field>
 
 				<form.Field name="confirm">
 					{(field) => (
-						<label className="emach-field" htmlFor={field.name}>
-							<span className="emach-field__label">Confirmar senha</span>
-							<input
-								className="emach-input"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="••••••••"
-								type="password"
-								value={field.state.value}
-							/>
-							{field.state.meta.errors.map((error) => (
-								<span className="emach-field__error" key={error?.message}>
-									{error?.message}
-								</span>
-							))}
-						</label>
+						<TextField
+							field={field}
+							label="Confirmar senha"
+							placeholder="••••••••"
+							type="password"
+						/>
 					)}
 				</form.Field>
 

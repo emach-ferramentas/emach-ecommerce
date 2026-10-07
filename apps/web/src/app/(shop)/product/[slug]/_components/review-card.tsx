@@ -25,7 +25,7 @@ export function ReviewCard({
 	return (
 		<article
 			className={cn(
-				"border-border border-b px-4 py-5 sm:px-5",
+				"border-line border-b px-4 py-5 sm:px-5",
 				// Sobra ímpar estica full-width; senão, coluna esquerda ganha border-r.
 				stretch && isLast ? "md:col-span-2" : index % 2 === 0 && "md:border-r",
 				index >= lastRowStart && "md:border-b-0",
@@ -41,7 +41,7 @@ export function ReviewCard({
 					<VerifiedBadge />
 				</div>
 				<time
-					className="font-display text-[11px] text-ink-muted uppercase tracking-[0.08em]"
+					className="shrink-0 text-[12.5px] text-ink-muted"
 					dateTime={review.createdAt.toISOString()}
 				>
 					{formatReviewDate(review.createdAt)}
@@ -52,7 +52,7 @@ export function ReviewCard({
 					{review.title}
 				</h3>
 			)}
-			<p className="text-[13.5px] text-ink/75 leading-relaxed">{review.body}</p>
+			<p className="text-[13.5px] text-ink-2 leading-relaxed">{review.body}</p>
 		</article>
 	);
 }

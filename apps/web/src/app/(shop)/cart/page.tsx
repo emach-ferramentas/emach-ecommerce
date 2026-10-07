@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { SiteHeader } from "@/components/site-header";
 import { CartContent } from "./_components/cart-content";
 
 export const metadata: Metadata = {
@@ -10,10 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function CartPage() {
-	return (
-		<>
-			<SiteHeader />
-			<CartContent />
-		</>
-	);
+	return <CartContent />;
 }

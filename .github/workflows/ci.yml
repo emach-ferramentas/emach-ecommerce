@@ -20,6 +20,7 @@ jobs:
       - run: bun run --filter=@emach/validators test
       - run: bun run --filter=@emach/db test
       - run: bun run --filter=@emach/auth test
+      - run: bun run --filter=@emach/email test
 
   check-env:
     runs-on: ubuntu-latest

@@ -13,6 +13,7 @@
   "dependencies": {
     "@emach/auth": "workspace:*",
     "@emach/db": "workspace:*",
+    "@emach/email": "workspace:*",
     "@emach/env": "workspace:*",
     "@emach/redis": "workspace:*",
     "@emach/ui": "workspace:*",
@@ -32,7 +33,6 @@
     "next": "^16.3.6",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-inner-image-zoom": "^4.0.1",
     "sonner": "catalog:",
     "zod": "catalog:"
   },
@@ -42,7 +42,6 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "d3-geo": "^3.1.1",
     "tailwindcss": "catalog:",
     "typescript": "^6",
     "vitest": "^2.1.8"

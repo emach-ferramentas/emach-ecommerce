@@ -14,7 +14,7 @@ export function CartContent() {
 	const { removing, handleRemove } = useRemoveWithUndo();
 
 	return (
-		<main className="pb-16" id="main-content">
+		<div className="pb-16">
 			<div className="shop-wrap">
 				<PageHead
 					current="Carrinho"
@@ -49,6 +49,6 @@ export function CartContent() {
 					</div>
 				)}
 			</div>
-		</main>
+		</div>
 	);
 }

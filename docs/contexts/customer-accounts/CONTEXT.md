@@ -23,7 +23,7 @@ Um endereço de entrega pertencente a um **Client**. Um deles é o padrão. O cl
 _Avoid_: Endereço, Location
 
 **Customer Portal**:
-A área logada do **Client** no storefront (`/dashboard`): perfil + endereços (`dados-pessoais`), histórico de **Orders** (`pedidos` — lista, detalhe, rastreio, cancelar, recomprar, avaliar) e **Refund Requests** (`reembolso`). É o storefront — **não** confundir com o dashboard do staff (repo irmão `emach-dashboard`). O portal também tem `/dashboard/pedidos/[id]/pagar` (escolha do meio de pagamento; hoje stub, sem provedor integrado) e o checkout termina em `/pedidos/[number]`, a confirmação do pedido. O **Client** edita o **Document** e o telefone em `dados-pessoais`; a validação e a normalização (só dígitos) rodam nos hooks do Better Auth (`packages/auth/src/ecommerce.ts`).
+A área logada do **Client** no storefront (`/dashboard`): perfil + endereços (`dados-pessoais`), histórico de **Orders** (`pedidos` — lista, detalhe, rastreio, cancelar, recomprar, avaliar) e **Refund Requests** (`reembolso`). É o storefront — **não** confundir com o dashboard do staff (repo irmão `emach-dashboard`). O portal também tem `/dashboard/pedidos/[id]/pagar` (escolha do meio de pagamento; hoje stub, sem provedor integrado) e o checkout termina em `/pedidos/[number]`, a confirmação do pedido. O **Client** edita o **Document** e o telefone em `dados-pessoais`; a validação e a normalização rodam nos hooks do Better Auth (`packages/auth/src/ecommerce.ts`, via `normalizeUserForWrite` em `packages/auth/src/normalize-user.ts`). O **Document** é gravado sem pontuação: CPF só com dígitos, CNPJ alfanumérico em maiúsculas (`normalizeDocument`, #244). Campo vazio vira `NULL`.
 
 ## Relationships
 

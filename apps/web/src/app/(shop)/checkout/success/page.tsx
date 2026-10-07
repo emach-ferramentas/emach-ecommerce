@@ -6,7 +6,6 @@ import {
 	OrderReceived,
 } from "@/app/(shop)/pedidos/_components/order-received";
 import { EmachLinkButton } from "@/components/emach-button";
-import { SiteHeader } from "@/components/site-header";
 import { parseOrderNumber } from "@/lib/orders/order-number";
 
 export const metadata: Metadata = {
@@ -23,35 +22,28 @@ export default function CheckoutSuccessPage({
 	searchParams,
 }: SuccessPageProps) {
 	return (
-		<>
-			<SiteHeader />
-			<main className="shop-wrap py-10 md:py-16" id="main-content">
-				<OrderReceived
-					actions={
-						<>
-							<EmachLinkButton
-								href="/dashboard/pedidos"
-								size="lg"
-								variant="dark"
-							>
-								Ver meus pedidos
-							</EmachLinkButton>
-							<EmachLinkButton href="/catalog" size="lg" variant="line">
-								Continuar comprando
-							</EmachLinkButton>
-						</>
-					}
-					meta={
-						<Suspense fallback={null}>
-							<SuccessOrderNumber searchParams={searchParams} />
-						</Suspense>
-					}
-					title="Pedido recebido"
-				>
-					O pedido aparece em Meus pedidos com o pagamento pendente.
-				</OrderReceived>
-			</main>
-		</>
+		<div className="shop-wrap py-10 md:py-16">
+			<OrderReceived
+				actions={
+					<>
+						<EmachLinkButton href="/dashboard/pedidos" size="lg" variant="dark">
+							Ver meus pedidos
+						</EmachLinkButton>
+						<EmachLinkButton href="/catalog" size="lg" variant="line">
+							Continuar comprando
+						</EmachLinkButton>
+					</>
+				}
+				meta={
+					<Suspense fallback={null}>
+						<SuccessOrderNumber searchParams={searchParams} />
+					</Suspense>
+				}
+				title="Pedido recebido"
+			>
+				O pedido aparece em Meus pedidos com o pagamento pendente.
+			</OrderReceived>
+		</div>
 	);
 }
 

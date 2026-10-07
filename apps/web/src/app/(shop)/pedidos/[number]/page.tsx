@@ -19,7 +19,6 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { EmachLinkButton } from "@/components/emach-button";
 import { PageHead } from "@/components/page-head";
 import { Panel, SummaryRow } from "@/components/panel";
-import { SiteHeader } from "@/components/site-header";
 import { fmtNumericBRL } from "@/lib/format";
 import { requireCurrentClient } from "@/lib/session";
 
@@ -70,21 +69,15 @@ export default function OrderConfirmationPage({
 	params: Promise<{ number: string }>;
 }) {
 	return (
-		<>
-			<SiteHeader />
-			<Suspense fallback={<OrderConfirmationSkeleton />}>
-				<OrderConfirmationContent params={params} />
-			</Suspense>
-		</>
+		<Suspense fallback={<OrderConfirmationSkeleton />}>
+			<OrderConfirmationContent params={params} />
+		</Suspense>
 	);
 }
 
 function OrderConfirmationSkeleton() {
 	return (
-		<main
-			className="shop-wrap animate-pulse pt-6 pb-16 md:pt-10"
-			id="main-content"
-		>
+		<div className="shop-wrap animate-pulse pt-6 pb-16 md:pt-10">
 			<div className="h-4 w-56 max-w-full rounded-[3px] bg-canteiro" />
 			<div className="mt-4 h-12 w-80 max-w-full rounded-[3px] bg-canteiro" />
 			<div className="mt-3 h-4 w-full max-w-xl rounded-[3px] bg-canteiro" />
@@ -130,7 +123,7 @@ function OrderConfirmationSkeleton() {
 					</div>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }
 
@@ -181,7 +174,7 @@ async function OrderConfirmationContent({
 	);
 
 	return (
-		<main className="shop-wrap pb-16" id="main-content">
+		<div className="shop-wrap pb-16">
 			{orderRow.status === "pending_payment" && headline ? (
 				<>
 					<Breadcrumb current={current} trail={ORDER_TRAIL} />
@@ -299,6 +292,6 @@ async function OrderConfirmationContent({
 					</Panel>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

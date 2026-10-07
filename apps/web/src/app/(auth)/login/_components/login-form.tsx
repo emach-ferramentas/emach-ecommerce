@@ -19,12 +19,12 @@ import { toast } from "sonner";
 import z from "zod";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
 import { EmachButton } from "@/components/emach-button";
+import { TextField } from "@/components/field";
 import { Notice } from "@/components/notice";
 import { authClient } from "@/lib/auth-client";
 import { safeRedirect } from "@/lib/safe-redirect";
 import { LoginFallback } from "./login-fallback";
 import { LoginShell } from "./login-shell";
-import { PasswordInput } from "./password-input";
 
 const TRIGGER_CLASS =
 	"h-auto min-h-12 flex-1 whitespace-nowrap border-none px-0 font-semibold text-[15px] text-ink-muted hover:text-ink data-active:text-ink";
@@ -190,49 +190,23 @@ export function LoginForm() {
 					>
 						<signInForm.Field name="email">
 							{(field) => (
-								<label className="emach-field" htmlFor={field.name}>
-									<span className="emach-field__label">E-mail</span>
-									<input
-										className="emach-input"
-										id={field.name}
-										name={field.name}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="seu@email.com"
-										type="email"
-										value={field.state.value}
-									/>
-									<div aria-atomic="true" aria-live="polite">
-										{field.state.meta.errors.map((error) => (
-											<span className="emach-field__error" key={error?.message}>
-												{error?.message}
-											</span>
-										))}
-									</div>
-								</label>
+								<TextField
+									field={field}
+									label="E-mail"
+									placeholder="seu@email.com"
+									type="email"
+								/>
 							)}
 						</signInForm.Field>
 
 						<signInForm.Field name="password">
 							{(field) => (
-								<label className="emach-field" htmlFor={field.name}>
-									<span className="emach-field__label">Senha</span>
-									<PasswordInput
-										id={field.name}
-										name={field.name}
-										onBlur={field.handleBlur}
-										onChange={field.handleChange}
-										placeholder="••••••••"
-										value={field.state.value}
-									/>
-									<div aria-atomic="true" aria-live="polite">
-										{field.state.meta.errors.map((error) => (
-											<span className="emach-field__error" key={error?.message}>
-												{error?.message}
-											</span>
-										))}
-									</div>
-								</label>
+								<TextField
+									field={field}
+									label="Senha"
+									placeholder="••••••••"
+									type="password"
+								/>
 							)}
 						</signInForm.Field>
 
@@ -291,102 +265,45 @@ export function LoginForm() {
 					>
 						<signUpForm.Field name="name">
 							{(field) => (
-								<label className="emach-field" htmlFor={field.name}>
-									<span className="emach-field__label">Nome completo</span>
-									<input
-										className="emach-input"
-										id={field.name}
-										name={field.name}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="João da Silva"
-										value={field.state.value}
-									/>
-									<div aria-atomic="true" aria-live="polite">
-										{field.state.meta.errors.map((error) => (
-											<span className="emach-field__error" key={error?.message}>
-												{error?.message}
-											</span>
-										))}
-									</div>
-								</label>
+								<TextField
+									field={field}
+									label="Nome completo"
+									placeholder="João da Silva"
+								/>
 							)}
 						</signUpForm.Field>
 
 						<signUpForm.Field name="email">
 							{(field) => (
-								<label className="emach-field" htmlFor={field.name}>
-									<span className="emach-field__label">E-mail</span>
-									<input
-										className="emach-input"
-										id={field.name}
-										name={field.name}
-										onBlur={field.handleBlur}
-										onChange={(e) => field.handleChange(e.target.value)}
-										placeholder="seu@email.com"
-										type="email"
-										value={field.state.value}
-									/>
-									<div aria-atomic="true" aria-live="polite">
-										{field.state.meta.errors.map((error) => (
-											<span className="emach-field__error" key={error?.message}>
-												{error?.message}
-											</span>
-										))}
-									</div>
-								</label>
+								<TextField
+									field={field}
+									label="E-mail"
+									placeholder="seu@email.com"
+									type="email"
+								/>
 							)}
 						</signUpForm.Field>
 
 						<signUpForm.Field name="phone">
 							{(field) => (
-								<label className="emach-field" htmlFor={field.name}>
-									<span className="emach-field__label">
-										Telefone (opcional)
-									</span>
-									<input
-										className="emach-input"
-										id={field.name}
-										inputMode="numeric"
-										name={field.name}
-										onBlur={field.handleBlur}
-										onChange={(e) =>
-											field.handleChange(maskPhone(e.target.value))
-										}
-										placeholder="(11) 99999-9999"
-										value={field.state.value}
-									/>
-									<div aria-atomic="true" aria-live="polite">
-										{field.state.meta.errors.map((error) => (
-											<span className="emach-field__error" key={error?.message}>
-												{error?.message}
-											</span>
-										))}
-									</div>
-								</label>
+								<TextField
+									field={field}
+									inputMode="numeric"
+									label="Telefone (opcional)"
+									placeholder="(11) 99999-9999"
+									transform={maskPhone}
+								/>
 							)}
 						</signUpForm.Field>
 
 						<signUpForm.Field name="password">
 							{(field) => (
-								<label className="emach-field" htmlFor={field.name}>
-									<span className="emach-field__label">Senha</span>
-									<PasswordInput
-										id={field.name}
-										name={field.name}
-										onBlur={field.handleBlur}
-										onChange={field.handleChange}
-										placeholder="••••••••"
-										value={field.state.value}
-									/>
-									<div aria-atomic="true" aria-live="polite">
-										{field.state.meta.errors.map((error) => (
-											<span className="emach-field__error" key={error?.message}>
-												{error?.message}
-											</span>
-										))}
-									</div>
-								</label>
+								<TextField
+									field={field}
+									label="Senha"
+									placeholder="••••••••"
+									type="password"
+								/>
 							)}
 						</signUpForm.Field>
 

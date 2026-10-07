@@ -5,7 +5,6 @@ interface ProductRatingProps {
 	average: number;
 	className?: string;
 	size?: number;
-	tone?: "default" | "light";
 }
 
 const STARS = [1, 2, 3, 4, 5] as const;
@@ -14,14 +13,8 @@ export function ProductRating({
 	average,
 	className,
 	size = 14,
-	tone = "default",
 }: ProductRatingProps) {
 	const filled = Math.round(average);
-	const filledClass =
-		tone === "light"
-			? "fill-white text-white"
-			: "fill-foreground text-foreground";
-	const emptyClass = tone === "light" ? "text-white/30" : "text-gray-20";
 
 	return (
 		<div
@@ -30,24 +23,20 @@ export function ProductRating({
 			role="img"
 		>
 			<div aria-hidden className="flex items-center gap-0.5">
-				{STARS.map((position) => {
-					const isFilled = position <= filled;
-					return (
-						<Star
-							className={isFilled ? filledClass : emptyClass}
-							key={position}
-							size={size}
-							strokeWidth={1.5}
-						/>
-					);
-				})}
+				{STARS.map((position) => (
+					<Star
+						className={
+							position <= filled
+								? "fill-grafite text-grafite"
+								: "fill-none text-ink-muted"
+						}
+						key={position}
+						size={size}
+						strokeWidth={1.5}
+					/>
+				))}
 			</div>
-			<span
-				className={cn(
-					"font-semibold text-[13px] tabular-nums",
-					tone === "light" && "text-white"
-				)}
-			>
+			<span className="font-semibold text-[13px] text-ink tabular-nums">
 				{average.toFixed(1)}
 			</span>
 		</div>

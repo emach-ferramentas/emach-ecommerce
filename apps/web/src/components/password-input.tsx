@@ -1,39 +1,22 @@
 "use client";
 
+import { cn } from "@emach/ui/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
-
-interface PasswordInputProps {
-	id: string;
-	name: string;
-	onBlur: () => void;
-	onChange: (value: string) => void;
-	placeholder?: string;
-	value: string;
-}
+import { type InputHTMLAttributes, useState } from "react";
 
 export function PasswordInput({
-	id,
-	name,
-	value,
-	onBlur,
-	onChange,
-	placeholder,
-}: PasswordInputProps) {
+	className,
+	...inputProps
+}: Omit<InputHTMLAttributes<HTMLInputElement>, "type">) {
 	const [isVisible, setIsVisible] = useState(false);
 
 	return (
 		<div className="relative">
 			<input
-				className="emach-input"
-				id={id}
-				name={name}
-				onBlur={onBlur}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder={placeholder}
+				{...inputProps}
+				className={cn("emach-input", className)}
 				style={{ paddingRight: "44px" }}
 				type={isVisible ? "text" : "password"}
-				value={value}
 			/>
 			<button
 				aria-label={isVisible ? "Ocultar senha" : "Mostrar senha"}

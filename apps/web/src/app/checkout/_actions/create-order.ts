@@ -2,10 +2,12 @@
 
 import { db } from "@emach/db";
 import { headers } from "next/headers";
+import { after } from "next/server";
 
 import { getClientIp } from "@/lib/client-ip";
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
+import { sendOrderReceivedEmail } from "@/lib/orders/order-received-email";
 import { orderLimiter, RATE_LIMIT_MESSAGE } from "@/lib/rate-limit";
 import { requireCurrentClient } from "@/lib/session";
 
@@ -121,6 +123,14 @@ export async function createOrderAction(
 				shippingMethod,
 				shippingServiceCode,
 				verifiedShippingCents,
+			})
+		);
+		after(() =>
+			sendOrderReceivedEmail({
+				clientId,
+				orderId: result.orderId,
+				to: session.user.email,
+				name: input.name,
 			})
 		);
 		return { ok: true, ...result };

@@ -6,7 +6,6 @@ import { Suspense } from "react";
 
 import { Breadcrumb, CATALOG_CRUMB, HOME_CRUMB } from "@/components/breadcrumb";
 import { PhotoGallery } from "@/components/buy/photo-gallery";
-import { SiteHeader } from "@/components/site-header";
 import { specChips } from "@/lib/attribute-format";
 import { buildSlots } from "@/lib/gallery-slots";
 import { getProductShell } from "@/lib/product-detail";
@@ -23,6 +22,7 @@ import {
 	RelatedProductsSkeleton,
 } from "./_components/related-products";
 import { ServiceKit } from "./_components/service-kit";
+import { PRODUCT_GRID } from "./_lib/product-layout";
 
 const PRODUCT_SPEC_CHIPS = 4;
 
@@ -116,9 +116,7 @@ export default async function ProductPage({
 				productName={detail.tool.name}
 				slug={detail.tool.slug ?? detail.tool.id}
 			/>
-			<SiteHeader />
-
-			<main className="max-md:pb-[84px]" id="main-content">
+			<div className="max-md:pb-[84px]">
 				<div className="shop-wrap">
 					<Breadcrumb
 						current={detail.tool.name}
@@ -135,7 +133,7 @@ export default async function ProductPage({
 								: []),
 						]}
 					/>
-					<div className="grid items-start gap-5 pt-1.5 pb-9 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-8 md:pt-3.5 md:pb-12 lg:gap-x-12">
+					<div className={PRODUCT_GRID}>
 						<div className="max-md:-mx-4">
 							<PhotoGallery
 								name={detail.tool.name}
@@ -187,7 +185,7 @@ export default async function ProductPage({
 						toolId={detail.tool.id}
 					/>
 				</Suspense>
-			</main>
+			</div>
 		</>
 	);
 }

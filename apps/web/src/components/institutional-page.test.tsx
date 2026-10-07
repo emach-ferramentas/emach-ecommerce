@@ -32,9 +32,9 @@ describe("InstitutionalPage", () => {
 		expect(countOf(html, H1_TAG)).toBe(1);
 	});
 
-	it("envolve o conteúdo num main#main-content", () => {
-		expect(html).toContain("<main");
-		expect(html).toContain('id="main-content"');
+	it("não abre um segundo main: o StoreFrame do layout já abre o único", () => {
+		expect(html).not.toContain("<main");
+		expect(html).not.toContain('id="main-content"');
 	});
 
 	it("mostra a trilha Início > página atual", () => {

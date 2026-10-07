@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import z from "zod";
 import { AuthSubmitButton } from "@/components/auth-submit-button";
+import { TextField } from "@/components/field";
 import { authClient } from "@/lib/auth-client";
 import { AuthColumn } from "../_components/auth-column";
 
@@ -50,24 +51,12 @@ export default function ForgotPasswordPage() {
 			>
 				<form.Field name="email">
 					{(field) => (
-						<label className="emach-field" htmlFor={field.name}>
-							<span className="emach-field__label">E-mail</span>
-							<input
-								className="emach-input"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="seu@email.com"
-								type="email"
-								value={field.state.value}
-							/>
-							{field.state.meta.errors.map((error) => (
-								<span className="emach-field__error" key={error?.message}>
-									{error?.message}
-								</span>
-							))}
-						</label>
+						<TextField
+							field={field}
+							label="E-mail"
+							placeholder="seu@email.com"
+							type="email"
+						/>
 					)}
 				</form.Field>
 

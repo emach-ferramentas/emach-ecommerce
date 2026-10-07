@@ -16,7 +16,7 @@ E-commerce de ferramentas elétricas e manuais (furadeiras, serras, chaves, alic
 | **Logging** | evlog (instrumentation + request middleware + server actions) |
 | **Email** | Resend + React Email |
 | **Monorepo** | Turborepo 2 + Bun 1.3 |
-| **Design** | Ferrari-inspired chiaroscuro — Barlow / Barlow Condensed / `#DA291C` |
+| **Design** | H3 "Prateleira por ofício": Archivo variável, papel e canteiro, grafite, vermelho `#da291c` só no CTA de compra |
 
 ## Estrutura
 
@@ -84,7 +84,7 @@ bunx shadcn@latest diff -c packages/ui
 - **`CLAUDE.md`** — log de mistakes e decisões não óbvias: guardrails de banco, ownership de tabelas, invariantes P0 de auth, anti-patterns, gotchas, deploy e CI, MCP do Resend. Servidores MCP do projeto: `.mcp.json`.
 - **`AGENTS.md`** — pointer pra agentes externos (Codex, Amp, Cursor).
 - **`docs/agents/*.md`** — config das skills de engenharia (issue tracker, triage labels, domain docs).
-- **`DESIGN.md`** — tokens completos do design Ferrari-inspired (cores, tipografia, princípios, componentes EMACH custom).
+- **`DESIGN.md`**: sistema visual H3 (tokens, tipografia, regras, primitivos e exceções).
 - **`packages/db/CLAUDE.md`** — convenções de schema Drizzle (FKs, enums, money, triggers, queries compartilhadas).
 - **`CONTEXT-MAP.md`** e **`docs/contexts/<slug>/CONTEXT.md`** — glossário e fronteiras dos 8 bounded contexts.
 - **`docs/adr/`** — decisões de sistema (0001 débito de estoque, superseded; 0002 ownership de migrations; 0003 estoque multi-filial; 0004 deploy e gates de CI).

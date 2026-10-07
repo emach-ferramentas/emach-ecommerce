@@ -6,6 +6,7 @@ import {
 	isValidPhone,
 	maskCpfCnpj,
 	maskPhone,
+	normalizeDocument,
 	onlyDigits,
 	onlyLetters,
 } from "@emach/validators";
@@ -223,7 +224,7 @@ export function CheckoutContent({
 			const result = await createOrderAction({
 				name: value.name.trim(),
 				phone: onlyDigits(value.phone),
-				document: onlyDigits(value.document),
+				document: normalizeDocument(value.document),
 				addressId: value.addressId === NEW_ADDRESS_ID ? null : value.addressId,
 				newAddress:
 					value.addressId === NEW_ADDRESS_ID

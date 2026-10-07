@@ -108,4 +108,44 @@ describe("TextField", () => {
 		expect(inputOf(html)).toContain('aria-invalid="true"');
 		expect(html).toContain("CPF ou CNPJ inválido");
 	});
+
+	it("leva o name do campo ao input", () => {
+		const field: StringFieldApi = {
+			handleBlur: () => undefined,
+			handleChange: () => undefined,
+			name: "email",
+			state: { meta: { errors: [] }, value: "" },
+		};
+		const html = renderToStaticMarkup(
+			<TextField field={field} label="E-mail" type="email" />
+		);
+		expect(inputOf(html)).toContain('name="email"');
+	});
+
+	it("type=password com erro: botão de mostrar fora do rótulo e aria no input", () => {
+		const field: StringFieldApi = {
+			handleBlur: () => undefined,
+			handleChange: () => undefined,
+			name: "password",
+			state: {
+				meta: {
+					errors: [{ message: "A senha deve ter no mínimo 8 caracteres" }],
+				},
+				value: "123",
+			},
+		};
+		const html = renderToStaticMarkup(
+			<TextField field={field} label="Senha" type="password" />
+		);
+		const input = inputOf(html);
+		expect(input).toContain('type="password"');
+		expect(input).toContain('id="password"');
+		expect(input).toContain('aria-invalid="true"');
+		expect(input).toContain('aria-describedby="password-error"');
+		expect(html).toContain('id="password-error" role="alert"');
+		expect(html).toContain(
+			'<label class="emach-field__label" for="password">Senha</label>'
+		);
+		expect(html).toContain('aria-label="Mostrar senha"');
+	});
 });

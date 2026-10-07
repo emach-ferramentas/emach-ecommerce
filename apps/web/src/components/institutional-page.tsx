@@ -44,7 +44,7 @@ export function InstitutionalPage({
 	updatedAt,
 }: InstitutionalPageProps) {
 	return (
-		<main className="bg-paper pb-16 md:pb-24" id="main-content">
+		<div className="bg-paper pb-16 md:pb-24">
 			<div className="shop-wrap">
 				<PageHead title={title} trail={[HOME_CRUMB]}>
 					<p className="max-w-[65ch] leading-relaxed">{lede}</p>
@@ -104,6 +104,6 @@ export function InstitutionalPage({
 					</div>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

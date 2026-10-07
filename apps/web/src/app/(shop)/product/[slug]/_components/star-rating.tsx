@@ -26,7 +26,7 @@ export function StarRating({ rating, className, size = 13 }: StarRatingProps) {
 						className={
 							isFilled
 								? "fill-grafite text-grafite"
-								: "fill-transparent text-gray-20"
+								: "fill-none text-ink-muted"
 						}
 						key={position}
 						size={size}

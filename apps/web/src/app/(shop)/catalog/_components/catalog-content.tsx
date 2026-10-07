@@ -334,7 +334,7 @@ export function CatalogContent({
 	};
 
 	return (
-		<main className="pb-16" id="main-content">
+		<div className="pb-16">
 			<div className="shop-wrap">
 				<Breadcrumb {...catalogBreadcrumb(currentCategory, searchTerm)} />
 
@@ -506,6 +506,6 @@ export function CatalogContent({
 			>
 				<FilterPanel idPrefix="mobile" {...panelProps} />
 			</FilterDrawer>
-		</main>
+		</div>
 	);
 }

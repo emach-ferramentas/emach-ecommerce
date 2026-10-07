@@ -4,6 +4,8 @@ import {
 	isValidCpf,
 	isValidCpfCnpj,
 	isValidPhone,
+	maskCpfCnpj,
+	normalizeDocument,
 } from "./cpf-cnpj";
 
 describe("isValidCpf", () => {
@@ -50,7 +52,75 @@ describe("isValidCnpj", () => {
 	});
 });
 
+// Exemplo oficial do Serpro ("Cálculo dos dígitos verificadores de CNPJ
+// alfanumérico", manual-dv-cnpj.pdf da Receita Federal): 12.ABC.345/01DE-35.
+describe("isValidCnpj alfanumérico", () => {
+	test("aceita o exemplo oficial sem máscara", () => {
+		expect(isValidCnpj("12ABC34501DE35")).toBe(true);
+	});
+
+	test("aceita o exemplo oficial com máscara", () => {
+		expect(isValidCnpj("12.ABC.345/01DE-35")).toBe(true);
+	});
+
+	test("aceita letras minúsculas", () => {
+		expect(isValidCnpj("12.abc.345/01de-35")).toBe(true);
+	});
+
+	test("rejeita dígito verificador errado", () => {
+		expect(isValidCnpj("12ABC34501DE36")).toBe(false);
+	});
+
+	test("rejeita letra na posição do dígito verificador", () => {
+		expect(isValidCnpj("12ABC34501DE3A")).toBe(false);
+	});
+
+	test("rejeita letra trocada na raiz", () => {
+		expect(isValidCnpj("12ABD34501DE35")).toBe(false);
+	});
+});
+
+describe("normalizeDocument", () => {
+	test("tira pontuação e passa para maiúsculas", () => {
+		expect(normalizeDocument(" 12.abc.345/01de-35 ")).toBe("12ABC34501DE35");
+	});
+
+	test("mantém CPF só com dígitos", () => {
+		expect(normalizeDocument("529.982.247-25")).toBe("52998224725");
+	});
+});
+
+describe("maskCpfCnpj", () => {
+	test("formata CPF", () => {
+		expect(maskCpfCnpj("52998224725")).toBe("529.982.247-25");
+	});
+
+	test("formata CNPJ numérico", () => {
+		expect(maskCpfCnpj("11222333000181")).toBe("11.222.333/0001-81");
+	});
+
+	test("formata CNPJ alfanumérico em maiúsculas", () => {
+		expect(maskCpfCnpj("12abc34501de35")).toBe("12.ABC.345/01DE-35");
+	});
+
+	test("trata entrada parcial com letra como CNPJ", () => {
+		expect(maskCpfCnpj("12abc")).toBe("12.ABC");
+	});
+
+	test("corta além de 14 caracteres", () => {
+		expect(maskCpfCnpj("12ABC34501DE35999")).toBe("12.ABC.345/01DE-35");
+	});
+});
+
 describe("isValidCpfCnpj", () => {
+	test("aceita CNPJ alfanumérico", () => {
+		expect(isValidCpfCnpj("12.abc.345/01de-35")).toBe(true);
+	});
+
+	test("rejeita CPF com letra", () => {
+		expect(isValidCpfCnpj("5299822472A")).toBe(false);
+	});
+
 	test("aceita CPF válido (11 dígitos)", () => {
 		expect(isValidCpfCnpj("52998224725")).toBe(true);
 	});

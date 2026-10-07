@@ -23,6 +23,7 @@ import {
 } from "@/lib/purchase";
 import type { ToolService } from "@/lib/services";
 import { PRODUCT_COPY } from "../_lib/product-copy";
+import { PRODUCT_TITLE } from "../_lib/product-layout";
 import { StickyBuyBar } from "./sticky-buy-bar";
 
 interface ProductInfoProps {
@@ -69,9 +70,7 @@ export function ProductInfo({
 	if (!shown) {
 		return (
 			<div className="min-w-0">
-				<h1 className="font-display font-extrabold text-[clamp(2rem,1.4rem+1.4vw,2.7rem)] uppercase leading-[0.98]">
-					{tool.name}
-				</h1>
+				<h1 className={PRODUCT_TITLE}>{tool.name}</h1>
 				<p className="mt-4 text-[15px] text-ink-muted">
 					{PRODUCT_COPY.noVariant}
 				</p>
@@ -140,7 +139,7 @@ export function ProductInfo({
 				<div className="mb-3 flex flex-wrap gap-1.5">
 					{services.map((service) => (
 						<Link
-							className="inline-flex min-h-8 items-center gap-1.5 rounded-[3px] bg-grafite px-2.5 font-bold text-[12.5px] text-on-dark uppercase tracking-[0.04em] no-underline [font-stretch:80%] hover:bg-black"
+							className="inline-flex min-h-8 items-center gap-1.5 rounded-[3px] bg-grafite px-2.5 font-bold text-[12.5px] text-on-dark uppercase no-underline [font-stretch:80%] hover:bg-black"
 							href={service.href}
 							key={service.slug}
 						>
@@ -151,9 +150,7 @@ export function ProductInfo({
 				</div>
 			)}
 
-			<h1 className="font-display font-extrabold text-[clamp(2rem,1.4rem+1.4vw,2.7rem)] uppercase leading-[0.98]">
-				{tool.name}
-			</h1>
+			<h1 className={PRODUCT_TITLE}>{tool.name}</h1>
 			<p className="mt-2.5 text-[13.5px] text-ink-muted [overflow-wrap:anywhere]">
 				{tool.manufacturerName &&
 					`${PRODUCT_COPY.brand} ${tool.manufacturerName} · `}

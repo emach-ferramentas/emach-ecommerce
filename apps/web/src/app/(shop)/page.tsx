@@ -13,7 +13,6 @@ import { ServicePicker } from "@/components/home/service-picker";
 import { ProductCard } from "@/components/product-card";
 import { PromoHighlight } from "@/components/promo-highlight";
 import { Shelf } from "@/components/shelf";
-import { SiteHeader } from "@/components/site-header";
 import { getCardExtras } from "@/lib/card-data";
 import { canonicalFor } from "@/lib/seo/canonical";
 import { getServices } from "@/lib/services";
@@ -57,20 +56,15 @@ async function loadHome() {
 // do hero pra página não pular quando os dados chegam.
 function HomeSkeleton() {
 	return (
-		<main id="main-content">
-			<div className="h-[70svh] min-h-[30rem] w-full bg-black lg:h-[calc(100svh-176px)]" />
-		</main>
+		<div className="h-[70svh] min-h-[30rem] w-full bg-black lg:h-[calc(100svh-176px)]" />
 	);
 }
 
 export default function HomePage() {
 	return (
-		<>
-			<SiteHeader />
-			<Suspense fallback={<HomeSkeleton />}>
-				<HomeContent />
-			</Suspense>
-		</>
+		<Suspense fallback={<HomeSkeleton />}>
+			<HomeContent />
+		</Suspense>
 	);
 }
 
@@ -97,7 +91,7 @@ async function HomeContent() {
 	const counts = distinctCounts(services.map((s) => s.preview));
 
 	return (
-		<main id="main-content">
+		<>
 			<HeroCarousel banners={banners} />
 
 			{services.length > 0 && <ServicePicker services={services} />}
@@ -166,6 +160,6 @@ async function HomeContent() {
 					promotion={featuredPromotion}
 				/>
 			)}
-		</main>
+		</>
 	);
 }

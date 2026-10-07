@@ -6,7 +6,6 @@ import {
 	INSTITUTIONAL_H2_CLASS,
 	InstitutionalPage,
 } from "@/components/institutional-page";
-import { SiteHeader } from "@/components/site-header";
 import {
 	type BusinessHoursRow,
 	formatBranchAddress,
@@ -94,19 +93,16 @@ async function PickupBranchList() {
 
 export default function DeliveryPage() {
 	return (
-		<>
-			<SiteHeader />
-			<InstitutionalPage
-				extraTocItems={[{ id: "filiais", title: "Onde nos encontrar" }]}
-				lede={DELIVERY_LEDE}
-				sections={deliverySections}
-				title="Entrega e filiais"
-				updatedAt={DELIVERY_UPDATED_AT}
-			>
-				<Suspense fallback={null}>
-					<PickupBranchList />
-				</Suspense>
-			</InstitutionalPage>
-		</>
+		<InstitutionalPage
+			extraTocItems={[{ id: "filiais", title: "Onde nos encontrar" }]}
+			lede={DELIVERY_LEDE}
+			sections={deliverySections}
+			title="Entrega e filiais"
+			updatedAt={DELIVERY_UPDATED_AT}
+		>
+			<Suspense fallback={null}>
+				<PickupBranchList />
+			</Suspense>
+		</InstitutionalPage>
 	);
 }

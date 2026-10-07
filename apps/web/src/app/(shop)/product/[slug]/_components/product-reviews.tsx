@@ -51,7 +51,7 @@ interface SummaryRailProps {
 
 function SummaryRail({ avg, count, recommend }: SummaryRailProps) {
 	return (
-		<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-border border-b px-4 py-3.5 sm:px-5 md:flex-col md:items-start md:justify-center md:gap-1.5 md:border-r md:border-b-0 md:py-6">
+		<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-line border-b px-4 py-3.5 sm:px-5 md:flex-col md:items-start md:justify-center md:gap-1.5 md:border-r md:border-b-0 md:py-6">
 			<div className="flex items-baseline gap-1.5 font-display font-medium text-[42px] tabular-nums leading-none">
 				{avg.toFixed(1).replace(".", ",")}
 				<span className="text-[15px] text-ink-muted">/ 5</span>
@@ -114,12 +114,12 @@ function TestimonialCell({
 				{review.body}
 			</p>
 			<footer className="mt-3.5 flex flex-wrap items-center gap-3">
-				<span className="font-display font-semibold text-[12.5px] text-ink uppercase tracking-[0.1em]">
+				<span className="font-semibold text-[13px] text-ink">
 					{review.clientName}
 				</span>
 				<VerifiedBadge />
 				<time
-					className="font-display text-[11px] text-ink-muted uppercase tracking-[0.08em]"
+					className="text-[12.5px] text-ink-muted"
 					dateTime={review.createdAt.toISOString()}
 				>
 					{formatReviewDate(review.createdAt)}
@@ -207,12 +207,11 @@ export function ProductReviews({
 						className={cn(
 							index % 2 === 0 &&
 								index < reviews.length - 1 &&
-								"md:border-border md:border-r",
+								"md:border-line md:border-r",
 							stretchLast(reviews.length) &&
 								index === reviews.length - 1 &&
-								"md:col-span-2 md:border-border md:border-t",
-							index < reviews.length - 1 &&
-								"max-md:border-border max-md:border-b"
+								"md:col-span-2 md:border-line md:border-t",
+							index < reviews.length - 1 && "max-md:border-line max-md:border-b"
 						)}
 						key={review.id}
 						review={review}
@@ -237,7 +236,7 @@ export function ProductReviews({
 				<div className="rounded-[5px] border border-line">
 					{mode === "grid" ? (
 						<>
-							<div className="grid grid-cols-1 border-border border-b md:grid-cols-[240px_1fr]">
+							<div className="grid grid-cols-1 border-line border-b md:grid-cols-[240px_1fr]">
 								<SummaryRail
 									avg={avg}
 									count={stats.count}

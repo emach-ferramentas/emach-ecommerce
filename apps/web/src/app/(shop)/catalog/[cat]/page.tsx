@@ -3,7 +3,6 @@ import { getAllCategorySlugs } from "@emach/db/queries/categories";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { SiteHeader } from "@/components/site-header";
 import { canonicalFor } from "@/lib/seo/canonical";
 import { CatalogResults } from "../_components/catalog-results";
 import { CatalogSkeleton } from "../_components/catalog-skeleton";
@@ -73,11 +72,8 @@ export default async function CategoryPage({
 		notFound();
 	}
 	return (
-		<>
-			<SiteHeader />
-			<Suspense fallback={<CatalogSkeleton />}>
-				<CatalogResults cat={cat} searchParams={searchParams} />
-			</Suspense>
-		</>
+		<Suspense fallback={<CatalogSkeleton />}>
+			<CatalogResults cat={cat} searchParams={searchParams} />
+		</Suspense>
 	);
 }

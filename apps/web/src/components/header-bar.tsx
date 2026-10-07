@@ -3,7 +3,7 @@
 import { Menu, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/account-menu";
 import { CartSheet } from "@/components/cart-sheet";
@@ -19,11 +19,6 @@ export function HeaderBar({ nav }: { nav: StoreNav }) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [pulse, setPulse] = useState(false);
 	const prevCount = useRef(totalCount);
-
-	// A gaveta vive no CartProvider e sobrevive à troca de página. Sem isto, voltar
-	// no histórico com ela aberta a reabre na página anterior com o scroll travado.
-	// Layout effect para fechar antes do paint da página nova.
-	useLayoutEffect(() => () => setCartOpen(false), [setCartOpen]);
 
 	useEffect(() => {
 		if (totalCount > prevCount.current) {

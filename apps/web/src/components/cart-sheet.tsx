@@ -1,6 +1,8 @@
 "use client";
 
 import { X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef } from "react";
 
 import { CartEmpty } from "@/components/cart-empty";
 import { CartItemRow } from "@/components/cart-item-row";
@@ -22,6 +24,17 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 	// com o React Compiler — o sheet abria em opacity:0 sem desmontar, capturando
 	// cliques invisíveis na direita da tela. Mesmo padrão de mobile-menu/filter.
 	const panelRef = useOverlay(open, close);
+	const pathname = usePathname();
+	const onOpenChangeRef = useRef(onOpenChange);
+	onOpenChangeRef.current = onOpenChange;
+
+	// O header não desmonta entre páginas de (shop); a gaveta fecha na troca de
+	// rota, antes do paint, para não ficar aberta com o scroll travado.
+	useLayoutEffect(() => {
+		if (pathname) {
+			onOpenChangeRef.current(false);
+		}
+	}, [pathname]);
 
 	if (!open) {
 		return null;

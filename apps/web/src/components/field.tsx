@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@emach/ui/lib/utils";
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { ChangeEvent, InputHTMLAttributes, ReactNode } from "react";
+import { PasswordInput } from "./password-input";
 
 export type FieldErrors = ReadonlyArray<{ message?: string } | undefined>;
 
@@ -93,6 +94,7 @@ export function TextField({
 	id,
 	label,
 	transform,
+	type,
 	...inputProps
 }: TextFieldProps) {
 	return (
@@ -102,20 +104,28 @@ export function TextField({
 			id={id ?? field.name}
 			label={label}
 		>
-			{(control) => (
-				<input
-					{...inputProps}
-					{...control}
-					className={cn("emach-input", className)}
-					onBlur={field.handleBlur}
-					onChange={(e) =>
+			{(control) => {
+				const props = {
+					...inputProps,
+					...control,
+					name: field.name,
+					onBlur: field.handleBlur,
+					onChange: (e: ChangeEvent<HTMLInputElement>) =>
 						field.handleChange(
 							transform ? transform(e.target.value) : e.target.value
-						)
-					}
-					value={field.state.value}
-				/>
-			)}
+						),
+					value: field.state.value,
+				};
+				return type === "password" ? (
+					<PasswordInput {...props} className={className} />
+				) : (
+					<input
+						{...props}
+						className={cn("emach-input", className)}
+						type={type}
+					/>
+				);
+			}}
 		</Field>
 	);
 }
