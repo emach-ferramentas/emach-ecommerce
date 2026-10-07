@@ -1,4 +1,8 @@
-import { PRODUCT_GRID, PRODUCT_TITLE } from "./_lib/product-layout";
+import {
+	PRODUCT_CHIP_ROW,
+	PRODUCT_GRID,
+	PRODUCT_TITLE,
+} from "./_lib/product-layout";
 
 const THUMBS = [0, 1, 2, 3] as const;
 
@@ -24,6 +28,9 @@ export default function Loading() {
 						<div className="aspect-square rounded-[5px] bg-well" />
 					</div>
 					<div className="min-w-0">
+						<div className={PRODUCT_CHIP_ROW}>
+							<div className="h-8 w-40 rounded-[3px] bg-canteiro" />
+						</div>
 						<div className={PRODUCT_TITLE}>
 							<div className="h-[0.98em] w-11/12 bg-canteiro" />
 							<div className="h-[0.98em] w-2/3 bg-canteiro" />

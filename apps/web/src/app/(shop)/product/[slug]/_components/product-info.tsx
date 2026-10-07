@@ -23,7 +23,7 @@ import {
 } from "@/lib/purchase";
 import type { ToolService } from "@/lib/services";
 import { PRODUCT_COPY } from "../_lib/product-copy";
-import { PRODUCT_TITLE } from "../_lib/product-layout";
+import { PRODUCT_CHIP_ROW, PRODUCT_TITLE } from "../_lib/product-layout";
 import { StickyBuyBar } from "./sticky-buy-bar";
 
 interface ProductInfoProps {
@@ -136,7 +136,7 @@ export function ProductInfo({
 	return (
 		<div className="min-w-0">
 			{services.length > 0 && (
-				<div className="mb-3 flex flex-wrap gap-1.5">
+				<div className={PRODUCT_CHIP_ROW}>
 					{services.map((service) => (
 						<Link
 							className="inline-flex min-h-8 items-center gap-1.5 rounded-[3px] bg-grafite px-2.5 font-bold text-[12.5px] text-on-dark uppercase no-underline [font-stretch:80%] hover:bg-black"
