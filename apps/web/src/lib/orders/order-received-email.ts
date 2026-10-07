@@ -1,3 +1,5 @@
+import { db } from "@emach/db";
+import { loadCompanyAddress } from "@emach/email/company-address";
 import { sendEmail } from "@emach/email/send";
 import {
 	OrderReceivedEmail,
@@ -38,7 +40,8 @@ function addressLines(address: unknown): string[] {
 
 function toProps(
 	{ order, items }: OrderDetailData,
-	name: string
+	name: string,
+	companyAddress: string[] | null
 ): OrderReceivedProps {
 	const summary = [
 		{ label: "Subtotal", value: fmtNumericBRL(order.subtotalAmount) },
@@ -68,6 +71,7 @@ function toProps(
 		summary,
 		total: fmtNumericBRL(order.totalAmount),
 		addressLines: addressLines(order.shippingAddress),
+		companyAddress,
 	};
 }
 
@@ -84,14 +88,20 @@ export async function sendOrderReceivedEmail({
 	to: string;
 }): Promise<void> {
 	try {
-		const detail = await getClientOrderDetail(clientId, orderId);
+		const [detail, companyAddress] = await Promise.all([
+			getClientOrderDetail(clientId, orderId),
+			loadCompanyAddress(db),
+		]);
 		if (!detail) {
 			throw new Error("Pedido não encontrado");
 		}
 		await sendEmail({
 			to,
 			subject: `Pedido ${detail.order.number} recebido`,
-			react: createElement(OrderReceivedEmail, toProps(detail, name)),
+			react: createElement(
+				OrderReceivedEmail,
+				toProps(detail, name, companyAddress)
+			),
 		});
 	} catch (err) {
 		log.error({

@@ -19,6 +19,7 @@ export interface OrderReceivedItem {
 
 export interface OrderReceivedProps {
 	addressLines: string[];
+	companyAddress?: readonly string[] | null;
 	items: OrderReceivedItem[];
 	name: string;
 	orderNumber: string;
@@ -82,6 +83,7 @@ function Amount({
 
 export function OrderReceivedEmail({
 	addressLines,
+	companyAddress,
 	items,
 	name,
 	orderNumber,
@@ -91,6 +93,7 @@ export function OrderReceivedEmail({
 }: OrderReceivedProps) {
 	return (
 		<EmailLayout
+			companyAddress={companyAddress}
 			preview={`Pedido ${orderNumber} recebido. Falta o pagamento.`}
 			siteUrl={new URL(orderUrl).origin}
 		>
@@ -147,6 +150,10 @@ export function OrderReceivedEmail({
 }
 
 OrderReceivedEmail.PreviewProps = {
+	companyAddress: [
+		"Rua Pascoal Moreira Cabral Leme, 64, Loja Pinheiro, Nova Esperança",
+		"Balneário Camboriú/SC, CEP 88336-310",
+	],
 	name: "Ana Souza",
 	orderNumber: "2026-000123",
 	orderUrl: "https://emachferramentas.com.br/dashboard/pedidos/preview",

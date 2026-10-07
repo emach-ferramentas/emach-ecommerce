@@ -5,6 +5,7 @@ import {
 	clientSession,
 	clientVerification,
 } from "@emach/db/schema/client";
+import { loadCompanyAddress } from "@emach/email/company-address";
 import { sendEmail } from "@emach/email/send";
 import { ResetPasswordEmail } from "@emach/email/templates/reset-password";
 import { VerifyEmailEmail } from "@emach/email/templates/verify-email";
@@ -52,7 +53,11 @@ export const authEcommerce = betterAuth({
 			await sendEmail({
 				to: user.email,
 				subject: "Redefinir sua senha — EMACH",
-				react: ResetPasswordEmail({ name: user.name, url }),
+				react: ResetPasswordEmail({
+					companyAddress: await loadCompanyAddress(db),
+					name: user.name,
+					url,
+				}),
 			});
 		},
 	},
@@ -63,7 +68,11 @@ export const authEcommerce = betterAuth({
 			await sendEmail({
 				to: user.email,
 				subject: "Confirme seu e-mail — EMACH",
-				react: VerifyEmailEmail({ name: user.name, url }),
+				react: VerifyEmailEmail({
+					companyAddress: await loadCompanyAddress(db),
+					name: user.name,
+					url,
+				}),
 			});
 		},
 	},

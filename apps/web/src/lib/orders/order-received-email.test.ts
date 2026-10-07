@@ -1,14 +1,18 @@
 import type { OrderReceivedProps as Props } from "@emach/email/templates/order-received";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getClientOrderDetail, sendEmail, logError } = vi.hoisted(() => ({
-	getClientOrderDetail: vi.fn(),
-	sendEmail: vi.fn(),
-	logError: vi.fn(),
-}));
+const { getClientOrderDetail, sendEmail, logError, loadCompanyAddress } =
+	vi.hoisted(() => ({
+		getClientOrderDetail: vi.fn(),
+		sendEmail: vi.fn(),
+		logError: vi.fn(),
+		loadCompanyAddress: vi.fn(),
+	}));
 
 vi.mock("@/lib/orders/queries", () => ({ getClientOrderDetail }));
 vi.mock("@emach/email/send", () => ({ sendEmail }));
+vi.mock("@emach/email/company-address", () => ({ loadCompanyAddress }));
+vi.mock("@emach/db", () => ({ db: {} }));
 vi.mock("@/lib/evlog", () => ({ log: { error: logError } }));
 vi.mock("@emach/env/web", () => ({
 	env: { NEXT_PUBLIC_SITE_URL: "https://loja.example.com.br" },
@@ -57,6 +61,11 @@ const ARGS = {
 	name: "Ana Souza",
 };
 
+const COMPANY_ADDRESS = [
+	"Rua Pascoal Moreira Cabral Leme, 64, Loja Pinheiro, Nova Esperança",
+	"Balneário Camboriú/SC, CEP 88336-310",
+];
+
 const LINE_TOTAL = /1\.798,00/;
 const ORDER_TOTAL = /1\.820,00/;
 
@@ -65,7 +74,9 @@ describe("sendOrderReceivedEmail", () => {
 		getClientOrderDetail.mockReset();
 		sendEmail.mockReset();
 		logError.mockReset();
+		loadCompanyAddress.mockReset();
 		getClientOrderDetail.mockResolvedValue(DETAIL);
+		loadCompanyAddress.mockResolvedValue(COMPANY_ADDRESS);
 	});
 
 	it("envia ao cliente o pedido lido do banco, com link para pagar", async () => {
@@ -97,6 +108,7 @@ describe("sendOrderReceivedEmail", () => {
 			"Centro, Campinas — SP",
 			"CEP 13010-000",
 		]);
+		expect(p.companyAddress).toEqual(COMPANY_ADDRESS);
 		expect(logError).not.toHaveBeenCalled();
 	});
 
@@ -116,6 +128,19 @@ describe("sendOrderReceivedEmail", () => {
 			"Subtotal",
 			"Frete",
 		]);
+	});
+
+	it("sem endereço da loja o e-mail sai mesmo assim", async () => {
+		loadCompanyAddress.mockResolvedValue(null);
+		sendEmail.mockResolvedValue({ id: "email-1" });
+
+		await sendOrderReceivedEmail(ARGS);
+
+		const [{ react }] = sendEmail.mock.calls[0] as [
+			{ react: { props: Props } },
+		];
+		expect(react.props.companyAddress).toBeNull();
+		expect(react.props.orderNumber).toBe("2026-000123");
 	});
 
 	it("falha do Resend vai para o log e não lança", async () => {

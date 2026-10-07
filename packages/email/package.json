@@ -7,6 +7,9 @@
     "test": "bun test"
   },
   "exports": {
+    "./company-address": {
+      "default": "./src/company-address.ts"
+    },
     "./send": {
       "default": "./src/send.ts"
     },
@@ -21,9 +24,11 @@
     }
   },
   "dependencies": {
+    "@emach/db": "workspace:*",
     "@emach/env": "workspace:*",
     "@react-email/components": "catalog:",
     "@react-email/render": "catalog:",
+    "drizzle-orm": "^0.45.1",
     "evlog": "2.19.1",
     "react": "catalog:",
     "resend": "catalog:"

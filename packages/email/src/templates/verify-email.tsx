@@ -7,13 +7,19 @@ import {
 } from "../layout";
 
 export interface VerifyEmailProps {
+	companyAddress?: readonly string[] | null;
 	name: string;
 	url: string;
 }
 
-export function VerifyEmailEmail({ name, url }: VerifyEmailProps) {
+export function VerifyEmailEmail({
+	companyAddress,
+	name,
+	url,
+}: VerifyEmailProps) {
 	return (
 		<EmailLayout
+			companyAddress={companyAddress}
 			preview="Confirme seu e-mail na EMACH"
 			siteUrl={new URL(url).origin}
 		>
@@ -32,6 +38,10 @@ export function VerifyEmailEmail({ name, url }: VerifyEmailProps) {
 }
 
 VerifyEmailEmail.PreviewProps = {
+	companyAddress: [
+		"Rua Pascoal Moreira Cabral Leme, 64, Loja Pinheiro, Nova Esperança",
+		"Balneário Camboriú/SC, CEP 88336-310",
+	],
 	name: "Ana Souza",
 	url: "https://emachferramentas.com.br/api/auth/verify-email?token=preview",
 } satisfies VerifyEmailProps;

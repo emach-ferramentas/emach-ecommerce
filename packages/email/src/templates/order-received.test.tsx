@@ -38,6 +38,15 @@ const props: OrderReceivedProps = {
 	],
 };
 
+const COMPANY_ADDRESS = [
+	"Rua Pascoal Moreira Cabral Leme, 64, Loja Pinheiro, Nova Esperança",
+	"Balneário Camboriú/SC, CEP 88336-310",
+];
+
+function footerOf(html: string): string {
+	return html.slice(html.indexOf('data-email-layout="footer"'));
+}
+
 describe("e-mail de pedido recebido", () => {
 	test("traz número, itens, total e endereço", async () => {
 		const html = await render(<OrderReceivedEmail {...props} />);
@@ -90,5 +99,26 @@ describe("e-mail de pedido recebido", () => {
 		]) {
 			expect(text).not.toContain(banned);
 		}
+	});
+
+	test("rodapé traz o endereço da loja antes do CNPJ", async () => {
+		const footer = footerOf(
+			await render(
+				<OrderReceivedEmail {...props} companyAddress={COMPANY_ADDRESS} />
+			)
+		);
+		const [street, city] = COMPANY_ADDRESS.map((line) => footer.indexOf(line));
+		expect(street).toBeGreaterThan(footer.indexOf("Ferramentas e acessórios"));
+		expect(city).toBeGreaterThan(street ?? -1);
+		expect(footer.indexOf("CNPJ 04.128.615/0001-59")).toBeGreaterThan(
+			city ?? -1
+		);
+	});
+
+	test("sem endereço o rodapé não ganha linha de endereço", async () => {
+		const footer = footerOf(await render(<OrderReceivedEmail {...props} />));
+		expect(footer).toContain("CNPJ 04.128.615/0001-59");
+		expect(footer).not.toContain("Rua Pascoal");
+		expect(footer).not.toContain("CEP ");
 	});
 });

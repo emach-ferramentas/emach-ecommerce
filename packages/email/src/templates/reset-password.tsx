@@ -7,13 +7,19 @@ import {
 } from "../layout";
 
 export interface ResetPasswordEmailProps {
+	companyAddress?: readonly string[] | null;
 	name: string;
 	url: string;
 }
 
-export function ResetPasswordEmail({ name, url }: ResetPasswordEmailProps) {
+export function ResetPasswordEmail({
+	companyAddress,
+	name,
+	url,
+}: ResetPasswordEmailProps) {
 	return (
 		<EmailLayout
+			companyAddress={companyAddress}
 			preview="Redefina sua senha da conta EMACH"
 			siteUrl={new URL(url).origin}
 		>
@@ -32,6 +38,10 @@ export function ResetPasswordEmail({ name, url }: ResetPasswordEmailProps) {
 }
 
 ResetPasswordEmail.PreviewProps = {
+	companyAddress: [
+		"Rua Pascoal Moreira Cabral Leme, 64, Loja Pinheiro, Nova Esperança",
+		"Balneário Camboriú/SC, CEP 88336-310",
+	],
 	name: "Ana Souza",
 	url: "https://emachferramentas.com.br/reset-password/preview?callbackURL=%2Fredefinir-senha",
 } satisfies ResetPasswordEmailProps;

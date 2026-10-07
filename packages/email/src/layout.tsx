@@ -11,7 +11,7 @@ import {
 	Section,
 	Text,
 } from "@react-email/components";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 // Tokens do H3 (packages/ui/src/styles/globals.css) em hex, porque cliente de
 // e-mail não lê CSS custom property.
@@ -38,12 +38,19 @@ const TAGLINE =
 
 export interface EmailLayoutProps {
 	children: ReactNode;
+	/** Linhas de `loadCompanyAddress`; sem elas o rodapé omite o endereço. */
+	companyAddress?: readonly string[] | null;
 	preview: string;
 	/** Origem da loja (ex.: https://emachferramentas.com.br); serve o logo PNG. */
 	siteUrl: string;
 }
 
-export function EmailLayout({ children, preview, siteUrl }: EmailLayoutProps) {
+export function EmailLayout({
+	children,
+	companyAddress,
+	preview,
+	siteUrl,
+}: EmailLayoutProps) {
 	return (
 		<Html lang="pt-BR">
 			<Head>
@@ -110,6 +117,12 @@ export function EmailLayout({ children, preview, siteUrl }: EmailLayoutProps) {
 							<br />
 							{TAGLINE}
 							<br />
+							{companyAddress?.map((line) => (
+								<Fragment key={line}>
+									{line}
+									<br />
+								</Fragment>
+							))}
 							{`CNPJ ${CNPJ}`}
 						</Text>
 					</Section>
