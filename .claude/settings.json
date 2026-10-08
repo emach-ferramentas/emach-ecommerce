@@ -4,7 +4,8 @@
       {
         "hooks": [
           {
-            "command": "bun fix --skip=correctness/noUnusedImports",
+            "command": "bun \"$CLAUDE_PROJECT_DIR/.claude/hooks/formatar-arquivo-editado.ts\"",
+            "timeout": 30,
             "type": "command"
           }
         ],
