@@ -6,7 +6,7 @@ import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { navShortLabel } from "@/lib/nav-label";
 import type { StoreNav } from "@/lib/store-nav";
@@ -16,20 +16,59 @@ const linkClass =
 
 function DeptLink({
 	children,
+	current,
 	href,
 }: {
 	children: React.ReactNode;
+	current: string | null;
 	href: Route;
 }) {
 	return (
 		<Link
-			aria-current={usePathname() === href ? "page" : undefined}
+			aria-current={current === href ? "page" : undefined}
 			className={linkClass}
 			href={href}
 		>
 			{children}
 		</Link>
 	);
+}
+
+function DeptLinks({
+	current,
+	nav,
+}: {
+	current: string | null;
+	nav: StoreNav;
+}) {
+	return (
+		<>
+			{nav.services.length > 0 && (
+				<>
+					{nav.services.map((s) => (
+						<DeptLink current={current} href={s.href} key={s.slug}>
+							{s.name}
+						</DeptLink>
+					))}
+					<span
+						aria-hidden="true"
+						className="mx-2.5 h-[22px] w-px shrink-0 bg-line"
+					/>
+				</>
+			)}
+			{nav.categories
+				.filter((c) => c.productCount > 0)
+				.map((c) => (
+					<DeptLink current={current} href={c.href} key={c.slug}>
+						{navShortLabel(c.name)}
+					</DeptLink>
+				))}
+		</>
+	);
+}
+
+function CurrentDeptLinks({ nav }: { nav: StoreNav }) {
+	return <DeptLinks current={usePathname()} nav={nav} />;
 }
 
 function plural(n: number, one: string, many: string) {
@@ -88,26 +127,11 @@ export function DeptNav({ nav }: { nav: StoreNav }) {
 					/>
 				</button>
 				<div className="flex min-w-0 items-center overflow-x-auto [scrollbar-width:none]">
-					{nav.services.length > 0 && (
-						<>
-							{nav.services.map((s) => (
-								<DeptLink href={s.href} key={s.slug}>
-									{s.name}
-								</DeptLink>
-							))}
-							<span
-								aria-hidden="true"
-								className="mx-2.5 h-[22px] w-px shrink-0 bg-line"
-							/>
-						</>
-					)}
-					{nav.categories
-						.filter((c) => c.productCount > 0)
-						.map((c) => (
-							<DeptLink href={c.href} key={c.slug}>
-								{navShortLabel(c.name)}
-							</DeptLink>
-						))}
+					{/* Em rota dinâmica o pathname só existe no request: fora de
+					    Suspense o usePathname derruba o prerender do build. */}
+					<Suspense fallback={<DeptLinks current={null} nav={nav} />}>
+						<CurrentDeptLinks nav={nav} />
+					</Suspense>
 				</div>
 			</div>
 
