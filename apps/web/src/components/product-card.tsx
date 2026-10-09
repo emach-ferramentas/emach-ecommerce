@@ -57,7 +57,7 @@ export function ProductCard({
 	const compact = size === "compact";
 
 	return (
-		<article className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[5px] border border-line bg-paper transition-colors duration-150 ease-out hover:border-line-strong">
+		<article className="group relative flex min-w-0 flex-col overflow-hidden rounded-[5px] border border-line bg-paper transition-colors duration-150 ease-out hover:border-line-strong">
 			<div className="relative aspect-square bg-well">
 				<Link
 					aria-hidden="true"

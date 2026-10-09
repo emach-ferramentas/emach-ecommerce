@@ -30,7 +30,9 @@ const arrowClass =
 
 /**
  * Prateleira horizontal: título que leva à lista completa, setas no desktop,
- * arraste no celular e um card final com a foto que abre todos os produtos.
+ * arraste no celular e uma capa com a foto que abre todos os produtos. A capa
+ * gruda na borda direita do trilho, então fica à vista com qualquer número de
+ * produtos; com poucos, ela só segue o último card.
  */
 export function Shelf({
 	children,
@@ -46,8 +48,11 @@ export function Shelf({
 	const Heading = `h${headingLevel}` as const;
 	const titleId = useId();
 	const trackRef = useRef<HTMLDivElement>(null);
+	const capaRef = useRef<HTMLAnchorElement>(null);
+	// Nasce em `atEnd` para a capa não sair do SSR com a sombra de "tem mais"
+	// e apagá-la na hidratação quando a prateleira cabe inteira.
 	const [edges, setEdges] = useState({
-		atEnd: false,
+		atEnd: true,
 		atStart: true,
 		fits: false,
 	});
@@ -77,11 +82,12 @@ export function Shelf({
 		if (!track) {
 			return;
 		}
+		const capaWidth = capaRef.current?.offsetWidth ?? 0;
 		const reduce = window.matchMedia(
 			"(prefers-reduced-motion: reduce)"
 		).matches;
 		track.scrollBy({
-			left: direction * track.clientWidth,
+			left: direction * (track.clientWidth - capaWidth),
 			behavior: reduce ? "auto" : "smooth",
 		});
 	}
@@ -140,33 +146,39 @@ export function Shelf({
 			</div>
 			<div
 				className={cn(
-					"-mx-4 grid snap-x snap-mandatory scroll-px-4 auto-cols-[76%] grid-flow-col gap-2.5 overflow-x-auto overscroll-x-contain px-4 pt-0.5 pb-1.5 [scrollbar-width:none] md:mx-0 md:scroll-px-0 md:gap-4 md:px-0 [&::-webkit-scrollbar]:hidden [&>*]:min-w-0 [&>*]:snap-start",
+					"-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto overscroll-x-contain px-4 pt-0.5 pb-1.5 [--shelf-capa:calc(38%_-_10px)] [--shelf-col:62%] [scrollbar-width:none] md:mx-0 md:scroll-px-0 md:scroll-pr-[calc(var(--shelf-capa)_+_16px)] md:gap-4 md:px-0 md:[--shelf-capa:var(--shelf-col)] md:[--shelf-col:calc((100%_-_22.4px)/2.4)] [&::-webkit-scrollbar]:hidden [&>*]:min-w-0 [&>*]:shrink-0 [&>*]:basis-(--shelf-col) [&>*]:snap-start",
 					dense
-						? "md:auto-cols-[calc((100%_-_22.4px)/2.4)] xl:auto-cols-[calc((100%_-_32px)/3)]"
-						: "md:auto-cols-[calc((100%_-_22.4px)/2.4)] lg:auto-cols-[calc((100%_-_32px)/3)] xl:auto-cols-[calc((100%_-_48px)/4)]"
+						? "xl:[--shelf-col:calc((100%_-_32px)/3)]"
+						: "lg:[--shelf-col:calc((100%_-_32px)/3)] xl:[--shelf-col:calc((100%_-_48px)/4)]"
 				)}
 				onScroll={measure}
 				ref={trackRef}
 			>
 				{children}
 				<Link
-					className="group relative flex min-h-full items-end overflow-hidden rounded-[5px] bg-grafite text-white no-underline"
+					className={cn(
+						"group sticky right-4 z-[2] flex min-h-full items-end overflow-hidden rounded-[5px] bg-grafite text-white no-underline transition-shadow duration-300 ease-out-expo md:right-0",
+						!(edges.fits || edges.atEnd) &&
+							"shadow-[-10px_0_18px_-6px_rgb(22_25_29/0.38)]"
+					)}
 					href={href}
+					ref={capaRef}
+					style={{ flexBasis: "var(--shelf-capa)", scrollSnapAlign: "none" }}
 				>
 					{imageSrc && (
 						<Image
 							alt=""
 							className="object-cover opacity-55 transition-[transform,opacity] duration-500 ease-out-expo group-hover:scale-[1.04] group-hover:opacity-45 motion-reduce:transition-none"
 							fill
-							sizes="(min-width: 1296px) 300px, 76vw"
+							sizes="(min-width: 1296px) 300px, 40vw"
 							src={imageSrc}
 						/>
 					)}
-					<span className="relative z-[1] grid gap-2.5 p-4 md:p-5">
-						<b className="font-display font-extrabold text-[26px] uppercase leading-[0.95] md:text-[30px]">
+					<span className="relative z-[1] grid gap-2 p-3 md:gap-2.5 md:p-5">
+						<b className="font-display font-extrabold text-[19px] uppercase leading-[0.95] md:text-[30px]">
 							{title}
 						</b>
-						<span className="inline-flex items-center gap-1.5 font-bold text-[15px]">
+						<span className="inline-flex items-center gap-1.5 font-bold text-[13px] md:text-[15px]">
 							{productsLabel(Math.max(productCount, itemCount))}
 							<ChevronRight aria-hidden="true" className="size-5" />
 						</span>
