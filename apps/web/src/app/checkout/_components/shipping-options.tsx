@@ -42,8 +42,8 @@ export function ShippingOptions({
 	if (status === "negotiate") {
 		return (
 			<Notice>
-				Este pedido contém item de transporte especial. O frete será combinado
-				diretamente — entre em contato para concluir a compra.
+				Um item deste pedido não cabe nas caixas de envio, então o frete é a
+				combinar. Fale com a filial para concluir a compra.
 			</Notice>
 		);
 	}

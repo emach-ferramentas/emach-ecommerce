@@ -20,7 +20,7 @@ const archivo = Archivo({
 export const metadata: Metadata = {
 	metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
 	title: {
-		default: "EMACH Ferramentas — Furadeiras, Serras e EPIs",
+		default: "EMACH Ferramentas | Furadeiras, serras e EPIs",
 		template: "%s · EMACH",
 	},
 	description:

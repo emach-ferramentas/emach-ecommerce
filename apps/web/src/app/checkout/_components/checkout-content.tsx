@@ -550,8 +550,8 @@ export function CheckoutContent({
 																			aria-hidden="true"
 																			className="mt-0.5 size-3.5 shrink-0"
 																		/>
-																		CEP não encontrado — confira o número antes
-																		de continuar
+																		CEP não encontrado. Confira o número antes
+																		de continuar.
 																	</p>
 																) : null}
 															</div>

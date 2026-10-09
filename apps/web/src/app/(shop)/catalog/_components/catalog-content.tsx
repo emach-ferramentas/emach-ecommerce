@@ -151,7 +151,7 @@ function CatalogEmpty({
 	services: CatalogService[];
 }) {
 	const what = searchTerm
-		? `Nenhum produto da loja combina com “${searchTerm}”${filters.length > 1 ? " e os filtros marcados" : ""}.`
+		? `Nenhum produto da loja combina com "${searchTerm}"${filters.length > 1 ? " e os filtros marcados" : ""}.`
 		: "Nenhum produto da loja atende a todos os filtros marcados.";
 	return (
 		<div className="rounded-[5px] border border-line-strong border-dashed bg-paper px-[18px] py-6 md:px-7 md:py-9">
@@ -159,7 +159,7 @@ function CatalogEmpty({
 				Nada por aqui
 			</h2>
 			<p className="mt-2.5 max-w-[60ch] text-ink-2">
-				{what} Tire um filtro abaixo: às vezes a peça certa tem outro nome.
+				{what} Tire um filtro abaixo ou busque por outro nome.
 			</p>
 			{filters.length > 0 && (
 				<div className="mt-[18px] flex flex-wrap gap-2.5">

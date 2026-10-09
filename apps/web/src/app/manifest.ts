@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
-		name: "EMACH — Ferramentas Profissionais",
+		name: "EMACH Ferramentas",
 		short_name: "EMACH",
 		description: "Ferramentas elétricas, manuais e EPIs para obra e oficina.",
 		start_url: "/",

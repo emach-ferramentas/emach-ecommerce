@@ -256,7 +256,7 @@ export function HeaderSearch({ className }: { className?: string }) {
 									href={catalogSearchHref(term)}
 									onClick={close}
 								>
-									<span>Ver todos os resultados para “{term}”</span>
+									<span>Ver todos os resultados para {`"${term}"`}</span>
 									<ChevronRight aria-hidden="true" className="size-5" />
 								</Link>
 							</li>

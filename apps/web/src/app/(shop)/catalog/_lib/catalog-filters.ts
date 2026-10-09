@@ -95,7 +95,7 @@ export function deriveActiveFilters(state: FilterState): ActiveFilter[] {
 		out.push({
 			id: "q",
 			kind: "Busca",
-			value: `“${state.query.trim()}”`,
+			value: `"${state.query.trim()}"`,
 			remove: { q: null },
 		});
 	}

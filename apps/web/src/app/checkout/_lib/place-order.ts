@@ -455,7 +455,9 @@ export async function assertShippingQuoted(params: {
 	}
 	// Nenhum serviço cotável p/ o CEP/pacote → frete a combinar; sem opção a casar.
 	if (quote.negotiate) {
-		throw new OrderError("Frete a combinar — entre em contato para concluir");
+		throw new OrderError(
+			"Frete a combinar. Fale com a filial para concluir a compra."
+		);
 	}
 	const candidates = params.shippingServiceCode
 		? quote.options.filter((o) => o.carrierId === params.shippingServiceCode)

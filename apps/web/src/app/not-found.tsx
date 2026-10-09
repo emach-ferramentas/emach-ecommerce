@@ -22,7 +22,7 @@ export default function NotFound() {
 						</EmachLinkButton>
 					</>
 				}
-				lede="Essa página pode ter sido movida, renomeada ou ainda está na oficina. Volte ao catálogo para seguir explorando."
+				lede="O endereço pode estar errado, ou a página mudou de lugar. O catálogo tem todos os produtos da loja."
 				title="Página não encontrada"
 			/>
 		</StoreFrame>

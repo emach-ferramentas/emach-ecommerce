@@ -17,9 +17,7 @@ export const privacySections: InstitutionalSection[] = [
 	{
 		id: "o-que-coletamos",
 		title: "O que coletamos",
-		paragraphs: [
-			"Só o necessário para vender, entregar e atender. Nada de formulário com dez campos que ninguém usa.",
-		],
+		paragraphs: ["Só o necessário para vender, entregar e atender."],
 		bullets: [
 			"Cadastro: nome, e-mail, telefone e CPF ou CNPJ. O documento é guardado sem pontuação e serve para emitir a nota fiscal.",
 			"Endereços de entrega que você cadastra na sua conta.",
@@ -79,7 +77,7 @@ export const privacySections: InstitutionalSection[] = [
 		id: "seus-direitos",
 		title: "Seus direitos",
 		paragraphs: [
-			"A LGPD garante, e a gente atende, os pedidos abaixo. Faça o pedido em qualquer filial, com um documento que comprove que a conta é sua. Respondemos em até 15 dias.",
+			"A LGPD dá a você os direitos abaixo. Faça o pedido em qualquer filial, com um documento que comprove que a conta é sua. Respondemos em até 15 dias.",
 		],
 		bullets: [
 			"Confirmar se tratamos seus dados e acessar o que temos.",
@@ -101,7 +99,7 @@ export const privacySections: InstitutionalSection[] = [
 		id: "mudancas",
 		title: "Mudanças nesta política",
 		paragraphs: [
-			"Quando mudar algo relevante, atualizamos a data no topo desta página. Vale conferir de vez em quando.",
+			"Quando mudar algo relevante, atualizamos a data no topo desta página.",
 		],
 	},
 ];

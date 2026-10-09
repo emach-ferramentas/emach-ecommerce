@@ -94,7 +94,7 @@ export default function AboutPage() {
 			<div className="shop-wrap">
 				<PageHead
 					current="Quem somos"
-					title="Ferramenta profissional, e quem responde por ela"
+					title="Ferramentas profissionais, com loja física"
 					trail={[HOME_CRUMB]}
 				>
 					<p className="max-w-[65ch] leading-relaxed">{ABOUT_DESCRIPTION}</p>
@@ -170,7 +170,7 @@ async function Branches() {
 		<>
 			<div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
 				<h2 className={SECTION_TITLE_CLASS} id="filiais-titulo">
-					Onde a gente te atende
+					Nossas filiais
 				</h2>
 				<p className="text-[15px] text-ink-muted tabular-nums">
 					{branchCount} {pluralizeBranches(branchCount)}

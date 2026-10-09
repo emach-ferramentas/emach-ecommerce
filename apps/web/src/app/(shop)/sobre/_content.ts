@@ -7,29 +7,24 @@ export const ABOUT_DESCRIPTION =
 export const aboutPillars = [
 	{
 		id: "curadoria",
-		label: "Curadoria",
-		title: "Escolhidas pra trabalho pesado",
+		label: "O que vendemos",
+		title: "Só linha profissional",
 		description:
-			"Cada ferramenta do catálogo aguenta rotina de obra e indústria, sem item de vitrine",
+			"O catálogo só tem ferramentas feitas para uso diário em obra e indústria.",
 	},
 	{
 		id: "atendimento",
 		label: "Atendimento",
-		title: "Suporte de quem entende de ferramenta",
+		title: "Ajuda para escolher e usar",
 		description:
-			"A gente ajuda a escolher a ferramenta certa para o serviço e responde as dúvidas de uso",
+			"A equipe das filiais indica a ferramenta para o serviço e tira dúvidas de uso.",
 	},
 ] as const;
 
 export const sideNotes = [
 	{
-		id: "linha-profissional",
-		label: "Linha profissional",
-		text: "Feitas pra trabalhar todo dia, não pro fim de semana",
-	},
-	{
 		id: "presenca-fisica",
-		label: "Presença física",
-		text: "Loja de verdade: você retira, testa e tira dúvida pessoalmente",
+		label: "Lojas físicas",
+		text: "Nas filiais você vê a ferramenta, testa e compra no balcão, sem frete.",
 	},
 ] as const;

@@ -31,7 +31,7 @@ export function ResetPasswordEmail({
 			<EmailButton href={url}>Redefinir senha</EmailButton>
 			<EmailNote>
 				Este link expira em 1 hora. Se você não solicitou a redefinição, pode
-				ignorar este e-mail — sua senha atual continua segura.
+				ignorar este e-mail. Sua senha atual não muda.
 			</EmailNote>
 		</EmailLayout>
 	);

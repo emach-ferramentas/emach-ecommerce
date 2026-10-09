@@ -14,8 +14,8 @@ export default function ProductNotFound() {
 					</EmachLinkButton>
 				</>
 			}
-			lede="Pode ter sido descontinuado ou movido para outra categoria. Explore o catálogo completo para encontrar alternativas."
-			title="Esse produto saiu da bancada"
+			lede="Ele pode ter saído de linha ou mudado de categoria. Procure um modelo parecido no catálogo."
+			title="Produto não encontrado"
 		/>
 	);
 }

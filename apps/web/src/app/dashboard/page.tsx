@@ -20,7 +20,7 @@ export default async function DashboardPage() {
 	return (
 		<>
 			<PageHead title="Minha conta" trail={[HOME_CRUMB]}>
-				Acompanhe seus pedidos, devoluções e dados de cadastro num só lugar.
+				Acompanhe seus pedidos, devoluções e dados de cadastro.
 			</PageHead>
 			<div className="space-y-10">
 				{highlight ? (

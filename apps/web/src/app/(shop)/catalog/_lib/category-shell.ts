@@ -18,5 +18,5 @@ export async function getCategoryShell(
 
 /** Description de metadata quando a categoria não tem a própria. */
 export function defaultCategoryDescription(name: string): string {
-	return `${name} para obra, oficina e indústria. Linha profissional, com estoque nas filiais e envio para todo o Brasil.`;
+	return `${name} para obra, oficina e indústria, com estoque nas filiais e envio para todo o Brasil.`;
 }

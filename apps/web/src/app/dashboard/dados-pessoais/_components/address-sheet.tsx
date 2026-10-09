@@ -221,7 +221,7 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 										) : null}
 										{cepAutofill.notFound ? (
 											<p className="emach-field__error" role="alert">
-												CEP não encontrado — confira o número antes de salvar
+												CEP não encontrado. Confira o número antes de salvar.
 											</p>
 										) : null}
 									</div>
