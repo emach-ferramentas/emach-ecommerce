@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
+import { AccountSectionSkeleton } from "@/app/dashboard/_components/account-section-skeleton";
 import { PageHead } from "@/components/page-head";
 import { getClientOrderDetail } from "@/lib/orders/queries";
 import { requireCurrentClient } from "@/lib/session";
@@ -9,11 +11,25 @@ export const metadata: Metadata = {
 	title: "Pagamento",
 };
 
-export default async function PagarPage({
-	params,
-}: {
+interface PageProps {
 	params: Promise<{ id: string }>;
-}) {
+}
+
+export default function PagarPage({ params }: PageProps) {
+	return (
+		<Suspense
+			fallback={
+				<div className="pt-6 md:pt-10">
+					<AccountSectionSkeleton />
+				</div>
+			}
+		>
+			<Payment params={params} />
+		</Suspense>
+	);
+}
+
+async function Payment({ params }: PageProps) {
 	const { id } = await params;
 	const session = await requireCurrentClient();
 	const detail = await getClientOrderDetail(session.user.id, id);

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { AccountSectionSkeleton } from "@/app/dashboard/_components/account-section-skeleton";
 import { CountTabs } from "@/app/dashboard/_components/count-tabs";
 import { PageHead } from "@/components/page-head";
 import { listClientRefunds } from "@/lib/refunds/queries";
@@ -17,7 +19,18 @@ export const metadata: Metadata = {
 	title: "Devoluções e reembolso",
 };
 
-export default async function ReembolsoPage() {
+export default function ReembolsoPage() {
+	return (
+		<>
+			<PageHead title="Devoluções e reembolso" />
+			<Suspense fallback={<AccountSectionSkeleton />}>
+				<RefundsByTab />
+			</Suspense>
+		</>
+	);
+}
+
+async function RefundsByTab() {
 	const session = await requireCurrentClient();
 	const refunds = await listClientRefunds(session.user.id);
 	const counts = countRefundsByTab(refunds.map((r) => r.status));
@@ -42,11 +55,8 @@ export default async function ReembolsoPage() {
 	}
 
 	return (
-		<>
-			<PageHead title="Devoluções e reembolso" />
-			<CountTabs defaultValue="em_andamento" tabs={tabs}>
-				{refundsIn}
-			</CountTabs>
-		</>
+		<CountTabs defaultValue="em_andamento" tabs={tabs}>
+			{refundsIn}
+		</CountTabs>
 	);
 }

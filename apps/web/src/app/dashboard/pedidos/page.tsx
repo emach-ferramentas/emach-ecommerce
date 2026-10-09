@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { AccountSectionSkeleton } from "@/app/dashboard/_components/account-section-skeleton";
 import { CountTabs } from "@/app/dashboard/_components/count-tabs";
 import { PageHead } from "@/components/page-head";
 import { listClientOrders } from "@/lib/orders/queries";
@@ -17,7 +19,18 @@ export const metadata: Metadata = {
 	title: "Meus pedidos",
 };
 
-export default async function PedidosPage() {
+export default function PedidosPage() {
+	return (
+		<>
+			<PageHead title="Pedidos" />
+			<Suspense fallback={<AccountSectionSkeleton />}>
+				<OrdersByTab />
+			</Suspense>
+		</>
+	);
+}
+
+async function OrdersByTab() {
 	const session = await requireCurrentClient();
 	const orders = await listClientOrders(session.user.id);
 	const counts = countByTab(orders.map((o) => o.status));
@@ -45,11 +58,8 @@ export default async function PedidosPage() {
 	}
 
 	return (
-		<>
-			<PageHead title="Pedidos" />
-			<CountTabs defaultValue="all" tabs={tabs}>
-				{ordersIn}
-			</CountTabs>
-		</>
+		<CountTabs defaultValue="all" tabs={tabs}>
+			{ordersIn}
+		</CountTabs>
 	);
 }

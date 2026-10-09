@@ -1,3 +1,4 @@
+import { AccountSectionSkeleton } from "./account-section-skeleton";
 import { ACCOUNT_GRID_CLASS } from "./dashboard-chrome";
 import { NAV_ITEMS } from "./nav-items";
 
@@ -32,10 +33,7 @@ export function DashboardChromeSkeleton() {
 
 			<div className="min-w-0 pt-6 md:pt-10">
 				<div className="mb-6 h-12 w-64 max-w-full rounded-[3px] bg-canteiro" />
-				<div className="space-y-4">
-					<div className="h-48 rounded-[5px] border border-line bg-paper" />
-					<div className="h-48 rounded-[5px] border border-line bg-paper" />
-				</div>
+				<AccountSectionSkeleton />
 			</div>
 		</div>
 	);

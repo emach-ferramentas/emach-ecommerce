@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { AccountSectionSkeleton } from "@/app/dashboard/_components/account-section-skeleton";
 import { Panel } from "@/components/panel";
 import { getClientOrderDetail } from "@/lib/orders/queries";
 import {
@@ -27,7 +29,21 @@ interface PageProps {
 	params: Promise<{ id: string }>;
 }
 
-export default async function OrderDetailPage({ params }: PageProps) {
+export default function OrderDetailPage({ params }: PageProps) {
+	return (
+		<Suspense
+			fallback={
+				<div className="pt-6 md:pt-10">
+					<AccountSectionSkeleton />
+				</div>
+			}
+		>
+			<OrderDetail params={params} />
+		</Suspense>
+	);
+}
+
+async function OrderDetail({ params }: PageProps) {
 	const { id } = await params;
 	const session = await requireCurrentClient();
 	const detail = await getClientOrderDetail(session.user.id, id);
