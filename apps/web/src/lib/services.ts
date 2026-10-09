@@ -15,7 +15,7 @@ import { SERVICES_ROOT_SLUG, splitServiceTree } from "@/lib/service-tree";
 
 /** Foto de cada ofício, por slug. Ofício sem foto cai na 1ª foto de produto. */
 export const SERVICE_IMAGES: Record<string, string> = {
-	"demolicao-e-rasgo": "/images/oficios/demolicao-e-rasgo.webp",
+	demolicao: "/images/oficios/demolicao.webp",
 	"furar-e-parafusar": "/images/oficios/furar-e-parafusar.webp",
 	"mistura-de-argamassa": "/images/oficios/mistura-de-argamassa.webp",
 	"reboco-e-acabamento": "/images/oficios/reboco-e-acabamento.webp",

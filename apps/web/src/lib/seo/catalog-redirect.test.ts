@@ -38,6 +38,23 @@ describe("legacyCategoryRedirect", () => {
 			legacyCategoryRedirect(new URL(`${ORIGIN}/catalog?cat=%2E%2E`))
 		).toBeNull();
 	});
+	it("slug renomeado vai direto para o slug novo, no path e na query", () => {
+		expect(
+			legacyCategoryRedirect(
+				new URL(`${ORIGIN}/catalog/demolicao-e-rasgo?sort=price-asc`)
+			)?.toString()
+		).toBe(`${ORIGIN}/catalog/demolicao?sort=price-asc`);
+		expect(
+			legacyCategoryRedirect(
+				new URL(`${ORIGIN}/catalog?cat=demolicao-e-rasgo`)
+			)?.toString()
+		).toBe(`${ORIGIN}/catalog/demolicao`);
+	});
+	it("slug atual em /catalog/<slug> não redireciona", () => {
+		expect(
+			legacyCategoryRedirect(new URL(`${ORIGIN}/catalog/demolicao`))
+		).toBeNull();
+	});
 	it("escapa slug malicioso", () => {
 		const out = legacyCategoryRedirect(
 			new URL(`${ORIGIN}/catalog?cat=..%2F..%2Fadmin`)
