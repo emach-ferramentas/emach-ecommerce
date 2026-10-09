@@ -40,7 +40,7 @@ export default function Loading() {
 							<div className="h-[30px] w-24 rounded-[3px] bg-canteiro" />
 							<div className="h-[30px] w-20 rounded-[3px] bg-canteiro" />
 						</div>
-						<div className="mt-5 border-line border-t pt-5">
+						<div className="mt-7">
 							<div className="h-[34px] w-48 bg-canteiro md:h-10" />
 							<div className="mt-2 h-6 w-64 max-w-full bg-canteiro" />
 							<div className="mt-1 h-5 w-52 bg-canteiro" />

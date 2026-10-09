@@ -8,6 +8,7 @@ Este arquivo descreve o sistema visual que roda em produção. O código vence q
 - **Card se separa do fundo por borda, não por sombra.** Borda `border-line` de 1 px; no hover, `border-line-strong`. Sombra (`shadow-pop`, `shadow-bar`) só em camada que flutua sobre a página.
 - **Sem eyebrow.** Título não leva rótulo pequeno em caixa alta acima dele. O scanner reprova `SectionLabel` e `tracking-[0.`.
 - **Sem borda lateral colorida.** Nada de faixa vermelha à esquerda de item ativo, card ou aviso. O scanner reprova `border-<lado>-emach-red`, `border-emach-red` e `bg-emach-red/`.
+- **Sem régua preta.** Bloco não se separa por linha escura. Título de seção, grupo de filtro, lista do carrinho e ficha técnica se separam por espaço; a contagem ao lado do título vira etiqueta (`CountChip`), e a ficha técnica alterna linhas com fundo `bg-canteiro`. No menu de departamentos, o hover pinta o item com fundo `bg-canteiro`, e o departamento da página aberta (`aria-current="page"`) fica com o mesmo fundo e em negrito, sem sublinhado. A linha cinza de 1 px (`border-line`) fica só entre itens de lista e na borda de card. O scanner reprova `border-ink` junto de `border-<lado>-2`.
 - **Cantos de 3 px em controle, 5 px em card.** Botão, campo, stepper e seta usam `rounded-[3px]`; card, painel e aviso usam `rounded-[5px]`. Círculo (`rounded-full`) só em ponto de status e avatar.
 - **Preço sempre no formato R$ 899,00** (`fmtBRL` de `lib/format.ts`), com `tabular-nums` em coluna de valores.
 - **A loja não fala de troca, devolução nem garantia** em texto de vitrine. `apps/web/src/lib/seo/institutional-content.test.ts` trava isso nas páginas institucionais, na caixa de compra e na barra fixa da página de produto.
@@ -82,7 +83,8 @@ Antes de escrever marcação crua, procure aqui.
 | `StatusScreen` | `status-screen.tsx` | Tela de erro ou de vazio: título, lede, ações e nota. Usada por `error.tsx`, `not-found.tsx` e afins. |
 | `InstitutionalPage` | `institutional-page.tsx` | Página de texto com sumário lateral e data de atualização. |
 | `ProductCard`, `ProductCardSkeleton` | `product-card.tsx`, `product-card-skeleton.tsx` | Card de produto (seção 7). O skeleton espelha a anatomia do card. |
-| `Shelf` | `shelf.tsx` | Prateleira horizontal com setas no desktop, arraste no celular e card final que abre a lista completa. |
+| `Shelf` | `shelf.tsx` | Prateleira horizontal com setas no desktop e arraste no celular. A capa que abre a lista completa gruda na borda direita do trilho. |
+| `CountChip` | `count-chip.tsx` | Contagem ao lado do título de seção ("4 produtos, 3 em estoque"), como etiqueta com borda `border-line`. |
 | `QtyStepper` | `buy/qty-stepper.tsx` | Quantidade com `min` 1 por padrão e tamanhos `lg` e `md`. |
 | `VoltagePicker` | `buy/voltage-picker.tsx` | Voltagem como rádios nativos em botões grandes. A opção esgotada fica visível, tracejada e desabilitada. |
 | `ProductImage` | `product-image.tsx` | Foto com fade no carregamento e ícone por categoria em `bg-well` quando não há foto. |

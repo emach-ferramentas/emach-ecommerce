@@ -10,7 +10,7 @@ export default function Loading() {
 				<h1 className={`${PAGE_TITLE_CLASS} text-ink-muted`}>Seu carrinho</h1>
 			</div>
 			<div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
-				<div className="border-ink border-t-2">
+				<div>
 					{["a", "b"].map((key) => (
 						<div
 							className="grid grid-cols-[72px_minmax(0,1fr)] gap-x-3.5 gap-y-2 border-line border-b py-4 md:grid-cols-[96px_minmax(0,1fr)]"

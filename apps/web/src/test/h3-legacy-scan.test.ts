@@ -36,7 +36,12 @@ const FIXTURES: readonly [string, string, string][] = [
 	[
 		"border-<lado>-emach-red",
 		'className="border-l-emach-red"',
-		'className="border-b-2 border-ink"',
+		'className="border-b border-line"',
+	],
+	[
+		"régua border-<lado>-2 border-ink",
+		'className="mb-4 flex border-ink border-b-2 pb-3"',
+		'className="border-2 border-ink bg-canteiro"',
 	],
 	[
 		"SectionLabel",

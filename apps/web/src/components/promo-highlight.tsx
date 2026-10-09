@@ -2,6 +2,7 @@ import type { PromotionWithTools } from "@emach/db/queries/promotions";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
+import { CountChip } from "@/components/count-chip";
 import { ProductCard } from "@/components/product-card";
 import { PromoCountdown } from "@/components/promo-countdown";
 import type { CardExtrasByTool } from "@/lib/card-data";
@@ -26,7 +27,7 @@ export function PromoHighlight({
 			className="border-line border-t bg-paper py-10 md:py-14"
 		>
 			<div className="shop-wrap">
-				<div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-ink border-b-2 pb-3">
+				<div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
 					<div>
 						<h2
 							className="font-display font-extrabold text-[clamp(1.9rem,1.3rem+1.6vw,2.75rem)] uppercase leading-[0.98]"
@@ -34,12 +35,12 @@ export function PromoHighlight({
 						>
 							{promotion.title}
 						</h2>
-						<p className="mt-1.5 text-[14px] text-ink-muted tabular-nums">
+						<CountChip className="mt-2">
 							{promotion.tools.length}{" "}
 							{promotion.tools.length === 1
 								? "produto em oferta"
 								: "produtos em oferta"}
-						</p>
+						</CountChip>
 					</div>
 					{promotion.endsAt && (
 						<PromoCountdown endsAt={promotion.endsAt.toISOString()} />

@@ -26,7 +26,7 @@ export function CartContent() {
 					<CartEmpty centered />
 				) : (
 					<div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
-						<div className="border-ink border-t-2">
+						<div>
 							{items.map((item) => (
 								<CartItemRow
 									item={item}

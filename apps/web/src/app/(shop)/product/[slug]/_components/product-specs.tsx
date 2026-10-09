@@ -67,10 +67,10 @@ export function ProductSpecs({ attributes, sku, tool }: ProductSpecsProps) {
 					<h2 className={sectionTitle} id="ficha-tecnica">
 						{PRODUCT_COPY.specs}
 					</h2>
-					<dl className="mt-[18px] border-ink border-t-2">
+					<dl className="mt-[18px]">
 						{rows.map((row) => (
 							<div
-								className="grid grid-cols-2 gap-3 border-line border-b py-[11px] text-[15px] md:grid-cols-[42%_1fr]"
+								className="grid grid-cols-2 gap-3 rounded-[3px] px-3 py-[11px] text-[15px] odd:bg-canteiro md:grid-cols-[42%_1fr]"
 								key={`${row.label}:${row.value}`}
 							>
 								<dt className="text-ink-muted">{row.label}</dt>

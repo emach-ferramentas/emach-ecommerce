@@ -173,7 +173,7 @@ export function ProductInfo({
 				</ul>
 			)}
 
-			<div className="mt-5 border-line border-t pt-5">
+			<div className="mt-7">
 				<p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 					<span className="font-extrabold text-[34px] tabular-nums leading-none tracking-[-0.02em] md:text-[40px]">
 						{fmtNumericBRL(price.finalAmount)}

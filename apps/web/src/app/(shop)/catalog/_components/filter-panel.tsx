@@ -48,7 +48,7 @@ function Group({
 	title: string;
 }) {
 	return (
-		<fieldset className="min-w-0 border-ink border-t-2 pt-3 pb-[18px] first:max-lg:border-t-0">
+		<fieldset className="min-w-0 pb-[26px]">
 			<legend className="float-left mb-1 w-full p-0 font-extrabold text-[15px] text-ink">
 				{title}
 			</legend>

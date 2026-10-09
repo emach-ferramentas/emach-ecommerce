@@ -7,6 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { CountChip } from "@/components/count-chip";
+
 interface ShelfProps {
 	/** Cards já renderizados no servidor, um por item. */
 	children: React.ReactNode;
@@ -94,7 +96,7 @@ export function Shelf({
 
 	return (
 		<section aria-labelledby={titleId} className="min-w-0">
-			<div className="mb-4 flex items-end justify-between gap-x-5 gap-y-2 border-ink border-b-2 pb-3 max-md:items-start">
+			<div className="mb-5 flex items-end justify-between gap-x-5 gap-y-2 max-md:items-start">
 				<div>
 					<Heading
 						className="font-display font-extrabold text-[clamp(1.55rem,1.15rem+1vw,2.1rem)] uppercase leading-[0.98]"
@@ -107,10 +109,10 @@ export function Shelf({
 							{title}
 						</Link>
 					</Heading>
-					<p className="mt-[5px] text-[14px] text-ink-muted tabular-nums">
+					<CountChip className="mt-2">
 						{productCount} {productCount === 1 ? "produto" : "produtos"}
 						{inStockCount !== null && `, ${inStockCount} em estoque`}
-					</p>
+					</CountChip>
 				</div>
 				<div className="flex shrink-0 items-center gap-2">
 					<Link

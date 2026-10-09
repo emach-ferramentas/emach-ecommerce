@@ -2,15 +2,35 @@
 
 import { cn } from "@emach/ui/lib/utils";
 import { ChevronDown, ChevronRight, Menu } from "lucide-react";
+import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { navShortLabel } from "@/lib/nav-label";
 import type { StoreNav } from "@/lib/store-nav";
 
 const linkClass =
-	"relative inline-flex min-h-[50px] shrink-0 items-center whitespace-nowrap px-2 font-semibold text-[14px] text-ink-2 no-underline hover:text-ink xl:px-[11px] xl:text-[15px] after:absolute after:inset-x-2 after:bottom-0 after:h-[3px] after:origin-left after:scale-x-0 after:bg-grafite after:transition-transform after:duration-200 after:ease-out-expo after:content-[''] hover:after:scale-x-100 xl:after:inset-x-[11px]";
+	"inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-[3px] px-2 font-semibold text-[14px] text-ink-2 no-underline transition-colors duration-150 ease-out hover:bg-canteiro hover:text-ink aria-[current=page]:bg-canteiro aria-[current=page]:font-extrabold aria-[current=page]:text-ink xl:px-[11px] xl:text-[15px]";
+
+function DeptLink({
+	children,
+	href,
+}: {
+	children: React.ReactNode;
+	href: Route;
+}) {
+	return (
+		<Link
+			aria-current={usePathname() === href ? "page" : undefined}
+			className={linkClass}
+			href={href}
+		>
+			{children}
+		</Link>
+	);
+}
 
 function plural(n: number, one: string, many: string) {
 	return `${n} ${n === 1 ? one : many}`;
@@ -71,9 +91,9 @@ export function DeptNav({ nav }: { nav: StoreNav }) {
 					{nav.services.length > 0 && (
 						<>
 							{nav.services.map((s) => (
-								<Link className={linkClass} href={s.href} key={s.slug}>
+								<DeptLink href={s.href} key={s.slug}>
 									{s.name}
-								</Link>
+								</DeptLink>
 							))}
 							<span
 								aria-hidden="true"
@@ -84,9 +104,9 @@ export function DeptNav({ nav }: { nav: StoreNav }) {
 					{nav.categories
 						.filter((c) => c.productCount > 0)
 						.map((c) => (
-							<Link className={linkClass} href={c.href} key={c.slug}>
+							<DeptLink href={c.href} key={c.slug}>
 								{navShortLabel(c.name)}
-							</Link>
+							</DeptLink>
 						))}
 				</div>
 			</div>
