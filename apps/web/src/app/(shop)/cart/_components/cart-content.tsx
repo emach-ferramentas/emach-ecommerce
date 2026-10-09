@@ -1,6 +1,5 @@
 "use client";
 
-import { HOME_CRUMB } from "@/components/breadcrumb";
 import { CartEmpty } from "@/components/cart-empty";
 import { CartItemRow } from "@/components/cart-item-row";
 import { CartTotals } from "@/components/cart-totals";
@@ -16,11 +15,7 @@ export function CartContent() {
 	return (
 		<div className="pb-16">
 			<div className="shop-wrap">
-				<PageHead
-					current="Carrinho"
-					title="Seu carrinho"
-					trail={[HOME_CRUMB]}
-				/>
+				<PageHead title="Seu carrinho" />
 
 				{items.length === 0 ? (
 					<CartEmpty centered />

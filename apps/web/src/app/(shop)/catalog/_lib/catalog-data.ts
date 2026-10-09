@@ -11,7 +11,6 @@ import { type CardExtrasByTool, getCardExtras } from "@/lib/card-data";
 import { isServicePath, splitServiceTree } from "@/lib/service-tree";
 import { serviceHref } from "@/lib/services";
 import type { SortKey, VoltageKey } from "./catalog-filters";
-import { ancestorsOf, type CatalogCrumb } from "./category-crumbs";
 import { type FacetCounts, getFacetCounts } from "./facet-counts";
 
 export const CATALOG_PAGE_SIZE = 24;
@@ -28,8 +27,6 @@ export interface CatalogDataInput {
 }
 
 export interface CatalogCurrentCategory {
-	/** Categorias acima da atual, da raiz para baixo (sem a mãe dos ofícios). */
-	ancestors: CatalogCrumb[];
 	description: string | null;
 	id: string;
 	/** A categoria atual é um ofício (filha de `servicos`). */
@@ -67,13 +64,9 @@ export async function fetchCatalogData(
 
 	let currentCategory: CatalogCurrentCategory | null = null;
 	if (input.cat) {
-		const [detail, fullTree] = await Promise.all([
-			getCategoryBySlug(db, input.cat),
-			treePromise,
-		]);
+		const detail = await getCategoryBySlug(db, input.cat);
 		if (detail) {
 			currentCategory = {
-				ancestors: ancestorsOf(fullTree, detail.path),
 				description: detail.description,
 				id: detail.id,
 				isService: isServicePath(detail.path),

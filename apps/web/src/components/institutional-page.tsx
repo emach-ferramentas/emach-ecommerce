@@ -1,4 +1,3 @@
-import { HOME_CRUMB } from "@/components/breadcrumb";
 import { PageHead } from "@/components/page-head";
 
 export interface InstitutionalSection {
@@ -46,7 +45,7 @@ export function InstitutionalPage({
 	return (
 		<div className="bg-paper pb-16 md:pb-24">
 			<div className="shop-wrap">
-				<PageHead title={title} trail={[HOME_CRUMB]}>
+				<PageHead title={title}>
 					<p className="max-w-[65ch] leading-relaxed">{lede}</p>
 					<p className="mt-3 text-[13.5px] text-ink-muted">
 						Atualizado em{" "}

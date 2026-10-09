@@ -1,29 +1,14 @@
-import { cacheLife } from "next/cache";
-import { getCardExtras } from "@/lib/card-data";
-import { getShelves } from "@/lib/shelves";
 import { CATALOG_PAGE_SIZE, getCatalogData } from "../_lib/catalog-data";
-import { catalogView } from "../_lib/catalog-view";
 import {
 	type CatalogSearchParams,
 	parseCatalogSearchParams,
 } from "../_lib/parse-search-params";
-import { CatalogContent, type CatalogShelves } from "./catalog-content";
+import { CatalogContent } from "./catalog-content";
 
 interface CatalogResultsProps {
 	/** Slug vindo do PATH (/catalog/[cat]). A rota raiz passa undefined. */
 	cat?: string;
 	searchParams: Promise<CatalogSearchParams>;
-}
-
-// Vitrine do catálogo sem recorte: mesma janela de cache da home.
-async function loadShelves(): Promise<CatalogShelves> {
-	"use cache";
-	cacheLife({ revalidate: 600 });
-	const { by, shelves } = await getShelves();
-	const extras = await getCardExtras(
-		shelves.flatMap((s) => s.items.map((t) => t.id))
-	);
-	return { by, extras, shelves };
 }
 
 // Buraco dinâmico do catálogo: lê searchParams (filtros/busca/paginação) — por
@@ -46,10 +31,7 @@ export async function CatalogResults({
 		page: parsed.page,
 	};
 
-	const [data, shelves] = await Promise.all([
-		getCatalogData(input),
-		catalogView(input) === "shelves" ? loadShelves() : null,
-	]);
+	const data = await getCatalogData(input);
 
 	return (
 		<CatalogContent
@@ -64,7 +46,6 @@ export async function CatalogResults({
 			priceMin={parsed.priceMin ?? null}
 			query={parsed.q}
 			services={data.services}
-			shelves={shelves}
 			sort={parsed.sort}
 			tools={data.tools}
 			total={data.total}

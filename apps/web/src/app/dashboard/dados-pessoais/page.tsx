@@ -3,7 +3,6 @@ import { clientAddress } from "@emach/db/schema/client";
 import { desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
-import { ACCOUNT_TRAIL } from "@/app/dashboard/_components/account-trail";
 import { PageHead } from "@/components/page-head";
 import { requireCurrentClient } from "@/lib/session";
 import { AddressesSection } from "./_components/addresses-section";
@@ -31,7 +30,7 @@ export default async function PersonalDataPage() {
 
 	return (
 		<div className="pb-12">
-			<PageHead title="Meus dados" trail={ACCOUNT_TRAIL} />
+			<PageHead title="Meus dados" />
 			<div className="space-y-5">
 				<PersonalDataForm
 					initialData={{

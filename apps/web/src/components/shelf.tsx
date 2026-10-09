@@ -12,9 +12,6 @@ import { CountChip } from "@/components/count-chip";
 interface ShelfProps {
 	/** Cards já renderizados no servidor, um por item. */
 	children: React.ReactNode;
-	/** Prateleira dentro de página de catálogo: 3 por vez em vez de 4. */
-	dense?: boolean;
-	headingLevel?: 2 | 3;
 	href: Route;
 	imageSrc: string | null;
 	inStockCount: number | null;
@@ -38,8 +35,6 @@ const arrowClass =
  */
 export function Shelf({
 	children,
-	dense = false,
-	headingLevel = 3,
 	href,
 	imageSrc,
 	inStockCount,
@@ -47,7 +42,6 @@ export function Shelf({
 	productCount,
 	title,
 }: ShelfProps) {
-	const Heading = `h${headingLevel}` as const;
 	const titleId = useId();
 	const trackRef = useRef<HTMLDivElement>(null);
 	const capaRef = useRef<HTMLAnchorElement>(null);
@@ -98,7 +92,7 @@ export function Shelf({
 		<section aria-labelledby={titleId} className="min-w-0">
 			<div className="mb-5 flex items-end justify-between gap-x-5 gap-y-2 max-md:items-start">
 				<div>
-					<Heading
+					<h3
 						className="font-display font-extrabold text-[clamp(1.55rem,1.15rem+1vw,2.1rem)] uppercase leading-[0.98]"
 						id={titleId}
 					>
@@ -108,7 +102,7 @@ export function Shelf({
 						>
 							{title}
 						</Link>
-					</Heading>
+					</h3>
 					<CountChip className="mt-2">
 						{productCount} {productCount === 1 ? "produto" : "produtos"}
 						{inStockCount !== null && `, ${inStockCount} em estoque`}
@@ -149,9 +143,7 @@ export function Shelf({
 			<div
 				className={cn(
 					"-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto overscroll-x-contain px-4 pt-0.5 pb-1.5 [--shelf-capa:calc(38%_-_10px)] [--shelf-col:62%] [scrollbar-width:none] md:mx-0 md:scroll-px-0 md:scroll-pr-[calc(var(--shelf-capa)_+_16px)] md:gap-4 md:px-0 md:[--shelf-capa:var(--shelf-col)] md:[--shelf-col:calc((100%_-_22.4px)/2.4)] [&::-webkit-scrollbar]:hidden [&>*]:min-w-0 [&>*]:shrink-0 [&>*]:basis-(--shelf-col) [&>*]:snap-start",
-					dense
-						? "xl:[--shelf-col:calc((100%_-_32px)/3)]"
-						: "lg:[--shelf-col:calc((100%_-_32px)/3)] xl:[--shelf-col:calc((100%_-_48px)/4)]"
+					"lg:[--shelf-col:calc((100%_-_32px)/3)] xl:[--shelf-col:calc((100%_-_48px)/4)]"
 				)}
 				onScroll={measure}
 				ref={trackRef}

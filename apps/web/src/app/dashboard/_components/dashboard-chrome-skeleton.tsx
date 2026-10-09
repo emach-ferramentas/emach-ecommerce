@@ -15,7 +15,7 @@ export function DashboardChromeSkeleton() {
 				))}
 			</div>
 
-			<div className="hidden md:block md:self-start md:pt-[18px]">
+			<div className="hidden md:block md:self-start md:pt-10">
 				<div className="space-y-2 border-line border-b pb-4">
 					<div className="h-4 w-32 rounded-[3px] bg-canteiro" />
 					<div className="h-3.5 w-44 max-w-full rounded-[3px] bg-canteiro" />
@@ -30,9 +30,8 @@ export function DashboardChromeSkeleton() {
 				))}
 			</div>
 
-			<div className="min-w-0 pt-2.5 md:pt-[18px]">
-				<div className="h-4 w-40 rounded-[3px] bg-canteiro" />
-				<div className="mt-3 mb-6 h-12 w-64 max-w-full rounded-[3px] bg-canteiro" />
+			<div className="min-w-0 pt-6 md:pt-10">
+				<div className="mb-6 h-12 w-64 max-w-full rounded-[3px] bg-canteiro" />
 				<div className="space-y-4">
 					<div className="h-48 rounded-[5px] border border-line bg-paper" />
 					<div className="h-48 rounded-[5px] border border-line bg-paper" />

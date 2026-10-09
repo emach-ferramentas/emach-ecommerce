@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ACCOUNT_TRAIL } from "@/app/dashboard/_components/account-trail";
 import { CountTabs } from "@/app/dashboard/_components/count-tabs";
 import { PageHead } from "@/components/page-head";
 import { listClientOrders } from "@/lib/orders/queries";
@@ -47,7 +46,7 @@ export default async function PedidosPage() {
 
 	return (
 		<>
-			<PageHead title="Pedidos" trail={ACCOUNT_TRAIL} />
+			<PageHead title="Pedidos" />
 			<CountTabs defaultValue="all" tabs={tabs}>
 				{ordersIn}
 			</CountTabs>

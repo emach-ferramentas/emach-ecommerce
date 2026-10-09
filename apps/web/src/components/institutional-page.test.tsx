@@ -37,12 +37,8 @@ describe("InstitutionalPage", () => {
 		expect(html).not.toContain('id="main-content"');
 	});
 
-	it("mostra a trilha Início > página atual", () => {
-		expect(html).toContain('aria-label="Você está em"');
-		expect(html).toContain('href="/"');
-		expect(html).toContain(
-			'<span aria-current="page" class="line-clamp-1">T</span>'
-		);
+	it("não mostra trilha de navegação", () => {
+		expect(html).not.toContain('aria-label="Você está em"');
 	});
 
 	it("liga o sumário a cada seção", () => {

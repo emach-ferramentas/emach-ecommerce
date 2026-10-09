@@ -10,11 +10,6 @@ export default function Loading() {
 	return (
 		<div className="max-md:pb-[84px]">
 			<div className="shop-wrap animate-pulse">
-				<div className="pt-2.5 pb-1.5 md:pt-[18px]">
-					<div className="flex min-h-8 items-center">
-						<div className="h-3.5 w-64 max-w-full bg-canteiro" />
-					</div>
-				</div>
 				<div className={PRODUCT_GRID}>
 					<div className="grid gap-3.5 max-md:-mx-4 md:grid-cols-[76px_minmax(0,1fr)]">
 						<div className="flex flex-col gap-2.5 max-md:hidden">

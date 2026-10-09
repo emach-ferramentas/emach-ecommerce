@@ -44,6 +44,11 @@ const FIXTURES: readonly [string, string, string][] = [
 		'className="border-2 border-ink bg-canteiro"',
 	],
 	[
+		"Breadcrumb",
+		'<Breadcrumb current="Catálogo" trail={[HOME_CRUMB]} />',
+		"<BreadcrumbJsonLd category={category} productName={name} />",
+	],
+	[
 		"SectionLabel",
 		"<SectionLabel>Resumo</SectionLabel>",
 		"<PageHead title='Resumo' />",
@@ -114,7 +119,6 @@ describe("primitivos do U0", () => {
 		expect(
 			scanForLegacyTokens([
 				"components/emach-button.tsx",
-				"components/breadcrumb.tsx",
 				"components/page-head.tsx",
 				"components/panel.tsx",
 				"components/notice.tsx",
@@ -123,7 +127,6 @@ describe("primitivos do U0", () => {
 				"components/store-frame.tsx",
 				"components/field.tsx",
 				"components/buy/qty-stepper.tsx",
-				"app/dashboard/_components/account-trail.ts",
 				"app/dashboard/_components/status-stepper.tsx",
 				"app/dashboard/pedidos/_components/order-status-badge.tsx",
 				"app/dashboard/reembolso/_components/refund-status-badge.tsx",

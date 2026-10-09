@@ -1,9 +1,5 @@
 import type { OrderStatus } from "@emach/db/schema/orders";
 import { Ban } from "lucide-react";
-import {
-	ACCOUNT_TRAIL,
-	ORDERS_CRUMB,
-} from "@/app/dashboard/_components/account-trail";
 import { StatusStepper } from "@/app/dashboard/_components/status-stepper";
 import { PageHead } from "@/components/page-head";
 import { Panel } from "@/components/panel";
@@ -27,8 +23,6 @@ const DATETIME_FMT = new Intl.DateTimeFormat("pt-BR", {
 	minute: "2-digit",
 });
 
-const ORDER_TRAIL = [...ACCOUNT_TRAIL, ORDERS_CRUMB];
-
 export function OrderDetailHeader({
 	createdAt,
 	number,
@@ -45,7 +39,6 @@ export function OrderDetailHeader({
 			<PageHead
 				aside={<OrderStatusBadge status={status} />}
 				title={`Pedido #${number}`}
-				trail={ORDER_TRAIL}
 			>
 				Realizado em{" "}
 				<strong className="font-semibold text-ink">

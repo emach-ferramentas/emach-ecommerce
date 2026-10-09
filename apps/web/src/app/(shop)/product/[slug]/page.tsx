@@ -1,10 +1,9 @@
 import { db } from "@emach/db";
 import { getAllToolSlugs } from "@emach/db/queries/tools";
-import type { Metadata, Route } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { Breadcrumb, CATALOG_CRUMB, HOME_CRUMB } from "@/components/breadcrumb";
 import { PhotoGallery } from "@/components/buy/photo-gallery";
 import { specChips } from "@/lib/attribute-format";
 import { buildSlots } from "@/lib/gallery-slots";
@@ -118,21 +117,6 @@ export default async function ProductPage({
 			/>
 			<div className="max-md:pb-[84px]">
 				<div className="shop-wrap">
-					<Breadcrumb
-						current={detail.tool.name}
-						trail={[
-							HOME_CRUMB,
-							CATALOG_CRUMB,
-							...(detail.primaryCategory
-								? [
-										{
-											href: `/catalog/${detail.primaryCategory.slug}` as Route,
-											label: detail.primaryCategory.name,
-										},
-									]
-								: []),
-						]}
-					/>
 					<div className={PRODUCT_GRID}>
 						<div className="max-md:-mx-4">
 							<PhotoGallery

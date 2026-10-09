@@ -9,6 +9,7 @@ Este arquivo descreve o sistema visual que roda em produção. O código vence q
 - **Sem eyebrow.** Título não leva rótulo pequeno em caixa alta acima dele. O scanner reprova `SectionLabel` e `tracking-[0.`.
 - **Sem borda lateral colorida.** Nada de faixa vermelha à esquerda de item ativo, card ou aviso. O scanner reprova `border-<lado>-emach-red`, `border-emach-red` e `bg-emach-red/`.
 - **Sem régua preta.** Bloco não se separa por linha escura. Título de seção, grupo de filtro, lista do carrinho e ficha técnica se separam por espaço; a contagem ao lado do título vira etiqueta (`CountChip`), e a ficha técnica alterna linhas com fundo `bg-canteiro`. No menu de departamentos, o hover pinta o item com fundo `bg-canteiro`, e o departamento da página aberta (`aria-current="page"`) fica com o mesmo fundo e em negrito, sem sublinhado. A linha cinza de 1 px (`border-line`) fica só entre itens de lista e na borda de card. O scanner reprova `border-ink` junto de `border-<lado>-2`.
+- **Sem breadcrumb.** Nenhuma página mostra trilha de navegação; o título abre a página. O caminho para o Google segue no JSON-LD `BreadcrumbList` da página de produto. O scanner reprova `Breadcrumb`.
 - **Cantos de 3 px em controle, 5 px em card.** Botão, campo, stepper e seta usam `rounded-[3px]`; card, painel e aviso usam `rounded-[5px]`. Círculo (`rounded-full`) só em ponto de status e avatar.
 - **Preço sempre no formato R$ 899,00** (`fmtBRL` de `lib/format.ts`), com `tabular-nums` em coluna de valores.
 - **A loja não fala de troca, devolução nem garantia** em texto de vitrine. `apps/web/src/lib/seo/institutional-content.test.ts` trava isso nas páginas institucionais, na caixa de compra e na barra fixa da página de produto.
@@ -73,8 +74,7 @@ Antes de escrever marcação crua, procure aqui.
 | Primitivo | Arquivo | Para que serve |
 | --- | --- | --- |
 | `EmachButton`, `EmachLinkButton`, `emachButtonVariants` | `emach-button.tsx` | Botão e link com cara de botão. `variant` é obrigatório e não tem default, para o vermelho nunca sair por omissão: `cta`, `dark`, `line`, `danger`, `link`. Tamanhos `md` (44 px) e `lg` (52 px); `full` ocupa a largura. `isLoading` troca o ícone por spinner, marca `aria-busy` e mantém o foco. CTA que navega usa `EmachLinkButton`, nunca `<Link>` em volta de `<EmachButton>`. |
-| `PageHead` | `page-head.tsx` | Breadcrumb opcional (`trail`), título com `PAGE_TITLE_CLASS`, lede (`children`) e slot à direita (`aside`). |
-| `Breadcrumb`, `HOME_CRUMB`, `CATALOG_CRUMB` | `breadcrumb.tsx` | Trilha "Você está em" com o item atual em `aria-current`. |
+| `PageHead` | `page-head.tsx` | Título com `PAGE_TITLE_CLASS`, lede (`children`) e slot à direita (`aside`). |
 | `Panel`, `SummaryRow` | `panel.tsx` | Bloco com título, borda `line` e canto de 5 px, em tom `paper` ou `canteiro`. `SummaryRow` é a linha de valor do resumo, com `total` e tons `muted` e `discount`. |
 | `Field`, `TextField` | `field.tsx` | Rótulo, dica e erro ligados ao controle por `aria-describedby` e `aria-invalid`. `TextField` encaixa um campo do TanStack Form e troca para `PasswordInput` quando `type="password"`. |
 | `Notice` | `notice.tsx` | Aviso em linha, tons `info` (canteiro) e `error` (borda e texto `error-text`, `role="alert"`), com slot de ação. |

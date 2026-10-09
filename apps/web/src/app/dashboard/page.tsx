@@ -1,5 +1,4 @@
 import { Clock, Package, RotateCcw, UserRound } from "lucide-react";
-import { HOME_CRUMB } from "@/components/breadcrumb";
 import { PageHead } from "@/components/page-head";
 import { StatusChip } from "@/components/status-chip";
 import { listClientOrders } from "@/lib/orders/queries";
@@ -19,7 +18,7 @@ export default async function DashboardPage() {
 
 	return (
 		<>
-			<PageHead title="Minha conta" trail={[HOME_CRUMB]}>
+			<PageHead title="Minha conta">
 				Acompanhe seus pedidos, devoluções e dados de cadastro.
 			</PageHead>
 			<div className="space-y-10">

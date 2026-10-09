@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import { Fragment, Suspense } from "react";
 
-import { HOME_CRUMB } from "@/components/breadcrumb";
 import { PageHead } from "@/components/page-head";
 import {
 	type BusinessHoursRow,
@@ -92,11 +91,7 @@ export default function AboutPage() {
 	return (
 		<div className="bg-paper pb-16 md:pb-24">
 			<div className="shop-wrap">
-				<PageHead
-					current="Quem somos"
-					title="Ferramentas profissionais, com loja física"
-					trail={[HOME_CRUMB]}
-				>
+				<PageHead title="Ferramentas profissionais, com loja física">
 					<p className="max-w-[65ch] leading-relaxed">{ABOUT_DESCRIPTION}</p>
 				</PageHead>
 

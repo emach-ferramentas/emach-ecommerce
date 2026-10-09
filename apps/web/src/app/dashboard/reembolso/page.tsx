@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ACCOUNT_TRAIL } from "@/app/dashboard/_components/account-trail";
 import { CountTabs } from "@/app/dashboard/_components/count-tabs";
 import { PageHead } from "@/components/page-head";
 import { listClientRefunds } from "@/lib/refunds/queries";
@@ -44,7 +43,7 @@ export default async function ReembolsoPage() {
 
 	return (
 		<>
-			<PageHead title="Devoluções e reembolso" trail={ACCOUNT_TRAIL} />
+			<PageHead title="Devoluções e reembolso" />
 			<CountTabs defaultValue="em_andamento" tabs={tabs}>
 				{refundsIn}
 			</CountTabs>

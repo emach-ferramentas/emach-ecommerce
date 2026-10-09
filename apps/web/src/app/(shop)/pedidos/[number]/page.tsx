@@ -10,12 +10,7 @@ import {
 	OrderNumber,
 	OrderReceived,
 } from "@/app/(shop)/pedidos/_components/order-received";
-import {
-	ACCOUNT_TRAIL,
-	ORDERS_CRUMB,
-} from "@/app/dashboard/_components/account-trail";
 import { OrderStatusBadge } from "@/app/dashboard/pedidos/_components/order-status-badge";
-import { Breadcrumb } from "@/components/breadcrumb";
 import { EmachLinkButton } from "@/components/emach-button";
 import { PageHead } from "@/components/page-head";
 import { Panel, SummaryRow } from "@/components/panel";
@@ -56,8 +51,6 @@ const HEADLINE: Partial<Record<OrderStatus, { title: string; lead: string }>> =
 			lead: "O pedido continua aberto. Tente pagar de novo pela página do pedido na sua conta.",
 		},
 	};
-
-const ORDER_TRAIL = [...ACCOUNT_TRAIL, ORDERS_CRUMB] as const;
 
 const ITEM_ROWS = ["item-a", "item-b"] as const;
 const SUMMARY_ROWS = ["subtotal", "frete", "total"] as const;
@@ -176,34 +169,26 @@ async function OrderConfirmationContent({
 	return (
 		<div className="shop-wrap pb-16">
 			{orderRow.status === "pending_payment" && headline ? (
-				<>
-					<Breadcrumb current={current} trail={ORDER_TRAIL} />
-					<div className="mt-2 md:mt-4">
-						<OrderReceived
-							actions={actions}
-							meta={
-								<div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-									<OrderNumber number={orderRow.number} />
-									{status}
-									<span className="text-[14px] text-ink-muted tabular-nums">
-										Criado em {createdAt}
-									</span>
-								</div>
-							}
-							title={headline.title}
-						>
-							{headline.lead}
-						</OrderReceived>
-					</div>
-				</>
+				<div className="pt-6 md:pt-10">
+					<OrderReceived
+						actions={actions}
+						meta={
+							<div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+								<OrderNumber number={orderRow.number} />
+								{status}
+								<span className="text-[14px] text-ink-muted tabular-nums">
+									Criado em {createdAt}
+								</span>
+							</div>
+						}
+						title={headline.title}
+					>
+						{headline.lead}
+					</OrderReceived>
+				</div>
 			) : (
 				<>
-					<PageHead
-						aside={status}
-						current={current}
-						title={headline?.title ?? current}
-						trail={ORDER_TRAIL}
-					>
+					<PageHead aside={status} title={headline?.title ?? current}>
 						<p className="tabular-nums">
 							{headline ? (
 								<>

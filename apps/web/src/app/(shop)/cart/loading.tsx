@@ -3,10 +3,7 @@ import { PAGE_TITLE_CLASS } from "@/components/page-head";
 export default function Loading() {
 	return (
 		<div className="shop-wrap animate-pulse pb-16">
-			<div className="pt-2.5 pb-1.5 md:pt-[18px]">
-				<div className="h-5 w-32 rounded-[3px] bg-canteiro" />
-			</div>
-			<div className="mt-0.5 mb-6 md:mt-2">
+			<div className="mb-6 pt-6 md:pt-10">
 				<h1 className={`${PAGE_TITLE_CLASS} text-ink-muted`}>Seu carrinho</h1>
 			</div>
 			<div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">

@@ -28,6 +28,7 @@ export const LEGACY_PATTERNS: ReadonlyArray<{ re: RegExp; token: string }> = [
 		token: "régua border-<lado>-2 border-ink",
 		re: /^(?=.*\bborder-[tbxy]-(?:2|\[[2-9]px\])(?!\S))(?=.*(?<![:\w-])border-ink\b)/,
 	},
+	{ token: "Breadcrumb", re: /\bBreadcrumb\b/ },
 	{ token: "SectionLabel", re: /\bSectionLabel\b/ },
 	{ token: "AccountHero", re: /\bAccountHero\b/ },
 	{ token: "AccountSection", re: /\bAccountSection\b/ },

@@ -47,7 +47,7 @@ export function AccountNav({
 				})}
 			</nav>
 
-			<aside className="hidden md:sticky md:top-4 md:block md:self-start md:pt-[18px]">
+			<aside className="hidden md:sticky md:top-4 md:block md:self-start md:pt-10">
 				<div className="border-line border-b pb-4">
 					<div className="truncate font-bold text-[15px] text-ink">
 						{userName}
