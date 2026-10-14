@@ -1,7 +1,7 @@
-import type { db } from "@emach/db";
 import { promotion } from "@emach/db/schema/promotions";
 import { tool } from "@emach/db/schema/tools";
 import { eq } from "drizzle-orm";
+import type { DbExecutor } from "@/lib/db-executor";
 
 /**
  * Desativa promoções globais (`applies_to_all`) dentro da transação de teste.
@@ -15,7 +15,7 @@ import { eq } from "drizzle-orm";
  * Chamar no início de cada `withRollback`: isola o teste do estado global de
  * promoções de forma determinística. O ROLLBACK reverte — nada toca o banco.
  */
-export async function disableGlobalPromos(tx: typeof db): Promise<void> {
+export async function disableGlobalPromos(tx: DbExecutor): Promise<void> {
 	await tx
 		.update(promotion)
 		.set({ active: false })
@@ -26,7 +26,7 @@ export async function disableGlobalPromos(tx: typeof db): Promise<void> {
  * Insere um `tool` mínimo (só as colunas NOT NULL sem default) e devolve o id.
  * Compartilhado pelos testes de integração que precisam de um produto-semente.
  */
-export async function seedTool(tx: typeof db): Promise<string> {
+export async function seedTool(tx: DbExecutor): Promise<string> {
 	const id = crypto.randomUUID();
 	await tx.insert(tool).values({
 		id,

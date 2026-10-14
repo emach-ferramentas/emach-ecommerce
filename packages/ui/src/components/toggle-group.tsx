@@ -33,6 +33,10 @@ function ToggleGroup({
 		spacing?: number;
 		orientation?: "horizontal" | "vertical";
 	}) {
+	const gapStyle: React.CSSProperties & { "--gap": number } = {
+		"--gap": spacing,
+	};
+
 	return (
 		<ToggleGroupPrimitive
 			className={cn(
@@ -44,7 +48,7 @@ function ToggleGroup({
 			data-slot="toggle-group"
 			data-spacing={spacing}
 			data-variant={variant}
-			style={{ "--gap": spacing } as React.CSSProperties}
+			style={gapStyle}
 			{...props}
 		>
 			<ToggleGroupContext.Provider

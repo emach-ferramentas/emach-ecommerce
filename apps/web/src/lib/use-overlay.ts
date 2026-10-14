@@ -17,7 +17,7 @@ function cycleFocus(container: HTMLElement, e: KeyboardEvent) {
 		return;
 	}
 
-	const active = document.activeElement as HTMLElement | null;
+	const active: Element | null = document.activeElement;
 
 	if (e.shiftKey && active === first) {
 		e.preventDefault();
@@ -63,7 +63,11 @@ export function useOverlay(
 			return;
 		}
 
-		const previouslyFocused = document.activeElement as HTMLElement | null;
+		const previouslyFocused =
+			document.activeElement instanceof HTMLElement ||
+			document.activeElement instanceof SVGElement
+				? document.activeElement
+				: null;
 
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {

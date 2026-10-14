@@ -22,10 +22,14 @@ function parseDecimal(raw: string | undefined): number {
 // semântica de "Frete a combinar" do motor anterior). carrierId é composto
 // (CarrierCode-ServiceCode) — ServiceCode sozinho pode colidir entre
 // transportadoras.
-export function mapFrenetResponse(response: FrenetQuoteResponse): {
+interface FrenetMapResult {
 	negotiate: boolean;
 	options: ShippingOption[];
-} {
+}
+
+export function mapFrenetResponse(
+	response: FrenetQuoteResponse
+): FrenetMapResult {
 	// Chave ausente ≠ zero serviços: se a Frenet renomear a chave (ex.: corrigir
 	// o typo oficial) ou devolver 200 com corpo inesperado, todo checkout viraria
 	// "a combinar" sem exceção nem fail-open — este warn é o único sinal

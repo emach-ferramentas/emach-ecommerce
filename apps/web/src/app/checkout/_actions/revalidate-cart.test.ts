@@ -2,18 +2,19 @@ import { db } from "@emach/db";
 import { promotion, promotionTool } from "@emach/db/schema/promotions";
 import { tool, toolVariant } from "@emach/db/schema/tools";
 import { describe, expect, it } from "vitest";
+import type { DbTransaction } from "@/lib/db-executor";
 import { disableGlobalPromos } from "@/lib/test-helpers";
 import { computeFinalPrices } from "./revalidate-cart";
 
 const ROLLBACK = Symbol("rollback");
 
 async function withRollback(
-	fn: (tx: typeof db) => Promise<void>
+	fn: (tx: DbTransaction) => Promise<void>
 ): Promise<void> {
 	try {
 		await db.transaction(async (tx) => {
-			await disableGlobalPromos(tx as unknown as typeof db);
-			await fn(tx as unknown as typeof db);
+			await disableGlobalPromos(tx);
+			await fn(tx);
 			throw ROLLBACK;
 		});
 	} catch (err) {
@@ -24,7 +25,7 @@ async function withRollback(
 }
 
 async function seedToolWithVariant(
-	tx: typeof db,
+	tx: DbTransaction,
 	price: string
 ): Promise<{ toolId: string; variantId: string }> {
 	const toolId = crypto.randomUUID();

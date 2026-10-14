@@ -1,6 +1,7 @@
 import { db } from "@emach/db";
 import { promotion, promotionTool } from "@emach/db/schema/promotions";
 import { describe, expect, it } from "vitest";
+import type { DbTransaction } from "@/lib/db-executor";
 import { disableGlobalPromos, seedTool } from "@/lib/test-helpers";
 import {
 	type CouponLine,
@@ -12,12 +13,12 @@ const ROLLBACK = Symbol("rollback");
 const RE_MIN_ORDER = /Pedido mínimo/;
 
 async function withRollback(
-	fn: (tx: typeof db) => Promise<void>
+	fn: (tx: DbTransaction) => Promise<void>
 ): Promise<void> {
 	try {
 		await db.transaction(async (tx) => {
-			await disableGlobalPromos(tx as unknown as typeof db);
-			await fn(tx as unknown as typeof db);
+			await disableGlobalPromos(tx);
+			await fn(tx);
 			throw ROLLBACK;
 		});
 	} catch (err) {
@@ -39,7 +40,7 @@ interface PromoOpts {
 }
 
 async function seedPromotion(
-	tx: typeof db,
+	tx: DbTransaction,
 	code: string,
 	opts: PromoOpts = {}
 ): Promise<string> {

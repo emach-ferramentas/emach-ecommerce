@@ -46,7 +46,7 @@ export function ProductCard({
 	tool,
 }: ProductCardProps) {
 	const Heading = `h${headingLevel}` as const;
-	const href = `/product/${tool.slug}` as Route;
+	const href = `/product/${tool.slug}` satisfies Route<`/product/${string}`>;
 	const priceCents = listPriceCents(tool);
 
 	const hasDiscount =

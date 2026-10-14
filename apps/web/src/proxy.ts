@@ -50,7 +50,8 @@ export async function proxy(req: NextRequest): Promise<Response> {
 		}
 	}
 
-	// evlog entrega a Response real do middleware, mas declara só `headers`.
+	// SAFETY: evlog entrega a Response real do middleware, mas o NextResponse
+	// que ele declara só tem `headers` e não casa com o Response do DOM.
 	return (await runEvlog(req)) as Response;
 }
 

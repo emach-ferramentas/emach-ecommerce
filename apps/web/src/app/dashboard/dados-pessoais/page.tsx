@@ -28,6 +28,10 @@ export default function PersonalDataPage() {
 async function PersonalData() {
 	const session = await requireCurrentClient();
 
+	// SAFETY: phone e document são additionalFields opcionais e nullable em
+	// packages/auth/src/ecommerce.ts (required: false, type string); o `?? null`
+	// abaixo cobre o caso de a coluna vir vazia, e name/email/emailVerified já
+	// existem no tipo da sessão.
 	const user = session.user as {
 		name: string;
 		email: string;

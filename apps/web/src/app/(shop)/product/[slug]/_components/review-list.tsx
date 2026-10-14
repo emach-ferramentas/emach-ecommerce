@@ -23,9 +23,8 @@ function pickSort(
 		return updates.reviewSort ?? null;
 	}
 
-	const raw = currentParams.reviewSort;
-
-	return typeof raw === "string" ? (raw as ReviewSortKey) : null;
+	// Só "rating-desc" muda o link: "newest" é o padrão e não entra na URL.
+	return currentParams.reviewSort === "rating-desc" ? "rating-desc" : null;
 }
 
 function pickPage(
@@ -38,7 +37,7 @@ function pickPage(
 
 	const raw = currentParams.reviewPage;
 
-	return typeof raw === "string" ? Number(raw) : null;
+	return raw === undefined || Array.isArray(raw) ? null : Number(raw);
 }
 
 function buildHref(
@@ -57,7 +56,7 @@ function buildHref(
 			for (const v of value) {
 				params.append(key, v);
 			}
-		} else if (typeof value === "string") {
+		} else if (value !== undefined) {
 			params.set(key, value);
 		}
 	}
@@ -75,6 +74,9 @@ function buildHref(
 
 	const qs = params.toString();
 
+	// SAFETY: o único caller (page.tsx via ProductReviews) passa pathname como
+	// `/product/${slug}`, rota de app/(shop)/product/[slug]; a query string não
+	// entra na checagem do typedRoutes.
 	return (qs ? `${pathname}?${qs}` : pathname) as Route;
 }
 

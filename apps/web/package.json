@@ -6,7 +6,7 @@
     "dev": "TZ=UTC next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "check-types": "tsc --noEmit",
+    "check-types": "SKIP_ENV_VALIDATION=1 next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:ci": "VITEST_UNIT_ONLY=1 vitest run"
   },

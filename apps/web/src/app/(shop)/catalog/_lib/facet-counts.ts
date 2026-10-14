@@ -88,13 +88,13 @@ function buildPredicates(input: FacetCountsInput, flags: PredicateFlags): SQL {
 		)`);
 	}
 
-	if (flags.withPrice && typeof input.priceMin === "number") {
+	if (flags.withPrice && input.priceMin !== undefined) {
 		filters.push(
 			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id) >= ${input.priceMin}`
 		);
 	}
 
-	if (flags.withPrice && typeof input.priceMax === "number") {
+	if (flags.withPrice && input.priceMax !== undefined) {
 		filters.push(
 			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id) <= ${input.priceMax}`
 		);
@@ -212,9 +212,16 @@ export async function getFacetCounts(
 
 	const priceRow = priceRes.rows[0];
 
-	const byPriceRange = Object.fromEntries(
-		PRICE_RANGES.map((r) => [r.key, Number(priceRow?.[r.key]) || 0])
-	) as Record<PriceRangeKey, number>;
+	const byPriceRange: Record<PriceRangeKey, number> = {
+		"ate-200": 0,
+		"200-500": 0,
+		"500-1000": 0,
+		"acima-1000": 0,
+	};
+
+	for (const r of PRICE_RANGES) {
+		byPriceRange[r.key] = Number(priceRow?.[r.key]) || 0;
+	}
 
 	const byVoltage: Record<VoltageKey, number> = {
 		"127V": 0,

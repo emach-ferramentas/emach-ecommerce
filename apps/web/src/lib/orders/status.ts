@@ -105,7 +105,9 @@ function statusRank(status: OrderStatus): number {
 		return 0;
 	}
 
-	return (STEPPER_PHASES as readonly OrderStatus[]).indexOf(status) + 1;
+	const phases: readonly OrderStatus[] = STEPPER_PHASES;
+
+	return phases.indexOf(status) + 1;
 }
 
 export function stepStateFor(

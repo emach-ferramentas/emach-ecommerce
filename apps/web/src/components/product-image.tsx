@@ -5,13 +5,13 @@ import { Disc3, Drill, Ruler, Shield, Wrench } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-	eletricas: Drill,
-	manuais: Wrench,
-	medicao: Ruler,
-	seguranca: Shield,
-	acessorios: Disc3,
-};
+const CATEGORY_ICONS = new Map<string, React.ElementType>([
+	["eletricas", Drill],
+	["manuais", Wrench],
+	["medicao", Ruler],
+	["seguranca", Shield],
+	["acessorios", Disc3],
+]);
 
 interface ProductImageProps {
 	alt?: string;
@@ -63,7 +63,7 @@ export function ProductImage({
 		);
 	}
 
-	const Icon = CATEGORY_ICONS[categorySlug] ?? Wrench;
+	const Icon = CATEGORY_ICONS.get(categorySlug) ?? Wrench;
 
 	return (
 		<div

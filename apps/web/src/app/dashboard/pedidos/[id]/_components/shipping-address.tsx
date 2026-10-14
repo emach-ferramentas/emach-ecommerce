@@ -1,19 +1,16 @@
 import { Panel } from "@/components/panel";
-
-interface AddressSnapshot {
-	city?: string;
-	complement?: string | null;
-	country?: string;
-	neighborhood?: string;
-	number?: string;
-	recipient?: string;
-	state?: string;
-	street?: string;
-	zipCode?: string;
-}
+import {
+	type AddressSnapshot,
+	addressSnapshotSchema,
+} from "@/lib/orders/address-snapshot";
 
 export function ShippingAddress({ address }: { address: unknown }) {
-	const a = (address ?? {}) as AddressSnapshot;
+	// O parse só falha quando o jsonb não é objeto: aí a seção mostra o
+	// endereço vazio em vez de quebrar a página de pedido.
+	const parsed = addressSnapshotSchema.safeParse(address ?? {});
+
+	const a: AddressSnapshot = parsed.success ? parsed.data : {};
+
 	const streetLine = [a.street, a.number].filter(Boolean).join(", ");
 	const localityLine = [a.neighborhood, a.city].filter(Boolean).join(", ");
 	const stateSuffix = a.state ? ` — ${a.state}` : "";

@@ -76,7 +76,7 @@ export function countRefundsByTab(
 // Fonte única em @emach/db (issue #96); sincronizado por CI — consumidores
 // importam ACTIVE_REFUND_STATUSES direto de @emach/db/schema/orders.
 export function isActiveRefund(status: RefundStatus): boolean {
-	return (ACTIVE_REFUND_STATUSES as readonly RefundStatus[]).includes(status);
+	return ACTIVE_REFUND_STATUSES.some((active) => active === status);
 }
 
 // Fases do stepper de reembolso (espelham os 4 status não-recusados, em ordem).
@@ -96,7 +96,9 @@ function refundRank(status: RefundStatus): number {
 		return -1; // terminal-negativo: o card pula o stepper e mostra a recusa
 	}
 
-	return (REFUND_STEPPER_PHASES as readonly RefundStatus[]).indexOf(status) + 1;
+	const phases: readonly RefundStatus[] = REFUND_STEPPER_PHASES;
+
+	return phases.indexOf(status) + 1;
 }
 
 export function refundStepDisplayState(

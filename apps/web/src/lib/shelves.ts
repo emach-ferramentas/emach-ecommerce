@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { cacheLife } from "next/cache";
 
 import { sortInStockFirst } from "@/lib/list-price";
+import { catalogHref } from "@/lib/routes";
 import { splitServiceTree } from "@/lib/service-tree";
 import { getServices } from "@/lib/services";
 
@@ -65,7 +66,7 @@ export async function getShelves(): Promise<Shelves> {
 			const items = sortInStockFirst(tools);
 
 			return {
-				href: `/catalog/${category.slug}` as Route,
+				href: catalogHref(category.slug),
 				imageSrc: items[0]?.primaryImage?.url ?? null,
 				inStockCount: null,
 				items,

@@ -122,7 +122,7 @@ export async function createOrderAction(
 		}
 
 		const result = await db.transaction((tx) =>
-			placeOrder(tx as unknown as typeof db, {
+			placeOrder(tx, {
 				clientId,
 				input,
 				ipAddress,

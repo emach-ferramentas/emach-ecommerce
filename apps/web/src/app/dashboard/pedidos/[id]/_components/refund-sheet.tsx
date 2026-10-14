@@ -83,7 +83,15 @@ export function RefundSheet({
 						<select
 							className="emach-select"
 							disabled={pending}
-							onChange={(e) => setReason(e.target.value as RefundReason)}
+							onChange={(e) => {
+								const next = REFUND_REASON_OPTIONS.find(
+									(r) => r === e.target.value
+								);
+
+								if (next) {
+									setReason(next);
+								}
+							}}
 							value={reason}
 						>
 							{REFUND_REASON_OPTIONS.map((r) => (

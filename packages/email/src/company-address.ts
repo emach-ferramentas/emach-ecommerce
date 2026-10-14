@@ -1,7 +1,7 @@
+import type { db as Database } from "@emach/db";
 import { branch } from "@emach/db/schema/inventory";
 import { storeSettings } from "@emach/db/schema/store-settings";
 import { eq } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { log } from "evlog";
 
 export interface BranchAddressFields {
@@ -57,7 +57,7 @@ export function formatBranchAddress(
  * sem endereço o e-mail sai com o rodapé sem ele.
  */
 export async function loadCompanyAddress(
-	db: NodePgDatabase<Record<string, unknown>>
+	db: typeof Database
 ): Promise<string[] | null> {
 	try {
 		const rows = await db

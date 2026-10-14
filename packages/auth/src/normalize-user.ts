@@ -5,6 +5,7 @@ import {
 	onlyDigits,
 } from "@emach/validators";
 import { APIError } from "better-auth/api";
+import { z } from "zod";
 
 // Validação server-side de CPF/CNPJ (#92). A política client-side (Zod) é só
 // UX; requests diretos aos endpoints do Better Auth (sign-up, updateUser)
@@ -16,8 +17,10 @@ import { APIError } from "better-auth/api";
 //     e violaria a invariante "sem pontuação" do schema).
 //   - `string`: CPF (só dígitos) ou CNPJ (maiúsculas e dígitos, #244)
 //     normalizado e válido.
-function normalizeDocumentForWrite(raw: unknown): string | null | undefined {
-	if (typeof raw !== "string") {
+function normalizeDocumentForWrite(
+	raw: string | undefined
+): string | null | undefined {
+	if (raw === undefined) {
 		return;
 	}
 
@@ -41,8 +44,10 @@ function normalizeDocumentForWrite(raw: unknown): string | null | undefined {
 // Mesmo tri-estado do document, para o `phone` (#100). `phone` NÃO é unique no
 // schema (text("phone")), então o motivo do '' → null aqui é a invariante "só
 // dígitos" da coluna, não colisão de unique. Validação client-side (Zod) é só UX.
-function normalizePhoneForWrite(raw: unknown): string | null | undefined {
-	if (typeof raw !== "string") {
+function normalizePhoneForWrite(
+	raw: string | undefined
+): string | null | undefined {
+	if (raw === undefined) {
 		return;
 	}
 
@@ -63,15 +68,21 @@ function normalizePhoneForWrite(raw: unknown): string | null | undefined {
 	return phone;
 }
 
+// Payload do hook do Better Auth: os campos chegam sem tipo garantido. Valor
+// que não é string (ausente, null, número) vira `undefined` = o hook não mexe.
+const writableUserFieldsSchema = z.object({
+	document: z.string().optional().catch(undefined),
+	phone: z.string().optional().catch(undefined),
+});
+
 // Aplica a normalização de todos os additionalFields graváveis num único lugar,
 // consumido por create.before e update.before. `undefined` = campo ausente no
 // payload → não mexe; `null`/string = grava.
-export function normalizeUserForWrite<T>(data: T): T {
-	const document = normalizeDocumentForWrite(
-		(data as { document?: unknown }).document
-	);
-
-	const phone = normalizePhoneForWrite((data as { phone?: unknown }).phone);
+export function normalizeUserForWrite<T extends object>(data: T): T {
+	const parsed = writableUserFieldsSchema.safeParse(data);
+	const fields = parsed.success ? parsed.data : {};
+	const document = normalizeDocumentForWrite(fields.document);
+	const phone = normalizePhoneForWrite(fields.phone);
 	let out = data;
 
 	if (document !== undefined) {

@@ -12,10 +12,9 @@ O `vendor/eslint-stylistic/` traz o próprio `LICENSE` (MIT) e o próprio `UPSTR
 
 - Os `*.test.ts` de `src/` não foram copiados. O RuleTester do upstream depende de `tsx` e não roda no CI daqui.
 - O plugin Effect (`effect/`) foi copiado mas não está registrado em `.oxlintrc.json`: o repo não depende de `effect`.
-- Severidade em `.oxlintrc.json` difere do upstream (tudo `error`):
-  - `error`: `oxc/no-accumulating-spread`, `no-array-filter-map`, `no-object-parameters`, `no-reduce-accumulator-copy`, `no-reflect-apply`, `no-reflect-get`, `no-shape-in-symbol-names`, `no-unknown-type-aliases`, `no-widen-then-assert`, `require-readable-spacing`.
-  - `warn`: `no-chained-type-assertions`, `no-conditional-empty-object-spread`, `no-known-value-widening`, `no-runtime-typeof`, `no-unknown-parameters`, `no-unknown-returns`, `no-unsafe-dictionary-type`, `require-safety-comment-for-type-assertion`. Dívida existente; cada uma sobe para `error` quando zerar.
+- Severidade em `.oxlintrc.json` difere do upstream em dois pontos:
   - `off`: `no-module-mocking`. Teste unit mocka `@emach/db` porque o CI não tem banco.
+  - Em `*.test.ts(x)` ficam `off` as regras de cast e `unknown` (`no-chained-type-assertions`, `no-unknown-parameters`, `no-unknown-returns`, `require-safety-comment-for-type-assertion`): o fake parcial de banco ou de callback é o próprio cast.
 - O código daqui fica fora do Biome (`biome.json`) e do próprio oxlint (`ignorePatterns`).
 
 ## Atualizar

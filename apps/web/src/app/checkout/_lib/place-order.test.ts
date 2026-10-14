@@ -8,6 +8,7 @@ import { stockMovement } from "@emach/db/schema/stock-movements";
 import { tool, toolVariant } from "@emach/db/schema/tools";
 import { eq } from "drizzle-orm";
 import { describe, expect, it, vi } from "vitest";
+import type { DbTransaction } from "@/lib/db-executor";
 import { disableGlobalPromos } from "@/lib/test-helpers";
 
 // quoteShipping chama o DB global e a API externa — mockar para os testes de
@@ -38,12 +39,12 @@ const RE_COUPON_NOT_COVER = /não cobre/i;
 
 /** Roda `fn` numa transação e sempre dá ROLLBACK — zero resíduo no banco. */
 async function withRollback(
-	fn: (tx: typeof db) => Promise<void>
+	fn: (tx: DbTransaction) => Promise<void>
 ): Promise<void> {
 	try {
 		await db.transaction(async (tx) => {
-			await disableGlobalPromos(tx as unknown as typeof db);
-			await fn(tx as unknown as typeof db);
+			await disableGlobalPromos(tx);
+			await fn(tx);
 			throw ROLLBACK;
 		});
 	} catch (err) {
@@ -61,7 +62,7 @@ interface SeedResult {
 }
 
 async function seedMultiBranch(
-	tx: typeof db,
+	tx: DbTransaction,
 	stockPerBranch: number[]
 ): Promise<SeedResult> {
 	const clientId = crypto.randomUUID();
@@ -106,7 +107,7 @@ async function seedMultiBranch(
 }
 
 async function seedSecondVariant(
-	tx: typeof db,
+	tx: DbTransaction,
 	stockPerBranch: number[],
 	existingBranchIds: string[]
 ): Promise<{ toolId: string; variantId: string }> {

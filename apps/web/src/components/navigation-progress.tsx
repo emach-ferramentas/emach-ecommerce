@@ -2,10 +2,14 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
+import z from "zod";
 import {
 	createNavProgressMachine,
 	shouldTrackNavigation,
 } from "@/lib/nav-progress";
+
+// Detalhe do CustomEvent "emach:navstart" (instrumentation-client.ts).
+const navStartDetail = z.object({ url: z.string().optional() });
 
 // Instância de módulo: o instrumentation-client.ts dispara "emach:navstart" no
 // onRouterTransitionStart (único sinal global de navegação do App Router). Não
@@ -25,7 +29,11 @@ export function NavigationProgress() {
 
 	useEffect(() => {
 		const onStart = (event: Event) => {
-			const url = (event as CustomEvent<{ url?: string }>).detail?.url;
+			const parsed = navStartDetail.safeParse(
+				event instanceof CustomEvent ? event.detail : undefined
+			);
+
+			const url = parsed.success ? parsed.data.url : undefined;
 
 			// Sem mudança de pathname/searchParams não há sinal de chegada — armar
 			// a barra a deixaria varrendo até o teto, e nada está carregando.

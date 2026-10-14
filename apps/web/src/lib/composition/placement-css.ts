@@ -11,18 +11,27 @@ import {
 } from "./composition-schema";
 
 // Deslocamento de translate p/ ancorar o ponto de referência no elemento
-// (col = horizontal, row = vertical), indexado por charAt (noUncheckedIndexedAccess).
-const TX_BY_COL: Record<string, string> = { l: "0%", c: "-50%", r: "-100%" };
-const TY_BY_ROW: Record<string, string> = { t: "0%", m: "-50%", b: "-100%" };
+// (col = horizontal, row = vertical), lido por Map.get com fallback no uso.
+const TX_BY_COL = new Map<string, string>([
+	["l", "0%"],
+	["c", "-50%"],
+	["r", "-100%"],
+]);
 
-const PCT_BY_AXIS: Record<string, string> = {
-	l: "0%",
-	c: "50%",
-	r: "100%",
-	t: "0%",
-	m: "50%",
-	b: "100%",
-};
+const TY_BY_ROW = new Map<string, string>([
+	["t", "0%"],
+	["m", "-50%"],
+	["b", "-100%"],
+]);
+
+const PCT_BY_AXIS = new Map<string, string>([
+	["l", "0%"],
+	["c", "50%"],
+	["r", "100%"],
+	["t", "0%"],
+	["m", "50%"],
+	["b", "100%"],
+]);
 
 function colOf(anchor: Anchor9): string {
 	return anchor.charAt(1);
@@ -37,10 +46,10 @@ export function placementToStyle(
 	viewport: Viewport
 ): CSSProperties {
 	const base = anchorBasePosition(p.anchor, viewport);
-	const tx = TX_BY_COL[colOf(p.anchor)] ?? "0%";
-	const ty = TY_BY_ROW[rowOf(p.anchor)] ?? "0%";
-	const originX = PCT_BY_AXIS[colOf(p.anchor)] ?? "50%";
-	const originY = PCT_BY_AXIS[rowOf(p.anchor)] ?? "50%";
+	const tx = TX_BY_COL.get(colOf(p.anchor)) ?? "0%";
+	const ty = TY_BY_ROW.get(rowOf(p.anchor)) ?? "0%";
+	const originX = PCT_BY_AXIS.get(colOf(p.anchor)) ?? "50%";
+	const originY = PCT_BY_AXIS.get(rowOf(p.anchor)) ?? "50%";
 
 	const style: CSSProperties = {
 		left: `${base.x + p.offsetX}%`,
@@ -57,8 +66,8 @@ export function placementToStyle(
 }
 
 export function focalToObjectPosition(focal: Anchor9): string {
-	const x = PCT_BY_AXIS[colOf(focal)] ?? "50%";
-	const y = PCT_BY_AXIS[rowOf(focal)] ?? "50%";
+	const x = PCT_BY_AXIS.get(colOf(focal)) ?? "50%";
+	const y = PCT_BY_AXIS.get(rowOf(focal)) ?? "50%";
 
 	return `${x} ${y}`;
 }

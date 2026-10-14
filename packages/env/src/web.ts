@@ -11,4 +11,7 @@ export const env = createEnv({
 			process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY,
 	},
 	emptyStringAsUndefined: true,
+	// Só o `next typegen` do check-types liga isto: no CI não há `.env`, e o
+	// next.config importa este módulo só para gerar os tipos de rota.
+	skipValidation: process.env.SKIP_ENV_VALIDATION === "1",
 });

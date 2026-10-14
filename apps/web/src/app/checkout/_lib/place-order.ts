@@ -1,4 +1,3 @@
-import type { db } from "@emach/db";
 import { client, clientAddress } from "@emach/db/schema/client";
 import { consentLog } from "@emach/db/schema/consent-log";
 import { stockLevel } from "@emach/db/schema/inventory";
@@ -22,6 +21,8 @@ import {
 	publicCouponError,
 	validateCoupon,
 } from "@/lib/coupons/validate-coupon";
+import { isUniqueViolation } from "@/lib/db-errors";
+import type { DbExecutor } from "@/lib/db-executor";
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
 import { fetchFrenetAddress } from "@/lib/frenet/client";
@@ -47,18 +48,42 @@ export class OrderError extends Error {
 	}
 }
 
-const PG_UNIQUE_VIOLATION = "23505";
+type ExecuteResult = Awaited<ReturnType<DbExecutor["execute"]>>;
 
-/** Detecta a violação de unicidade de `client.document` (DrizzleQueryError → cause pg). */
-function isDocumentUniqueViolation(err: unknown): boolean {
-	const cause = (err as { cause?: { code?: string; constraint?: string } })
-		?.cause;
+/**
+ * Primeira linha de um `tx.execute` cru, validada pelo `schema`. Aceita os dois
+ * formatos de retorno de driver: `{ rows: [...] }` (node-postgres) e array.
+ */
+function firstExecuteRow<S extends z.ZodType>(
+	query: string,
+	result: ExecuteResult,
+	schema: S
+): z.output<S> | undefined {
+	const parsed = z
+		.union([z.object({ rows: z.array(schema) }), z.array(schema)])
+		.safeParse(result);
 
-	return (
-		cause?.code === PG_UNIQUE_VIOLATION &&
-		cause?.constraint === "client_document_unique"
-	);
+	if (!parsed.success) {
+		// Formato inesperado do driver: o caller trata como "sem linha", então a
+		// causa real fica só aqui no log.
+		log.error({
+			action: "execute_row_shape_mismatch",
+			query,
+			error: parsed.error.message,
+		});
+
+		return;
+	}
+
+	return Array.isArray(parsed.data) ? parsed.data[0] : parsed.data.rows[0];
 }
+
+const promotionLockRowSchema = z.object({
+	redemption_count: z.number(),
+	max_redemptions: z.number().nullable(),
+});
+
+const orderSeqRowSchema = z.object({ seq: z.number() });
 
 export const inputSchema = z.object({
 	name: z.string().trim().min(2).max(120),
@@ -102,7 +127,7 @@ export type CreateOrderResult =
 	| { ok: true; orderId: string; orderNumber: string }
 	| { ok: false; error: string };
 
-interface AddressSnapshot {
+interface AddressSnapshotWrite {
 	city: string;
 	complement: string | null;
 	country: string;
@@ -119,8 +144,8 @@ async function buildAddressSnapshot(params: {
 	addressId: string | null;
 	newAddress: z.infer<typeof newAddressSchema> | null;
 	recipient: string;
-	tx: typeof db;
-}): Promise<{ snapshot: AddressSnapshot; addressId: string }> {
+	tx: DbExecutor;
+}): Promise<{ snapshot: AddressSnapshotWrite; addressId: string }> {
 	const { clientId, addressId, newAddress, recipient, tx } = params;
 
 	if (addressId) {
@@ -256,7 +281,7 @@ function assertVariantsFound(
 // preços VERIFICADOS (fora da transação) — dentro da transação o placeOrder
 // re-executa esta função como autoridade final.
 export async function prepareLines(
-	tx: typeof db,
+	tx: DbExecutor,
 	input: CreateOrderInput
 ): Promise<{ lines: PreparedLine[]; autoPromoToolIds: Set<string> }> {
 	const variantIds = input.cartItems.map((i) => i.variantId);
@@ -368,7 +393,7 @@ export async function prepareLines(
  * endereço do input. Retorna `null` se não houver CEP válido.
  */
 export async function resolveDestinationCep(
-	database: typeof db,
+	database: DbExecutor,
 	input: CreateOrderInput,
 	clientId: string
 ): Promise<string | null> {
@@ -507,7 +532,7 @@ export async function assertShippingQuoted(params: {
 }
 
 async function checkAggregateStock(
-	tx: typeof db,
+	tx: DbExecutor,
 	lines: PreparedLine[]
 ): Promise<void> {
 	const variantIds = lines.map((l) => l.variant.id);
@@ -533,7 +558,7 @@ async function checkAggregateStock(
 }
 
 export async function placeOrder(
-	tx: typeof db,
+	tx: DbExecutor,
 	params: {
 		clientId: string;
 		input: CreateOrderInput;
@@ -607,21 +632,11 @@ export async function placeOrder(
 			sql`SELECT redemption_count, max_redemptions FROM promotion WHERE id = ${coupon.promotionId} FOR UPDATE`
 		);
 
-		const lock =
-			(
-				lockRes as unknown as {
-					rows: Array<{
-						redemption_count: number;
-						max_redemptions: number | null;
-					}>;
-				}
-			).rows?.[0] ??
-			(
-				lockRes as unknown as Array<{
-					redemption_count: number;
-					max_redemptions: number | null;
-				}>
-			)[0];
+		const lock = firstExecuteRow(
+			"promotion_lock",
+			lockRes,
+			promotionLockRowSchema
+		);
 
 		if (!lock) {
 			// Promoção removida concorrentemente entre validateCoupon e o FOR UPDATE.
@@ -659,7 +674,7 @@ export async function placeOrder(
 			})
 			.where(eq(client.id, clientId));
 	} catch (err) {
-		if (isDocumentUniqueViolation(err)) {
+		if (isUniqueViolation(err, "client_document_unique")) {
 			throw new OrderError("Este CPF/CNPJ já está cadastrado em outra conta.");
 		}
 
@@ -699,8 +714,7 @@ export async function placeOrder(
 	);
 
 	const seq = Number(
-		(seqRow as unknown as { rows: Array<{ seq: number }> }).rows[0]?.seq ??
-			(seqRow as unknown as Array<{ seq: number }>)[0]?.seq
+		firstExecuteRow("order_number_seq", seqRow, orderSeqRowSchema)?.seq
 	);
 
 	if (!Number.isFinite(seq)) {

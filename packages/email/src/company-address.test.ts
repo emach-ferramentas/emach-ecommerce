@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { db as Database } from "@emach/db";
 import { log } from "evlog";
 import {
 	type BranchAddressFields,
@@ -56,7 +56,7 @@ describe("formatBranchAddress", () => {
 	});
 });
 
-type Db = NodePgDatabase<Record<string, unknown>>;
+type Db = typeof Database;
 
 function dbReturning(result: () => Promise<unknown[]>): Db {
 	const chain = {
@@ -66,6 +66,8 @@ function dbReturning(result: () => Promise<unknown[]>): Db {
 		limit: result,
 	};
 
+	// SAFETY: loadCompanyAddress só chama select().from().leftJoin().where()
+	// .limit(), e o chain fake acima cobre exatamente essa sequência.
 	return { select: () => chain } as unknown as Db;
 }
 

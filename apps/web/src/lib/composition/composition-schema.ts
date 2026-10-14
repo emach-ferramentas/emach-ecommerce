@@ -132,7 +132,11 @@ export const SAFE_STACK_ORDER: ElementKey[] = [
 	"cta",
 ];
 
-const COL_BY_HALIGN: Record<string, number> = { l: 5, c: 50, r: 95 };
+const COL_BY_HALIGN = new Map<string, number>([
+	["l", 5],
+	["c", 50],
+	["r", 95],
+]);
 
 function rowByValign(valign: string, bottomRow: number) {
 	if (valign === "t") {
@@ -148,7 +152,7 @@ function rowByValign(valign: string, bottomRow: number) {
 
 // Posição-base do ponto de referência de cada âncora (% do container).
 export function anchorBasePosition(anchor: Anchor9, viewport: Viewport) {
-	const col = COL_BY_HALIGN[anchor.charAt(1)] ?? 50;
+	const col = COL_BY_HALIGN.get(anchor.charAt(1)) ?? 50;
 	const bottomRow = viewport === "desktop" ? 88 : 84;
 	const row = rowByValign(anchor.charAt(0), bottomRow);
 
@@ -158,11 +162,13 @@ export function anchorBasePosition(anchor: Anchor9, viewport: Viewport) {
 // Divide os elementos do desktop em 3 grupos pro render mobile: sem override →
 // pilha segura; override com placement → posicionado absoluto; hidden → fora.
 // Só considera keys presentes em desktop.elements.
-export function partitionMobileElements(c: BannerComposition): {
-	stacked: ElementKey[];
-	positioned: [ElementKey, ElementPlacement][];
+interface MobilePartition {
 	hidden: ElementKey[];
-} {
+	positioned: [ElementKey, ElementPlacement][];
+	stacked: ElementKey[];
+}
+
+export function partitionMobileElements(c: BannerComposition): MobilePartition {
 	const stacked: ElementKey[] = [];
 	const positioned: [ElementKey, ElementPlacement][] = [];
 	const hiddenKeys: ElementKey[] = [];

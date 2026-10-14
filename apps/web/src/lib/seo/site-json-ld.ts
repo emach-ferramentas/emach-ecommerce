@@ -139,14 +139,19 @@ function e164(phone: string | null): string | undefined {
 }
 
 function buildOrganization(base: string, sameAs: string[]): Organization {
-	return {
+	const organization: Organization = {
 		"@type": "Organization",
 		"@id": `${base}/#organization`,
 		name: ORGANIZATION_NAME,
 		url: `${base}/`,
 		logo: `${base}/images/logos/icone.svg`,
-		...(sameAs.length > 0 ? { sameAs } : {}),
 	};
+
+	if (sameAs.length > 0) {
+		organization.sameAs = sameAs;
+	}
+
+	return organization;
 }
 
 function buildWebSite(base: string): WebSite {
@@ -185,23 +190,45 @@ function buildHardwareStore(base: string, branch: BranchRow): HardwareStore {
 	const telephone = e164(branch.phone);
 	const hours = openingHoursFor(branch.businessHours);
 
-	return {
+	const address: HardwareStore["address"] = {
+		"@type": "PostalAddress",
+		addressCountry: "BR",
+	};
+
+	if (streetAddress) {
+		address.streetAddress = streetAddress;
+	}
+
+	if (branch.city) {
+		address.addressLocality = branch.city;
+	}
+
+	if (branch.state) {
+		address.addressRegion = branch.state;
+	}
+
+	if (postalCode) {
+		address.postalCode = postalCode;
+	}
+
+	const store: HardwareStore = {
 		"@type": "HardwareStore",
 		"@id": `${base}/#branch-${branch.id}`,
 		name: `EMACH ${branch.name}`,
 		url: `${base}/sobre#filiais`,
 		parentOrganization: { "@id": `${base}/#organization` },
-		address: {
-			"@type": "PostalAddress",
-			addressCountry: "BR",
-			...(streetAddress ? { streetAddress } : {}),
-			...(branch.city ? { addressLocality: branch.city } : {}),
-			...(branch.state ? { addressRegion: branch.state } : {}),
-			...(postalCode ? { postalCode } : {}),
-		},
-		...(telephone ? { telephone } : {}),
-		...(hours.length > 0 ? { openingHoursSpecification: hours } : {}),
+		address,
 	};
+
+	if (telephone) {
+		store.telephone = telephone;
+	}
+
+	if (hours.length > 0) {
+		store.openingHoursSpecification = hours;
+	}
+
+	return store;
 }
 
 export function buildSiteGraph(input: SiteGraphInput): SiteGraph {

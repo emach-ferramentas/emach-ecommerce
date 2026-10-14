@@ -1,6 +1,6 @@
 import { toolImage } from "@emach/db/schema/tools";
 import { asc, inArray } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { DbExecutor } from "@/lib/db-executor";
 
 /**
  * Mapa `toolId` → URL da imagem primária (a de menor `sortOrder`).
@@ -9,12 +9,10 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
  * previews de pedido, devolução e recompra. Ver `docs/contexts/catalog/CONTEXT.md`
  * ("Primary image"). É read-only do Catalog (dashboard-owned).
  *
- * Recebe o handle do banco (`db` em produção, `tx` nos testes de integração via
- * `withRollback`) — mesma assinatura parametrizada dos demais query modules
- * (`NodePgDatabase<Record<string, unknown>>`, ver `packages/db/CLAUDE.md`).
+ * Recebe o handle do banco (`db` em produção, `tx` nos testes de integração).
  */
 export async function primaryImageByToolId(
-	database: NodePgDatabase<Record<string, unknown>>,
+	database: DbExecutor,
 	toolIds: string[]
 ): Promise<Map<string, string>> {
 	if (toolIds.length === 0) {

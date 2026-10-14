@@ -2,6 +2,7 @@ import { db } from "@emach/db";
 import { toolImage } from "@emach/db/schema/tools";
 import { describe, expect, it } from "vitest";
 
+import type { DbTransaction } from "@/lib/db-executor";
 import { seedTool } from "@/lib/test-helpers";
 
 import { primaryImageByToolId } from "./tool-images";
@@ -11,11 +12,11 @@ import { primaryImageByToolId } from "./tool-images";
 const ROLLBACK = Symbol("rollback");
 
 async function withRollback(
-	fn: (tx: typeof db) => Promise<void>
+	fn: (tx: DbTransaction) => Promise<void>
 ): Promise<void> {
 	try {
 		await db.transaction(async (tx) => {
-			await fn(tx as unknown as typeof db);
+			await fn(tx);
 			throw ROLLBACK;
 		});
 	} catch (err) {
@@ -26,7 +27,7 @@ async function withRollback(
 }
 
 async function seedImages(
-	tx: typeof db,
+	tx: DbTransaction,
 	toolId: string,
 	images: { sortOrder: number; url: string }[]
 ): Promise<void> {

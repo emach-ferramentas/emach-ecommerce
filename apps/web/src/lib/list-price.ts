@@ -19,10 +19,12 @@ function toCents(amount: string | null): number | null {
 export function listPriceCents(
 	tool: Pick<ToolListItem, "defaultVariant">
 ): number | null {
-	const { discountedAmount, priceAmount } = tool.defaultVariant as {
+	const variant: {
 		discountedAmount: string | null;
 		priceAmount: string | null;
-	};
+	} = tool.defaultVariant;
+
+	const { discountedAmount, priceAmount } = variant;
 
 	const base = toCents(priceAmount);
 

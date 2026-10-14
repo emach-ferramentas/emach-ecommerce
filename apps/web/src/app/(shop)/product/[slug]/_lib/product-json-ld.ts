@@ -160,20 +160,26 @@ export function buildProductJsonLd(
 		}
 
 		const gtin = gtinFrom(v.barcode);
-		offers.push({
+
+		const offer: Offer = {
 			"@id": `${url}#offer-${encodeURIComponent(v.sku)}`,
 			"@type": "Offer",
 			availability: stockByVariant[v.id]
 				? "https://schema.org/InStock"
 				: "https://schema.org/OutOfStock",
-			...(gtin ? { gtin } : {}),
 			itemCondition: "https://schema.org/NewCondition",
 			price: finalPriceAmount(v.priceAmount, input.activePromotion),
 			priceCurrency: "BRL",
 			priceValidUntil: validUntil,
 			sku: v.sku,
 			url,
-		});
+		};
+
+		if (gtin) {
+			offer.gtin = gtin;
+		}
+
+		offers.push(offer);
 	}
 
 	const firstOffer = offers[0];
@@ -191,21 +197,39 @@ export function buildProductJsonLd(
 		return null;
 	}
 
-	return {
+	const product: ProductJsonLd = {
 		"@context": "https://schema.org",
 		"@type": "Product",
 		name: tool.name,
-		...(tool.description ? { description: tool.description } : {}),
-		...(images.length > 0 ? { image: images.map((i) => i.url) } : {}),
-		...(productSku(variants) ?? {}),
-		...(tool.manufacturerName
-			? { brand: { "@type": "Brand", name: tool.manufacturerName } }
-			: {}),
-		...(firstOffer
-			? { offers: offers.length === 1 ? firstOffer : offers }
-			: {}),
-		...(rating ? { aggregateRating: rating } : {}),
 	};
+
+	if (tool.description) {
+		product.description = tool.description;
+	}
+
+	if (images.length > 0) {
+		product.image = images.map((i) => i.url);
+	}
+
+	const sku = productSku(variants);
+
+	if (sku) {
+		product.sku = sku.sku;
+	}
+
+	if (tool.manufacturerName) {
+		product.brand = { "@type": "Brand", name: tool.manufacturerName };
+	}
+
+	if (firstOffer) {
+		product.offers = offers.length === 1 ? firstOffer : offers;
+	}
+
+	if (rating) {
+		product.aggregateRating = rating;
+	}
+
+	return product;
 }
 
 export function buildBreadcrumbJsonLd(input: {

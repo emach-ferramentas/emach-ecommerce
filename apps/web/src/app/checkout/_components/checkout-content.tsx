@@ -12,7 +12,6 @@ import {
 } from "@emach/validators";
 import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { CircleAlert } from "lucide-react";
-import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -36,12 +35,25 @@ import { PageHead } from "@/components/page-head";
 import { Panel } from "@/components/panel";
 import { authClient } from "@/lib/auth-client";
 import { useCart } from "@/lib/cart-context";
+import { orderHref } from "@/lib/routes";
 import type { ShippingOption } from "@/lib/shipping/types";
 import { useCepAutofill } from "@/lib/use-cep-autofill";
 import { addressFieldsSchema } from "@/lib/validators/address";
 
 const NEW_ADDRESS_ID = "__new__";
 const CHECKOUT_FORM_ID = "checkout-form";
+
+// O schema exige `true` nos dois aceites, mas o formulário começa desmarcado:
+// o campo precisa ser `boolean`, não o literal `false` inferido do valor inicial.
+interface ConsentDefaults {
+	acceptPrivacy: boolean;
+	acceptTos: boolean;
+}
+
+const CONSENT_DEFAULTS: ConsentDefaults = {
+	acceptTos: false,
+	acceptPrivacy: false,
+};
 
 const formatUf = (raw: string): string =>
 	onlyLetters(raw).toUpperCase().slice(0, 2);
@@ -213,8 +225,7 @@ export function CheckoutContent({
 				city: "",
 				state: "",
 			},
-			acceptTos: false as boolean,
-			acceptPrivacy: false as boolean,
+			...CONSENT_DEFAULTS,
 			acceptMarketing: false,
 		},
 		validationLogic: revalidateLogic(),
@@ -277,7 +288,7 @@ export function CheckoutContent({
 			toast.success(
 				`Pedido ${result.orderNumber} recebido, aguardando pagamento`
 			);
-			router.push(`/pedidos/${result.orderNumber}` as Route);
+			router.push(orderHref(result.orderNumber));
 		},
 	});
 

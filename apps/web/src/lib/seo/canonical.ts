@@ -2,6 +2,10 @@ import { env } from "@emach/env/web";
 
 const TRAILING_SLASHES = /\/+$/;
 
+interface Canonical {
+	canonical: string;
+}
+
 /**
  * `alternates.canonical` absoluto para uma rota. Query string e barra final
  * são descartadas: o canonical é sempre a URL "limpa" da rota, mesmo quando
@@ -10,7 +14,7 @@ const TRAILING_SLASHES = /\/+$/;
 export function canonicalFor(
 	path: string,
 	baseUrl: string = env.NEXT_PUBLIC_SITE_URL
-): { canonical: string } {
+): Canonical {
 	const base = baseUrl.replace(TRAILING_SLASHES, "");
 	const withoutQuery = path.split("?")[0] ?? "/";
 	const trimmed = withoutQuery.replace(TRAILING_SLASHES, "");

@@ -8,8 +8,8 @@ import { getTools } from "@emach/db/queries/tools";
 import type { Route } from "next";
 import { cacheLife } from "next/cache";
 import { type CardExtrasByTool, getCardExtras } from "@/lib/card-data";
+import { catalogHref } from "@/lib/routes";
 import { isServicePath, splitServiceTree } from "@/lib/service-tree";
-import { serviceHref } from "@/lib/services";
 import type { SortKey, VoltageKey } from "./catalog-filters";
 import { type FacetCounts, getFacetCounts } from "./facet-counts";
 
@@ -111,7 +111,7 @@ export async function fetchCatalogData(
 		currentCategory,
 		facetCounts,
 		services: services.map((s) => ({
-			href: serviceHref(s.slug),
+			href: catalogHref(s.slug),
 			name: s.name,
 			productCount: s.productCount,
 			slug: s.slug,

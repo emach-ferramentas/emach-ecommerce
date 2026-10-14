@@ -116,6 +116,7 @@ export function FilterPanel({
 							<Link
 								aria-current={active ? "page" : undefined}
 								className={optionClass}
+								// SAFETY: categoryHrefFor é o buildHref de catalog/_lib/catalog-filters.ts: sempre `/catalog[/slug][?query]`.
 								href={categoryHrefFor(active ? null : service.slug) as Route}
 								key={service.slug}
 								onClick={(e) => {

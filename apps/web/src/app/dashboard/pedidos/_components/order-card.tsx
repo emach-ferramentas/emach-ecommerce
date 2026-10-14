@@ -1,4 +1,3 @@
-import type { Route } from "next";
 import {
 	MetaPair,
 	PreviewItems,
@@ -8,6 +7,7 @@ import { EmachLinkButton } from "@/components/emach-button";
 import { fmtNumericBRL } from "@/lib/format";
 import type { OrderListItem } from "@/lib/orders/queries";
 import { isTerminalNegative } from "@/lib/orders/status";
+import { accountOrderHref, accountOrderPayHref } from "@/lib/routes";
 import { CancelOrderButton } from "../[id]/_components/cancel-order-button";
 import { RebuyButton } from "../[id]/_components/rebuy-button";
 import { OrderStatusBadge } from "./order-status-badge";
@@ -21,8 +21,8 @@ const DATE_FMT = new Intl.DateTimeFormat("pt-BR", {
 });
 
 export function OrderCard({ order }: { order: OrderListItem }) {
-	const detailsHref = `/dashboard/pedidos/${order.id}` as Route;
-	const pagarHref = `/dashboard/pedidos/${order.id}/pagar` as Route;
+	const detailsHref = accountOrderHref(order.id);
+	const pagarHref = accountOrderPayHref(order.id);
 
 	const isPending =
 		order.status === "pending_payment" || order.status === "payment_failed";

@@ -18,6 +18,12 @@ const SORT_LABELS: Record<ReviewSortKey, string> = {
 	"rating-desc": "Melhor avaliadas",
 };
 
+function labelFor(value: string | null): string | undefined {
+	return value === "newest" || value === "rating-desc"
+		? SORT_LABELS[value]
+		: undefined;
+}
+
 interface ReviewSortProps {
 	current: ReviewSortKey;
 }
@@ -39,6 +45,9 @@ export function ReviewSort({ current }: ReviewSortProps) {
 
 		params.delete("reviewPage");
 		const qs = params.toString();
+		// SAFETY: pathname vem de usePathname(), que devolve a rota atual sem query
+		// (doc do Next, lida em next/dist/client/components/navigation.d.ts); qs é só
+		// o URLSearchParams serializado, então o caminho continua sendo o da página.
 		const href = (qs ? `${pathname}?${qs}` : pathname) as Route;
 		startTransition(() => {
 			router.replace(href, { scroll: false });
@@ -57,9 +66,7 @@ export function ReviewSort({ current }: ReviewSortProps) {
 					aria-busy={isPending}
 					className="h-11 min-w-[160px] transition-opacity aria-busy:pointer-events-none aria-busy:opacity-60 sm:h-8"
 				>
-					<SelectValue>
-						{(value) => SORT_LABELS[value as ReviewSortKey]}
-					</SelectValue>
+					<SelectValue>{(value) => labelFor(value)}</SelectValue>
 				</SelectTrigger>
 				<SelectContent>
 					<SelectItem value="newest">Mais recentes</SelectItem>

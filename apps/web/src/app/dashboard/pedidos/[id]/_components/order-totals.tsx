@@ -12,11 +12,11 @@ interface OrderTotalsProps {
 	totalAmount: string;
 }
 
-const PAYMENT_LABEL: Record<string, string> = {
-	pix: "Pix",
-	boleto: "Boleto bancário",
-	credit_card: "Cartão de crédito",
-};
+const PAYMENT_LABEL = new Map<string, string>([
+	["pix", "Pix"],
+	["boleto", "Boleto bancário"],
+	["credit_card", "Cartão de crédito"],
+]);
 
 export function OrderTotals({
 	couponApplied,
@@ -59,7 +59,7 @@ export function OrderTotals({
 				<p className="mt-3 text-[14px] text-ink-2">
 					Pagamento:{" "}
 					<span className="font-semibold text-ink">
-						{PAYMENT_LABEL[paymentMethod] ?? paymentMethod}
+						{PAYMENT_LABEL.get(paymentMethod) ?? paymentMethod}
 					</span>
 				</p>
 			) : null}

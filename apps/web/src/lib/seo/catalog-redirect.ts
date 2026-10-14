@@ -1,7 +1,7 @@
 /** Slug antigo de categoria → slug atual, para link salvo e índice do Google. */
-const RENAMED_CATEGORY_SLUGS: Record<string, string> = {
-	"demolicao-e-rasgo": "demolicao",
-};
+const RENAMED_CATEGORY_SLUGS = new Map<string, string>([
+	["demolicao-e-rasgo", "demolicao"],
+]);
 
 const CATALOG_SLUG_PATH = /^\/catalog\/([^/]+)$/;
 
@@ -11,8 +11,9 @@ const CATALOG_SLUG_PATH = /^\/catalog\/([^/]+)$/;
  * Devolve a URL nova (`/catalog/<slug>` + demais params) ou null.
  */
 export function legacyCategoryRedirect(url: URL): URL | null {
-	const renamed =
-		RENAMED_CATEGORY_SLUGS[url.pathname.match(CATALOG_SLUG_PATH)?.[1] ?? ""];
+	const renamed = RENAMED_CATEGORY_SLUGS.get(
+		url.pathname.match(CATALOG_SLUG_PATH)?.[1] ?? ""
+	);
 
 	if (renamed) {
 		const next = new URL(url);
@@ -32,7 +33,7 @@ export function legacyCategoryRedirect(url: URL): URL | null {
 	}
 
 	const next = new URL(url);
-	next.pathname = `/catalog/${encodeURIComponent(RENAMED_CATEGORY_SLUGS[cat] ?? cat)}`;
+	next.pathname = `/catalog/${encodeURIComponent(RENAMED_CATEGORY_SLUGS.get(cat) ?? cat)}`;
 
 	// O setter de `pathname` normaliza dot-segments: `cat=..` viraria `/` e o
 	// 308 mandaria a categoria legada pra raiz do site. Nesse caso não redireciona.

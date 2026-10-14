@@ -1,10 +1,10 @@
-import type { db } from "@emach/db";
 import { promotion, promotionTool } from "@emach/db/schema/promotions";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import {
 	autoPromoToolIdsFromMap,
 	fetchAutoPromosByToolId,
 } from "@/lib/auto-promo";
+import type { DbExecutor } from "@/lib/db-executor";
 import { fmtNumericBRL, numericToCents } from "@/lib/format";
 
 export interface CouponLine {
@@ -71,7 +71,7 @@ function couponDiscountCents(
 }
 
 export async function validateCoupon(
-	tx: typeof db,
+	tx: DbExecutor,
 	rawCode: string,
 	lines: CouponLine[],
 	autoPromoToolIds?: Set<string>

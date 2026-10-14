@@ -3,7 +3,7 @@ import { db } from "@emach/db";
 import { getCategoryTree } from "@emach/db/queries/categories";
 import type { Route } from "next";
 import { cacheLife } from "next/cache";
-
+import { catalogHref } from "@/lib/routes";
 import { splitServiceTree } from "@/lib/service-tree";
 import { getServices, type ServiceSummary } from "@/lib/services";
 
@@ -49,12 +49,14 @@ export async function getStoreNav(): Promise<StoreNav> {
 	const { categories } = splitServiceTree(tree);
 
 	return {
-		categories: categories.map((c) => ({
-			href: `/catalog/${c.slug}` as Route,
-			name: c.name,
-			productCount: c.productCount,
-			slug: c.slug,
-		})),
+		categories: categories.map(
+			(c): NavCategory => ({
+				href: catalogHref(c.slug),
+				name: c.name,
+				productCount: c.productCount,
+				slug: c.slug,
+			})
+		),
 		services: services.map(toNavService),
 	};
 }

@@ -41,3 +41,33 @@ describe("normalizeUserForWrite: documento", () => {
 		);
 	});
 });
+
+describe("normalizeUserForWrite: telefone", () => {
+	test("grava telefone só com dígitos", () => {
+		expect(normalizeUserForWrite({ phone: "(11) 98765-4321" }).phone).toBe(
+			"11987654321"
+		);
+	});
+
+	test("telefone vazio vira NULL", () => {
+		expect(normalizeUserForWrite({ phone: " " }).phone).toBeNull();
+	});
+
+	test("recusa telefone inválido", () => {
+		expect(() => normalizeUserForWrite({ phone: "123" })).toThrow(APIError);
+	});
+});
+
+describe("normalizeUserForWrite: campo que não é string", () => {
+	test.each([
+		["null", null],
+		["undefined", undefined],
+		["número", 11_987_654_321],
+	])("%s passa intacto e devolve o mesmo objeto", (_label, value) => {
+		const input = { name: "Ana", document: value, phone: value };
+		const out = normalizeUserForWrite(input);
+
+		expect(out).toBe(input);
+		expect(out).toEqual({ name: "Ana", document: value, phone: value });
+	});
+});

@@ -124,11 +124,13 @@ export function buildCartItem(
 	};
 }
 
-/** Rótulo do botão de voltagem e da tomada que ele atende. */
-export function voltageLabel(voltage: Voltage | null): {
-	name: string;
+interface VoltageLabel {
 	hint: string | null;
-} {
+	name: string;
+}
+
+/** Rótulo do botão de voltagem e da tomada que ele atende. */
+export function voltageLabel(voltage: Voltage | null): VoltageLabel {
 	switch (voltage) {
 		case "127V":
 			return { name: "127 V", hint: "Tomada 110 a 127 V" };

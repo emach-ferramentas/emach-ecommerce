@@ -15,7 +15,7 @@ function parseReviewSort(value: string | string[] | undefined): ReviewSortKey {
 }
 
 function parseReviewPage(value: string | string[] | undefined): number {
-	if (typeof value !== "string") {
+	if (value === undefined || Array.isArray(value)) {
 		return 1;
 	}
 

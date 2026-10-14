@@ -21,7 +21,7 @@ const SERVICE_LINKS: { href: Route; label: string }[] = [
 
 const INSTITUTIONAL_LINKS: { href: Route; label: string }[] = [
 	{ href: "/sobre", label: "Sobre a EMACH" },
-	{ href: "/sobre#filiais" as Route, label: "Nossas filiais" },
+	{ href: "/sobre#filiais", label: "Nossas filiais" },
 	{ href: "/privacidade", label: "Privacidade" },
 	{ href: "/dashboard", label: "Minha conta" },
 ];

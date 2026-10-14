@@ -21,12 +21,41 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
-import type { z } from "zod";
+import { z } from "zod";
 import { clientSchema, serverSchema } from "../packages/env/src/schemas";
 
-const target = (process.argv
-	.find((a) => a.startsWith("--target="))
-	?.split("=")[1] ?? "production") as "production" | "preview" | "development";
+// Só os campos que o script lê de GET /v9/projects/{id}/env.
+const vercelEnvListSchema = z.object({
+	envs: z.array(z.object({ key: z.string(), target: z.array(z.string()) })),
+});
+
+const TARGETS = ["production", "preview", "development"] as const;
+
+type Target = (typeof TARGETS)[number];
+
+function isTarget(value: string): value is Target {
+	return TARGETS.some((t) => t === value);
+}
+
+// Valida dentro do main(): erro aqui cai no catch e sai com a mensagem padrão.
+function readTarget(): Target {
+	const targetArg =
+		process.argv.find((a) => a.startsWith("--target="))?.split("=")[1] ??
+		"production";
+
+	if (!isTarget(targetArg)) {
+		throw new Error(
+			`--target inválido: ${targetArg} (use production, preview ou development)`
+		);
+	}
+
+	return targetArg;
+}
+
+interface ProjectRef {
+	orgId: string;
+	projectId: string;
+}
 
 // Opcionais no Zod (dev roda sem Redis — fallback in-memory), mas obrigatórias
 // no deploy: sem elas, cache Frenet e rate-limiters degradam pra in-memory por
@@ -65,7 +94,7 @@ function readToken(): string {
 	);
 }
 
-function readProjectRef(): { orgId: string; projectId: string } {
+function readProjectRef(): ProjectRef {
 	const orgId = process.env.VERCEL_ORG_ID;
 	const projectId = process.env.VERCEL_PROJECT_ID;
 
@@ -90,8 +119,8 @@ function readProjectRef(): { orgId: string; projectId: string } {
 
 async function fetchEnvKeys(
 	token: string,
-	orgId: string,
-	projectId: string
+	{ orgId, projectId }: ProjectRef,
+	target: Target
 ): Promise<Set<string>> {
 	const url = `https://api.vercel.com/v9/projects/${projectId}/env?teamId=${orgId}`;
 
@@ -103,9 +132,15 @@ async function fetchEnvKeys(
 		throw new Error(`Vercel API ${res.status}: ${await res.text()}`);
 	}
 
-	const body = (await res.json()) as {
-		envs: Array<{ key: string; target: string[] }>;
-	};
+	const parsed = vercelEnvListSchema.safeParse(await res.json());
+
+	if (!parsed.success) {
+		throw new Error(
+			`Vercel API respondeu fora do formato esperado: ${z.prettifyError(parsed.error)}`
+		);
+	}
+
+	const body = parsed.data;
 
 	return new Set(
 		body.envs.filter((e) => e.target.includes(target)).map((e) => e.key)
@@ -113,6 +148,8 @@ async function fetchEnvKeys(
 }
 
 async function main() {
+	const target = readTarget();
+
 	const required = [
 		...requiredKeys(serverSchema),
 		...requiredKeys(clientSchema),
@@ -120,8 +157,7 @@ async function main() {
 	];
 
 	const token = readToken();
-	const { orgId, projectId } = readProjectRef();
-	const present = await fetchEnvKeys(token, orgId, projectId);
+	const present = await fetchEnvKeys(token, readProjectRef(), target);
 
 	const missing = required.filter((k) => !present.has(k));
 

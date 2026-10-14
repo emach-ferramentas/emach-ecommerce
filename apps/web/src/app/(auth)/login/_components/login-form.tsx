@@ -30,12 +30,16 @@ const TRIGGER_CLASS =
 	"h-auto min-h-12 flex-1 whitespace-nowrap border-none px-0 font-semibold text-[15px] text-ink-muted hover:text-ink data-active:text-ink";
 
 // Códigos que o Better Auth anexa ao `errorCallbackURL` do login social.
-const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
-	access_denied:
+const GOOGLE_ERROR_MESSAGES = new Map<string, string>([
+	[
+		"access_denied",
 		"Login com Google cancelado. Tente de novo ou entre com e-mail e senha.",
-	account_not_linked:
+	],
+	[
+		"account_not_linked",
 		"Este e-mail já tem cadastro com senha e ainda não foi confirmado. Entre com e-mail e senha ou confirme o e-mail antes de usar o Google.",
-};
+	],
+]);
 
 const GOOGLE_ERROR_FALLBACK =
 	"Não foi possível entrar com o Google. Tente de novo ou entre com e-mail e senha.";
@@ -53,13 +57,15 @@ export function LoginForm() {
 	const googleErrorCode = searchParams.get("error");
 
 	const googleError = googleErrorCode
-		? (GOOGLE_ERROR_MESSAGES[googleErrorCode] ?? GOOGLE_ERROR_FALLBACK)
+		? (GOOGLE_ERROR_MESSAGES.get(googleErrorCode) ?? GOOGLE_ERROR_FALLBACK)
 		: null;
 
 	const { data: session, isPending } = authClient.useSession();
 
 	useEffect(() => {
 		if (session?.user) {
+			// SAFETY: redirectTo passa por safeRedirect (lib/safe-redirect.ts), que só
+			// devolve caminho relativo sem rota de auth. Não se checa que a rota existe.
 			router.replace(redirectTo as Route);
 		}
 	}, [session, router, redirectTo]);
@@ -95,6 +101,7 @@ export function LoginForm() {
 				},
 				{
 					onSuccess: () => {
+						// SAFETY: redirectTo vem de safeRedirect (só caminho relativo, sem rota de auth).
 						router.push(redirectTo as Route);
 						toast.success("Login realizado com sucesso");
 					},
@@ -121,28 +128,21 @@ export function LoginForm() {
 			phone: "",
 		},
 		onSubmit: async ({ value }) => {
-			const payload: {
-				callbackURL: string;
-				email: string;
-				password: string;
-				name: string;
-				phone?: string;
-			} = {
+			const phoneDigits = onlyDigits(value.phone);
+
+			// undefined some do corpo JSON do cliente de auth, então o campo fica ausente.
+			const payload = {
 				callbackURL: redirectTo,
 				email: value.email,
 				password: value.password,
 				name: value.name,
+				phone: phoneDigits || undefined,
 			};
-
-			const phoneDigits = onlyDigits(value.phone);
-
-			if (phoneDigits) {
-				payload.phone = phoneDigits;
-			}
 
 			await authClient.signUp.email(payload, {
 				onSuccess: () => {
 					toast.success("Conta criada com sucesso");
+					// SAFETY: redirectTo vem de safeRedirect (só caminho relativo, sem rota de auth).
 					router.push(redirectTo as Route);
 				},
 				onError: (error) => {
@@ -175,7 +175,7 @@ export function LoginForm() {
 			)}
 			<Tabs
 				className="w-full gap-0"
-				onValueChange={(v) => setMode(v as "sign-in" | "sign-up")}
+				onValueChange={(v) => setMode(v === "sign-up" ? "sign-up" : "sign-in")}
 				value={mode}
 			>
 				<TabsList className="w-full" variant="line">

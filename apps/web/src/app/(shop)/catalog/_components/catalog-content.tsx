@@ -53,6 +53,14 @@ interface CatalogContentProps {
 	voltages: VoltageKey[];
 }
 
+const SORT_KEYS: readonly SortKey[] = [
+	"relevance",
+	"price-asc",
+	"price-desc",
+	"name-asc",
+	"newest",
+];
+
 const PAGE_LINK_CLASS =
 	"inline-flex min-h-11 items-center gap-1 rounded-[3px] border-[1.5px] border-line-strong bg-paper px-4 font-bold text-[15px] text-ink no-underline hover:border-ink";
 
@@ -216,6 +224,7 @@ export function CatalogContent({
 	);
 
 	function navigate(updates: FilterUpdate) {
+		// SAFETY: buildHref (catalog/_lib/catalog-filters.ts) sempre devolve `/catalog` ou `/catalog/<slug>`, com `?query` opcional; as duas formas são rotas do catálogo.
 		const href = buildHref(current, { ...updates, page: null }) as Route;
 		startTransition(() => {
 			router.replace(href, { scroll: false });
@@ -235,6 +244,7 @@ export function CatalogContent({
 	}
 
 	function pageHrefFor(nextPage: number): Route {
+		// SAFETY: buildHref (catalog/_lib/catalog-filters.ts) sempre devolve `/catalog` ou `/catalog/<slug>`, com `?query` opcional; as duas formas são rotas do catálogo.
 		return buildHref(current, { page: nextPage }) as Route;
 	}
 
@@ -345,7 +355,9 @@ export function CatalogContent({
 								<select
 									className="h-11 w-full cursor-pointer appearance-none rounded-[3px] border-[1.5px] border-line-strong bg-paper pr-[38px] pl-3 font-bold text-[15px] text-ink hover:border-ink md:w-auto"
 									onChange={(e) =>
-										navigate({ sort: e.target.value as SortKey })
+										navigate({
+											sort: SORT_KEYS.find((key) => key === e.target.value),
+										})
 									}
 									value={sort}
 								>

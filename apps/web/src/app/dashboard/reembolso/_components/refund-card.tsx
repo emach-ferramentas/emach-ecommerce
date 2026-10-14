@@ -1,5 +1,4 @@
 import { cn } from "@emach/ui/lib/utils";
-import type { Route } from "next";
 import {
 	MetaPair,
 	PreviewItems,
@@ -9,6 +8,7 @@ import { EmachLinkButton } from "@/components/emach-button";
 import { fmtNumericBRL } from "@/lib/format";
 import type { RefundListItem } from "@/lib/refunds/queries";
 import { REFUND_REASON_LABEL } from "@/lib/refunds/status";
+import { accountOrderHref } from "@/lib/routes";
 import { OrderRefundBlock } from "../../pedidos/[id]/_components/order-refund-block";
 import { RefundStatusBadge } from "./refund-status-badge";
 import { buildRefundSteps } from "./refund-steps";
@@ -33,7 +33,7 @@ function totalLabelFor(isRejected: boolean, isRefunded: boolean): string {
 }
 
 export function RefundCard({ refund }: { refund: RefundListItem }) {
-	const detailsHref = `/dashboard/pedidos/${refund.orderId}` as Route;
+	const detailsHref = accountOrderHref(refund.orderId);
 	const isRefunded = refund.status === "refunded";
 	const isRejected = refund.status === "rejected";
 

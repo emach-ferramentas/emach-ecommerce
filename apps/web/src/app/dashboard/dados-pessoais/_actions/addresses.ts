@@ -125,7 +125,8 @@ export async function updateAddressAction(
 				.update(clientAddress)
 				.set({
 					...fields,
-					...(isDefault === true ? { isDefault: true } : {}),
+					// undefined fica fora do UPDATE: o Drizzle ignora a chave.
+					isDefault: isDefault === true ? true : undefined,
 				})
 				.where(
 					and(eq(clientAddress.id, id), eq(clientAddress.clientId, clientId))

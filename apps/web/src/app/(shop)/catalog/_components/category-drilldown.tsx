@@ -43,6 +43,7 @@ export function CategoryDrilldown({
 			{level.back && (
 				<Link
 					className="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 py-1 text-left text-[13px] text-ink-muted transition-colors hover:text-ink"
+					// SAFETY: hrefFor é categoryHrefFor, que devolve buildHref (catalog/_lib/catalog-filters.ts): sempre `/catalog[/slug][?query]`.
 					href={hrefFor(level.back.slug) as Route}
 					onClick={(e) => {
 						// ctrl/cmd/shift/alt e botão do meio ficam com o browser (nova aba).
@@ -90,6 +91,7 @@ export function CategoryDrilldown({
 				{level.rows.map((row) => (
 					<Link
 						className={rowClass}
+						// SAFETY: hrefFor é categoryHrefFor, que devolve buildHref (catalog/_lib/catalog-filters.ts): sempre `/catalog[/slug][?query]`.
 						href={hrefFor(row.slug) as Route}
 						key={row.id}
 						onClick={(e) => {

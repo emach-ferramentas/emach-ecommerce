@@ -73,7 +73,7 @@ describe("legacyToComposition", () => {
 	});
 
 	it("trios dos 8 layouts batem com o mapa legado do LAYOUT_CONFIG", () => {
-		const trios: Record<string, [string, string | null, string]> = {
+		const trios = {
 			split: ["bl", "mr", "br"],
 			stack_left: ["bl", "mr", "bc"],
 			center_bottom: ["bc", "tc", "bc"],
@@ -82,7 +82,10 @@ describe("legacyToComposition", () => {
 			mirror_split: ["mr", "ml", "br"],
 			hero_center: ["tc", "mc", "bc"],
 			text_right: ["tc", "mc", "br"],
-		};
+		} satisfies Record<
+			Parameters<typeof legacyToComposition>[0]["layout"],
+			[string, string | null, string]
+		>;
 
 		for (const [layout, [title, product, cta]] of Object.entries(trios)) {
 			const c = legacyToComposition({

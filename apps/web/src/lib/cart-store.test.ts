@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	type CartItem,
 	cartSubtotalCents,
+	loadCart,
 	reconcilePrices,
 } from "./cart-store";
 
@@ -46,5 +47,63 @@ describe("cartSubtotalCents", () => {
 
 	it("carrinho vazio vale 0", () => {
 		expect(cartSubtotalCents([])).toBe(0);
+	});
+});
+
+describe("loadCart", () => {
+	const stored = new Map<string, string>();
+
+	beforeEach(() => {
+		stored.clear();
+		vi.stubGlobal("window", {});
+		vi.stubGlobal("localStorage", {
+			getItem: (key: string) => stored.get(key) ?? null,
+		});
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	const save = (value: unknown) => {
+		stored.set("emach:cart:v2", JSON.stringify(value));
+	};
+
+	const valid = { ...item("v1", "899.90"), voltage: "220V" };
+
+	it("mantém o item válido", () => {
+		save([valid]);
+
+		expect(loadCart()).toStrictEqual([valid]);
+	});
+
+	it("tira o item corrompido e mantém os válidos", () => {
+		const { sku: _sku, ...semSku } = item("v4", "10.00");
+
+		save([
+			{ ...item("v2", "10.00"), quantity: 0 },
+			valid,
+			{ ...item("v3", "10.00"), voltage: "110V" },
+			semSku,
+			null,
+		]);
+
+		expect(loadCart()).toStrictEqual([valid]);
+	});
+
+	it("JSON que não é array vira carrinho vazio", () => {
+		save({ items: [valid] });
+
+		expect(loadCart()).toStrictEqual([]);
+	});
+
+	it("storage com JSON inválido vira carrinho vazio", () => {
+		stored.set("emach:cart:v2", "{quebrado");
+
+		expect(loadCart()).toStrictEqual([]);
+	});
+
+	it("storage vazio vira carrinho vazio", () => {
+		expect(loadCart()).toStrictEqual([]);
 	});
 });

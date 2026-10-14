@@ -26,12 +26,16 @@ const inputSchema = z.object({
 	declaredValueCents: z.number().int().nonnegative().optional(),
 });
 
+// O tipo guia o caller; o safeParse abaixo continua sendo a validação, porque
+// server action recebe o payload do navegador.
+type QuoteShippingInput = z.input<typeof inputSchema>;
+
 export type QuoteShippingResult =
 	| { ok: true; options: ShippingOption[]; negotiate: boolean }
 	| { ok: false; error: string };
 
 export async function quoteShippingAction(
-	rawInput: unknown
+	rawInput: QuoteShippingInput
 ): Promise<QuoteShippingResult> {
 	// Único caller é o checkout (autenticado) — sessão obrigatória fecha o
 	// endpoint contra anônimos gastando cota da API Frenet.

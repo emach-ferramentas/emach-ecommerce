@@ -15,7 +15,7 @@ const MAX_SUGGESTIONS = 5;
 const SEARCH_FAILED = "Não foi possível buscar agora.";
 
 function catalogSearchHref(term: string): Route {
-	return `/catalog?q=${encodeURIComponent(term)}` as Route;
+	return `/catalog?q=${encodeURIComponent(term)}` satisfies Route;
 }
 
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -107,7 +107,7 @@ export function HeaderSearch({ className }: { className?: string }) {
 		}
 
 		const onPointer = (e: PointerEvent) => {
-			if (!formRef.current?.contains(e.target as Node)) {
+			if (!(e.target instanceof Node && formRef.current?.contains(e.target))) {
 				setOpen(false);
 			}
 		};
@@ -161,7 +161,10 @@ export function HeaderSearch({ className }: { className?: string }) {
 		}
 
 		e.preventDefault();
-		const current = links.indexOf(document.activeElement as HTMLAnchorElement);
+		const active = document.activeElement;
+
+		const current =
+			active instanceof HTMLAnchorElement ? links.indexOf(active) : -1;
 
 		if (e.key === "ArrowDown") {
 			links[(current + 1) % links.length]?.focus();

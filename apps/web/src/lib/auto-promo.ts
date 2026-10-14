@@ -1,6 +1,6 @@
-import type { db } from "@emach/db";
 import { promotion, promotionTool } from "@emach/db/schema/promotions";
 import { and, eq, gt, inArray, isNull, lte, or } from "drizzle-orm";
+import type { DbExecutor } from "@/lib/db-executor";
 
 export interface AutoPromo {
 	discountType: string;
@@ -17,7 +17,7 @@ export interface AutoPromo {
  * Módulo server-only: importa `db`/drizzle. NÃO importar em Client Components.
  */
 export async function fetchAutoPromosByToolId(
-	tx: typeof db,
+	tx: DbExecutor,
 	toolIds: string[],
 	now: Date
 ): Promise<Map<string, AutoPromo[]>> {

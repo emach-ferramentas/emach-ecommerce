@@ -11,23 +11,15 @@ import { createElement } from "react";
 import { log } from "@/lib/evlog";
 import { fmtNumericBRL, numericToCents } from "@/lib/format";
 import {
+	type AddressSnapshot,
+	addressSnapshotSchema,
+} from "@/lib/orders/address-snapshot";
+import {
 	getClientOrderDetail,
 	type OrderDetailData,
 } from "@/lib/orders/queries";
 
-interface AddressSnapshot {
-	city?: string;
-	complement?: string | null;
-	neighborhood?: string;
-	number?: string;
-	recipient?: string;
-	state?: string;
-	street?: string;
-	zipCode?: string;
-}
-
-function addressLines(address: unknown): string[] {
-	const a = (address ?? {}) as AddressSnapshot;
+function addressLines(a: AddressSnapshot): string[] {
 	const street = [a.street, a.number].filter(Boolean).join(", ");
 	const locality = [a.neighborhood, a.city].filter(Boolean).join(", ");
 
@@ -60,6 +52,8 @@ function toProps(
 		value: fmtNumericBRL(order.shippingAmount),
 	});
 
+	const address = addressSnapshotSchema.safeParse(order.shippingAddress);
+
 	return {
 		name,
 		orderNumber: order.number,
@@ -73,7 +67,7 @@ function toProps(
 		})),
 		summary,
 		total: fmtNumericBRL(order.totalAmount),
-		addressLines: addressLines(order.shippingAddress),
+		addressLines: address.success ? addressLines(address.data) : [],
 		companyAddress,
 	};
 }

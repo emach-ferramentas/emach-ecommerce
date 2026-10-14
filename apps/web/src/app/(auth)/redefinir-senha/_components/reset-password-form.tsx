@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
+import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
@@ -29,10 +30,8 @@ export function ResetPasswordForm() {
 				{
 					onSuccess: () => {
 						toast.success("Senha redefinida. Faça login novamente.");
-						router.push({
-							pathname: "/login",
-							query: { reset: "ok" },
-						} as never);
+						const loginResetHref: Route = "/login?reset=ok";
+						router.push(loginResetHref);
 					},
 					onError: (error) => {
 						toast.error(error.error.message || "Link inválido ou expirado.");

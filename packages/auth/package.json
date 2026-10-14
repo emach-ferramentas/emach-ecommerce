@@ -20,7 +20,8 @@
     "@emach/redis": "workspace:*",
     "@emach/validators": "workspace:*",
     "better-auth": "catalog:",
-    "evlog": "2.19.1"
+    "evlog": "2.19.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@emach/config": "workspace:*",

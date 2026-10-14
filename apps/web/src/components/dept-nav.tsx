@@ -86,7 +86,7 @@ export function DeptNav({ nav }: { nav: StoreNav }) {
 		}
 
 		const onPointer = (e: PointerEvent) => {
-			if (!rootRef.current?.contains(e.target as Node)) {
+			if (!(e.target instanceof Node && rootRef.current?.contains(e.target))) {
 				setOpen(false);
 			}
 		};

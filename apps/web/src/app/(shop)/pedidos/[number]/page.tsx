@@ -2,7 +2,7 @@ import { db } from "@emach/db";
 import type { OrderStatus } from "@emach/db/schema/orders";
 import { order, orderItem } from "@emach/db/schema/orders";
 import { and, eq } from "drizzle-orm";
-import type { Metadata, Route } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -15,6 +15,8 @@ import { EmachLinkButton } from "@/components/emach-button";
 import { PageHead } from "@/components/page-head";
 import { Panel, SummaryRow } from "@/components/panel";
 import { fmtNumericBRL } from "@/lib/format";
+import { addressSnapshotSchema } from "@/lib/orders/address-snapshot";
+import { accountOrderHref } from "@/lib/routes";
 import { requireCurrentClient } from "@/lib/session";
 
 // Rota autenticada e sempre dinâmica (lê sessão): não há prerender. `params` e
@@ -25,18 +27,6 @@ export const metadata: Metadata = {
 	title: "Detalhes do pedido",
 	robots: { index: false, follow: false },
 };
-
-interface AddressSnapshot {
-	city?: string;
-	complement?: string | null;
-	country?: string;
-	neighborhood?: string;
-	number?: string;
-	recipient?: string;
-	state?: string;
-	street?: string;
-	zipCode?: string;
-}
 
 // O checkout cai aqui com o pedido em pending_payment: o título diz o que
 // falta em vez de "confirmado", e o pagamento mora no detalhe da conta.
@@ -147,9 +137,13 @@ async function OrderConfirmationContent({
 		.from(orderItem)
 		.where(eq(orderItem.orderId, orderRow.id));
 
-	const address = (orderRow.shippingAddress ?? {}) as AddressSnapshot;
+	// Valor que não é objeto vira endereço vazio em vez de quebrar a página.
+	const address = addressSnapshotSchema
+		.catch({})
+		.parse(orderRow.shippingAddress);
+
 	const headline = HEADLINE[orderRow.status];
-	const accountOrderHref = `/dashboard/pedidos/${orderRow.id}` as Route;
+	const accountHref = accountOrderHref(orderRow.id);
 	const current = `Pedido ${orderRow.number}`;
 	const status = <OrderStatusBadge status={orderRow.status} />;
 
@@ -161,7 +155,7 @@ async function OrderConfirmationContent({
 
 	const actions = (
 		<>
-			<EmachLinkButton href={accountOrderHref} size="lg" variant="dark">
+			<EmachLinkButton href={accountHref} size="lg" variant="dark">
 				Ver pedido na conta
 			</EmachLinkButton>
 			<EmachLinkButton href="/catalog" size="lg" variant="line">

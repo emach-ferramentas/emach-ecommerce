@@ -6,6 +6,7 @@ import { inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { fetchAutoPromosByToolId } from "@/lib/auto-promo";
+import type { DbExecutor } from "@/lib/db-executor";
 import { log } from "@/lib/evlog";
 import { numericToCents } from "@/lib/format";
 import { effectiveAutoDiscountCents } from "@/lib/promotions";
@@ -40,7 +41,7 @@ export type RevalidateCartResult =
  * ser testável sem o guard de sessão.
  */
 export async function computeFinalPrices(
-	database: typeof db,
+	database: DbExecutor,
 	items: Array<{ toolId: string; variantId: string }>
 ): Promise<RevalidatedPrice[]> {
 	const variantIds = items.map((i) => i.variantId);

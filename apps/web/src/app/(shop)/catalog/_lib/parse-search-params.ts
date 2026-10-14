@@ -50,10 +50,16 @@ export interface ParsedCatalogParams {
 	voltages: VoltageKey[];
 }
 
+function isSortKey(value: string): value is SortKey {
+	return VALID_SORTS.some((sort) => sort === value);
+}
+
+function isVoltageKey(value: string): value is VoltageKey {
+	return VALID_VOLTAGES.some((voltage) => voltage === value);
+}
+
 function parseSort(value: string | undefined): SortKey {
-	return value && (VALID_SORTS as readonly string[]).includes(value)
-		? (value as SortKey)
-		: "relevance";
+	return value && isSortKey(value) ? value : "relevance";
 }
 
 function parseVoltages(value: string | undefined): VoltageKey[] {
@@ -61,11 +67,7 @@ function parseVoltages(value: string | undefined): VoltageKey[] {
 		return [];
 	}
 
-	return value
-		.split(",")
-		.filter((v): v is VoltageKey =>
-			(VALID_VOLTAGES as readonly string[]).includes(v)
-		);
+	return value.split(",").filter(isVoltageKey);
 }
 
 // A página vira OFFSET bigint no Postgres: fração ou notação exponencial

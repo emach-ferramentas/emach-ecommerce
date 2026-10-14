@@ -63,7 +63,9 @@ function HeroCta({
 	const style = CTA_VARIANT_MAP[banner.ctaVariant];
 
 	return (
-		// ctaHref vem como string do banco; typedRoutes não valida em runtime.
+		// SAFETY: a guarda acima garante que ctaHref é string não vazia. Não há
+		// checagem de que a rota existe: o valor do banco vai ao Link como está
+		// (typedRoutes não valida em runtime).
 		<Link
 			className={cn(
 				heroCtaVariants({ variant: style.variant, full }),

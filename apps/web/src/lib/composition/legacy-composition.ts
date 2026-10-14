@@ -49,15 +49,17 @@ type HasFlagsSource = Pick<
 	| "ctaHref"
 >;
 
-export function deriveHasFlagsFromBanner(banner: HasFlagsSource): {
-	hasTitle: boolean;
-	hasSubtitle: boolean;
+interface BannerFlags {
 	hasBadge: boolean;
-	hasSpecs: boolean;
 	hasCountdown: boolean;
-	hasProduct: boolean;
 	hasCta: boolean;
-} {
+	hasProduct: boolean;
+	hasSpecs: boolean;
+	hasSubtitle: boolean;
+	hasTitle: boolean;
+}
+
+export function deriveHasFlagsFromBanner(banner: HasFlagsSource): BannerFlags {
 	return {
 		hasTitle: banner.title !== null,
 		hasSubtitle: banner.subtitle !== null,

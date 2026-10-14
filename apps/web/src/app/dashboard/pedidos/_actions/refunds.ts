@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import type { ActionResult } from "@/lib/actions/types";
+import { isUniqueViolation } from "@/lib/db-errors";
 import { log } from "@/lib/evlog";
 import { isRefundEligibleStatus } from "@/lib/refunds/queries";
 import { requireCurrentClient } from "@/lib/session";
@@ -105,9 +106,7 @@ export async function requestRefundAction(raw: {
 	} catch (err) {
 		// Backstop de corrida: índice parcial único em (orderId) WHERE
 		// status IN ('requested','under_review').
-		const code = (err as { cause?: { code?: string } })?.cause?.code;
-
-		if (code === "23505") {
+		if (isUniqueViolation(err)) {
 			return {
 				ok: false,
 				error: "Já existe uma solicitação de devolução aberta para este pedido",

@@ -38,9 +38,9 @@ function filesMatching(dir: string, pattern: RegExp | string): string[] {
 		.filter((file) => {
 			const text = readFileSync(file, "utf8");
 
-			return typeof pattern === "string"
-				? text.includes(pattern)
-				: pattern.test(text);
+			return pattern instanceof RegExp
+				? pattern.test(text)
+				: text.includes(pattern);
 		})
 		.map((file) => relative(srcDir, file));
 }

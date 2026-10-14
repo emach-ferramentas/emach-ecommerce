@@ -220,11 +220,11 @@ function HeroPositionedProduct({
 // Alinhamento de conteúdo/texto pela COLUNA da âncora do placement (decisão do
 // controller pós Tasks 4-5): l→start, c→center, r→end. Classes estáticas —
 // Tailwind JIT não vê string montada.
-const ALIGN_BY_COL: Record<string, "start" | "center" | "end"> = {
-	l: "start",
-	c: "center",
-	r: "end",
-};
+const ALIGN_BY_COL = new Map<string, "start" | "center" | "end">([
+	["l", "start"],
+	["c", "center"],
+	["r", "end"],
+]);
 
 const TEXT_ALIGN_CLASS: Record<"start" | "center" | "end", string> = {
 	start: "text-left",
@@ -248,7 +248,7 @@ function HeroPositionedElement({
 	banner: HeroElementBanner;
 	headingTag: "h1" | "h2";
 }) {
-	const align = ALIGN_BY_COL[placement.anchor.charAt(1)] ?? "center";
+	const align = ALIGN_BY_COL.get(placement.anchor.charAt(1)) ?? "center";
 
 	const content = renderHeroElement(elementKey, banner, {
 		align,

@@ -190,7 +190,7 @@ function NameCard({
 
 		setIsSaving(true);
 		await authClient.updateUser(
-			{ name: value } as Parameters<typeof authClient.updateUser>[0],
+			{ name: value } satisfies Parameters<typeof authClient.updateUser>[0],
 			{
 				onSuccess: () => {
 					toast.success("Nome atualizado");
@@ -348,9 +348,7 @@ function PhoneCard({
 		const digits = onlyDigits(value);
 		setIsSaving(true);
 		await authClient.updateUser(
-			{
-				phone: digits || undefined,
-			} as Parameters<typeof authClient.updateUser>[0],
+			{ phone: digits || undefined },
 			{
 				onSuccess: () => {
 					toast.success("Telefone atualizado");
@@ -467,9 +465,7 @@ function DocumentCard({
 		const document = normalizeDocument(value);
 		setIsSaving(true);
 		await authClient.updateUser(
-			{
-				document: document || undefined,
-			} as Parameters<typeof authClient.updateUser>[0],
+			{ document: document || undefined },
 			{
 				onSuccess: () => {
 					toast.success("Documento atualizado");

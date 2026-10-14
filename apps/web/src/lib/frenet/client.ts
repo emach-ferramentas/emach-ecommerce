@@ -1,4 +1,5 @@
 import { env } from "@emach/env/server";
+import { z } from "zod";
 
 import type {
 	FrenetAddressResponse,
@@ -9,6 +10,61 @@ import type {
 const TIMEOUT_MS = 10_000;
 const TRAILING_SLASH = /\/$/;
 
+// Campo opcional da Frenet: ausente ou `null` viram `undefined`, para o tipo
+// bater com os contratos de ./types.
+const optionalString = z
+	.string()
+	.nullish()
+	.transform((v) => v ?? undefined);
+
+// Campo de serviço: string documentada, número aceito como string. Tipo
+// inesperado vira `undefined` em vez de derrubar a cotação inteira.
+const serviceString = z
+	.union([z.string(), z.number()])
+	.nullish()
+	.transform((v) => (v == null ? undefined : String(v)))
+	.catch(undefined);
+
+// Formato real da resposta: chave com o typo oficial `ShippingSevicesArray`,
+// preço e prazo como string, erro por serviço (`Error` boolean ou "true").
+// O erro é por serviço: serviço malformado chega ao map.ts sem preço e é
+// descartado lá (contado em `discardedByParse`), sem custar os demais. Só a
+// casca (corpo não-objeto, array que não é array) vira FrenetError.
+// `Timeout` fica de fora: ninguém o lê.
+const frenetServiceSchema = z.object({
+	Carrier: serviceString,
+	CarrierCode: serviceString,
+	DeliveryTime: serviceString,
+	Error: z
+		.union([z.boolean(), z.string()])
+		.nullish()
+		.transform((v) => v ?? undefined)
+		.catch(undefined),
+	Msg: serviceString,
+	ServiceCode: serviceString,
+	ServiceDescription: serviceString,
+	ShippingPrice: serviceString,
+});
+
+const frenetQuoteResponseSchema = z.object({
+	ShippingSevicesArray: z
+		.array(
+			// Item que nem é objeto vira serviço vazio, descartado no map.ts.
+			frenetServiceSchema.catch(() => frenetServiceSchema.parse({}))
+		)
+		.nullish()
+		.transform((v) => v ?? undefined),
+}) satisfies z.ZodType<FrenetQuoteResponse>;
+
+const frenetAddressResponseSchema = z.object({
+	CEP: optionalString,
+	City: optionalString,
+	District: optionalString,
+	Message: optionalString,
+	Street: optionalString,
+	UF: optionalString,
+}) satisfies z.ZodType<FrenetAddressResponse>;
+
 /** Erro do client Frenet — timeout, HTTP não-2xx ou body inválido. */
 export class FrenetError extends Error {
 	constructor(message: string) {
@@ -18,7 +74,11 @@ export class FrenetError extends Error {
 }
 
 // Timeout + tratamento de erro compartilhados entre os endpoints Frenet.
-async function frenetRequest<T>(path: string, init?: RequestInit): Promise<T> {
+async function frenetRequest<T>(
+	path: string,
+	schema: z.ZodType<T>,
+	init?: RequestInit
+): Promise<T> {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -40,7 +100,15 @@ async function frenetRequest<T>(path: string, init?: RequestInit): Promise<T> {
 			throw new FrenetError(`Frenet respondeu HTTP ${res.status}`);
 		}
 
-		return (await res.json()) as T;
+		const parsed = schema.safeParse(await res.json());
+
+		if (!parsed.success) {
+			throw new FrenetError(
+				`Frenet respondeu fora do formato em ${path}: ${z.prettifyError(parsed.error)}`
+			);
+		}
+
+		return parsed.data;
 	} catch (err) {
 		if (err instanceof FrenetError) {
 			throw err;
@@ -59,7 +127,7 @@ async function frenetRequest<T>(path: string, init?: RequestInit): Promise<T> {
 export function fetchFrenetQuote(
 	body: FrenetQuoteRequest
 ): Promise<FrenetQuoteResponse> {
-	return frenetRequest<FrenetQuoteResponse>("/shipping/quote", {
+	return frenetRequest("/shipping/quote", frenetQuoteResponseSchema, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
@@ -71,5 +139,5 @@ export function fetchFrenetQuote(
 export function fetchFrenetAddress(
 	cep: string
 ): Promise<FrenetAddressResponse> {
-	return frenetRequest<FrenetAddressResponse>(`/CEP/Address/${cep}`);
+	return frenetRequest(`/CEP/Address/${cep}`, frenetAddressResponseSchema);
 }

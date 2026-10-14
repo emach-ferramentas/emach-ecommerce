@@ -1,7 +1,43 @@
 "use client";
 
 import type { Voltage } from "@emach/db/schema/tools";
+import { z } from "zod";
 import { numericToCents } from "@/lib/format";
+
+// Cópia de `voltageEnum` (packages/db/src/schema/tools.ts): importar o enum em
+// runtime puxaria o Drizzle para o bundle do cliente. O `satisfies` exige uma
+// chave para cada `Voltage`, então voltagem nova vinda do sync quebra o tsc aqui.
+const VOLTAGES = {
+	"127V": "127V",
+	"220V": "220V",
+	Bivolt: "Bivolt",
+	"380V": "380V",
+} as const satisfies { [V in Voltage]: V };
+
+const cartItemSchema: z.ZodType<CartItem> = z.object({
+	categoryName: z.string().nullable(),
+	categorySlug: z.string().nullable(),
+	imageUrl: z.string().nullable(),
+	name: z.string(),
+	priceAmount: z.string(),
+	quantity: z.number().int().positive(),
+	sku: z.string(),
+	slug: z.string(),
+	toolId: z.string(),
+	variantId: z.string(),
+	voltage: z.enum(VOLTAGES).nullable(),
+});
+
+const cartListSchema = z.array(z.unknown()).catch([]);
+
+/** Itens válidos do storage. Item com forma antiga ou corrompida sai do carrinho. */
+function parseCartItems(stored: string): CartItem[] {
+	return cartListSchema.parse(JSON.parse(stored)).flatMap((item) => {
+		const parsed = cartItemSchema.safeParse(item);
+
+		return parsed.success ? [parsed.data] : [];
+	});
+}
 
 export interface CartItem {
 	categoryName: string | null;
@@ -29,7 +65,7 @@ export function loadCart(): CartItem[] {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 
-		return raw ? (JSON.parse(raw) as CartItem[]) : [];
+		return raw ? parseCartItems(raw) : [];
 	} catch {
 		return [];
 	}

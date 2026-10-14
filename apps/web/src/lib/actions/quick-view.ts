@@ -21,6 +21,10 @@ const inputSchema = z.object({
 		.regex(/^[\w-]+$/),
 });
 
+// O tipo guia o caller; o safeParse continua sendo a validação, porque a
+// action é pública e recebe o payload do navegador.
+type QuickViewInput = z.input<typeof inputSchema>;
+
 const QUICK_VIEW_IMAGES = 6;
 const QUICK_VIEW_SPECS = 4;
 
@@ -47,7 +51,7 @@ export interface QuickViewProduct {
 
 /** Dados do "Ver rápido": fotos, variantes vendáveis, preço com promoção e estoque. */
 export async function quickViewAction(
-	raw: unknown
+	raw: QuickViewInput
 ): Promise<ActionResultWith<QuickViewProduct>> {
 	const parsed = inputSchema.safeParse(raw);
 
