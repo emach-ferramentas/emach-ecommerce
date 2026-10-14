@@ -37,6 +37,7 @@
     "check:env": "bun scripts/check-vercel-env.ts",
     "fix": "bun node_modules/.bin/oxlint --fix && ultracite fix",
     "lint:slop": "bun node_modules/.bin/oxlint",
+    "test:lint-rules": "node tools/oxlint/emach/rules/no-regexp-in-loop.test.ts && node tools/oxlint/emach/rules/require-log-in-action-catch.test.ts",
     "prepare": "lefthook install",
     "clean": "bash scripts/clean.sh",
     "clean-all": "bash scripts/clean.sh -y --cache",

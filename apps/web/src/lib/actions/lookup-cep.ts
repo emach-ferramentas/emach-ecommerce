@@ -77,7 +77,7 @@ export async function lookupCepAction(
 		};
 	} catch (err) {
 		// Falha de infra não é erro do usuário: log e silêncio (sem toast).
-		log.warn({
+		log.error({
 			action: "lookup_cep_failed",
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});

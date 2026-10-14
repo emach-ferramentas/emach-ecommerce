@@ -74,18 +74,19 @@ export async function createReviewAction(raw: {
 	} catch (err) {
 		// Race de duplo-submit: o unique (toolId,clientId,orderId) é o backstop
 		// quando duas requisições passam por canCreateReview ao mesmo tempo.
-		if (isUniqueViolation(err)) {
-			return { ok: false, error: "Você já avaliou este produto" };
-		}
+		const duplicate = isUniqueViolation(err);
 
-		const message = err instanceof Error ? err.message : "Erro inesperado";
 		log.error({
-			action: "create_review_failed",
+			action: duplicate ? "create_review_duplicate" : "create_review_failed",
 			clientId,
 			orderId,
 			toolId,
-			error: message,
+			error: err instanceof Error ? err.message : "Erro inesperado",
 		});
+
+		if (duplicate) {
+			return { ok: false, error: "Você já avaliou este produto" };
+		}
 
 		return { ok: false, error: "Não foi possível enviar a avaliação" };
 	}

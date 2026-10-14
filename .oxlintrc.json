@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["oxc"],
+  "plugins": ["oxc", "typescript", "eslint"],
   "categories": {
     "correctness": "off"
   },
@@ -8,6 +8,10 @@
     {
       "name": "anti-slop",
       "specifier": "./tools/oxlint/anti-slop/index.ts"
+    },
+    {
+      "name": "emach",
+      "specifier": "./tools/oxlint/emach/index.ts"
     }
   ],
   "ignorePatterns": [
@@ -21,6 +25,7 @@
     "**/dist/**",
     "**/.turbo/**",
     "tools/oxlint/anti-slop/**",
+    "tools/oxlint/emach/**",
     "packages/db/src/schema/**",
     "packages/db/src/queries/**"
   ],
@@ -43,7 +48,36 @@
     "anti-slop/no-unknown-returns": "error",
     "anti-slop/no-unsafe-dictionary-type": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "error",
-    "anti-slop/no-module-mocking": "off"
+    "anti-slop/no-module-mocking": "off",
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": true,
+        "ts-ignore": true,
+        "ts-nocheck": true
+      }
+    ],
+    "eslint/no-restricted-properties": [
+      "error",
+      {
+        "object": "React",
+        "property": "useMemo",
+        "message": "React 19 com React Compiler: ref é prop comum e a memoização é automática."
+      },
+      {
+        "object": "React",
+        "property": "useCallback",
+        "message": "React 19 com React Compiler: ref é prop comum e a memoização é automática."
+      },
+      {
+        "object": "React",
+        "property": "forwardRef",
+        "message": "React 19 com React Compiler: ref é prop comum e a memoização é automática."
+      }
+    ],
+    "eslint/prefer-regex-literals": "error",
+    "emach/no-regexp-in-loop": "error",
+    "emach/require-log-in-action-catch": "error"
   },
   "overrides": [
     {
@@ -52,7 +86,15 @@
         "anti-slop/no-chained-type-assertions": "off",
         "anti-slop/no-unknown-parameters": "off",
         "anti-slop/no-unknown-returns": "off",
-        "anti-slop/require-safety-comment-for-type-assertion": "off"
+        "anti-slop/require-safety-comment-for-type-assertion": "off",
+        "typescript/ban-ts-comment": [
+          "error",
+          {
+            "ts-expect-error": "allow-with-description",
+            "ts-ignore": true,
+            "ts-nocheck": true
+          }
+        ]
       }
     }
   ]

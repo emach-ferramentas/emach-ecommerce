@@ -106,20 +106,21 @@ export async function requestRefundAction(raw: {
 	} catch (err) {
 		// Backstop de corrida: índice parcial único em (orderId) WHERE
 		// status IN ('requested','under_review').
-		if (isUniqueViolation(err)) {
+		const duplicate = isUniqueViolation(err);
+
+		log.error({
+			action: duplicate ? "request_refund_duplicate" : "request_refund_failed",
+			clientId,
+			orderId,
+			error: err instanceof Error ? err.message : "Erro inesperado",
+		});
+
+		if (duplicate) {
 			return {
 				ok: false,
 				error: "Já existe uma solicitação de devolução aberta para este pedido",
 			};
 		}
-
-		const message = err instanceof Error ? err.message : "Erro inesperado";
-		log.error({
-			action: "request_refund_failed",
-			clientId,
-			orderId,
-			error: message,
-		});
 
 		return { ok: false, error: "Não foi possível solicitar a devolução" };
 	}
