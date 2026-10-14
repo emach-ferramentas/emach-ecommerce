@@ -1,5 +1,4 @@
 import { and, eq, sql } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { order, orderItem } from "../schema/orders";
 import type { Review } from "../schema/reviews";
@@ -10,6 +9,7 @@ import {
 	APPROVED,
 	formatReviewerName,
 	REVIEW_DATE_KEYS,
+	toNullableNumber,
 } from "./catalog-helpers";
 
 export const REVIEW_WINDOW_DAYS = 90;
@@ -32,10 +32,8 @@ export type CanCreateReviewResult =
 	| { ok: true }
 	| { ok: false; reason: CanCreateReviewReason };
 
-type LocalAnyDb = NodePgDatabase<Record<string, unknown>>;
-
 export async function canCreateReview(
-	db: LocalAnyDb,
+	db: AnyDb,
 	input: CanCreateReviewInput
 ): Promise<CanCreateReviewResult> {
 	const { clientId, orderId, toolId } = input;
@@ -165,7 +163,7 @@ export async function getReviews(
 
 	const reviews: ReviewWithReviewer[] = listRes.rows.map((row) => {
 		const { client_name, ...rest } = row;
-		const rev = coerceDates(rest as Review, REVIEW_DATE_KEYS);
+		const rev = coerceDates<Review>(rest, REVIEW_DATE_KEYS);
 
 		return {
 			...rev,
@@ -219,14 +217,4 @@ export async function getReviewStats(
 			5: Number(row?.c5 ?? 0),
 		},
 	};
-}
-
-function toNullableNumber(value: unknown): number | null {
-	if (value === null || value === undefined) {
-		return null;
-	}
-
-	const n = typeof value === "number" ? value : Number(value);
-
-	return Number.isFinite(n) ? n : null;
 }

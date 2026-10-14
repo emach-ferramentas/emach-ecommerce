@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { branch } from "../schema/inventory";
 import {
 	type ShippingInsurancePolicy,
 	storeSettings,
 } from "../schema/store-settings";
+import type { AnyDb } from "./catalog-helpers";
 
 export interface ShippingSettings {
 	insuranceCapAmount: number;
@@ -27,7 +27,7 @@ const DEFAULTS: ShippingSettings = {
  * baseado em env. Sem linha singleton → DEFAULTS (espelha o storefront atual).
  */
 export async function getShippingSettings(
-	db: NodePgDatabase<Record<string, unknown>>
+	db: AnyDb
 ): Promise<ShippingSettings> {
 	const rows = await db
 		.select({
@@ -72,9 +72,7 @@ export interface SocialLink {
  * estão marcados como visíveis. Ordem fixa = ordem de exibição no site.
  * Owned-by-dashboard, consumido pelo emach-ecommerce via sync de CI (ADR-0009).
  */
-export async function getStoreSocialLinks(
-	db: NodePgDatabase<Record<string, unknown>>
-): Promise<SocialLink[]> {
+export async function getStoreSocialLinks(db: AnyDb): Promise<SocialLink[]> {
 	const rows = await db
 		.select({
 			instagramUrl: storeSettings.socialInstagramUrl,
@@ -114,10 +112,7 @@ export async function getStoreSocialLinks(
 		{ network: "youtube", url: row.youtubeUrl, visible: row.youtubeVisible },
 	];
 
-	return candidates
-		.filter(
-			(c): c is { network: SocialNetwork; url: string; visible: boolean } =>
-				Boolean(c.visible && c.url)
-		)
-		.map(({ network, url }) => ({ network, url }));
+	return candidates.flatMap(({ network, url, visible }) =>
+		visible && url ? [{ network, url }] : []
+	);
 }

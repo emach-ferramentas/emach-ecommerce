@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { orderStatusEnum } from "../schema/orders";
+import type { AnyDb } from "./catalog-helpers";
 import {
 	computeDeltaPct,
 	type DashboardPeriod,
@@ -11,8 +11,6 @@ import {
 	REVENUE_ORDER_STATUSES,
 	sqlStatusList,
 } from "./order-status-groups";
-
-type AnyDb = NodePgDatabase<Record<string, unknown>>;
 
 /** Ordem canônica do ciclo de vida (não a ordem de ADD VALUE do enum). */
 export const ORDER_STATUS_FUNNEL = [
@@ -39,10 +37,10 @@ export type OrderFunnelCoversEnum = AssertNever<
 >;
 
 export function sortByFunnel<T extends { status: string }>(rows: T[]): T[] {
+	const funnel: readonly string[] = ORDER_STATUS_FUNNEL;
+
 	const pos = (s: string) => {
-		const i = ORDER_STATUS_FUNNEL.indexOf(
-			s as (typeof ORDER_STATUS_FUNNEL)[number]
-		);
+		const i = funnel.indexOf(s);
 
 		return i === -1 ? Number.MAX_SAFE_INTEGER : i;
 	};
@@ -228,7 +226,7 @@ export async function getDailyRevenue(
 
 	return res.rows.map((r, i) => ({
 		day: localDate(r.day),
-		revenue: revenues[i] as number,
+		revenue: Number(r.revenue),
 		movingAvg: Number(ma[i]?.toFixed(2) ?? 0),
 	}));
 }
