@@ -24,9 +24,11 @@ function totalLabelFor(isRejected: boolean, isRefunded: boolean): string {
 	if (isRejected) {
 		return "Valor solicitado";
 	}
+
 	if (isRefunded) {
 		return "Reembolsado";
 	}
+
 	return "A reembolsar";
 }
 
@@ -36,6 +38,7 @@ export function RefundCard({ refund }: { refund: RefundListItem }) {
 	const isRejected = refund.status === "rejected";
 
 	const totalLabel = totalLabelFor(isRejected, isRefunded);
+
 	const reasonText =
 		refund.reasonText || REFUND_REASON_LABEL[refund.reasonCategory];
 

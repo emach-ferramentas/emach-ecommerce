@@ -14,6 +14,7 @@ export function RequestRefundButton({
 	totalAmount: string;
 }) {
 	const [open, setOpen] = useState(false);
+
 	return (
 		<>
 			<EmachButton onClick={() => setOpen(true)} size="md" variant="line">

@@ -22,7 +22,9 @@ function pickSort(
 	if ("reviewSort" in updates) {
 		return updates.reviewSort ?? null;
 	}
+
 	const raw = currentParams.reviewSort;
+
 	return typeof raw === "string" ? (raw as ReviewSortKey) : null;
 }
 
@@ -33,7 +35,9 @@ function pickPage(
 	if ("reviewPage" in updates) {
 		return updates.reviewPage ?? null;
 	}
+
 	const raw = currentParams.reviewPage;
+
 	return typeof raw === "string" ? Number(raw) : null;
 }
 
@@ -43,10 +47,12 @@ function buildHref(
 	updates: { reviewPage?: number | null; reviewSort?: ReviewSortKey | null }
 ): Route {
 	const params = new URLSearchParams();
+
 	for (const [key, value] of Object.entries(currentParams)) {
 		if (key === "reviewPage" || key === "reviewSort") {
 			continue;
 		}
+
 		if (Array.isArray(value)) {
 			for (const v of value) {
 				params.append(key, v);
@@ -62,16 +68,19 @@ function buildHref(
 	if (sort && sort !== "newest") {
 		params.set("reviewSort", sort);
 	}
+
 	if (page && page > 1) {
 		params.set("reviewPage", String(page));
 	}
 
 	const qs = params.toString();
+
 	return (qs ? `${pathname}?${qs}` : pathname) as Route;
 }
 
 const PAGE_BTN =
 	"inline-flex min-h-11 items-center rounded-[3px] border-[1.5px] border-line-strong bg-paper px-5 font-bold text-[15px] text-ink transition-colors hover:border-ink";
+
 const PAGE_BTN_DISABLED =
 	"inline-flex min-h-11 items-center rounded-[3px] border-[1.5px] border-line bg-canteiro px-5 font-bold text-[15px] text-ink-muted";
 
@@ -84,10 +93,12 @@ export function ReviewList({
 	currentSearchParams,
 }: ReviewListProps) {
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
 	const prevHref =
 		page > 1
 			? buildHref(pathname, currentSearchParams, { reviewPage: page - 1 })
 			: null;
+
 	const nextHref =
 		page < totalPages
 			? buildHref(pathname, currentSearchParams, { reviewPage: page + 1 })

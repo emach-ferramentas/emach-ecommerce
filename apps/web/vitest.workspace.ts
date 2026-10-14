@@ -19,6 +19,7 @@ export function workspaceProjects({
 			exclude: [...configDefaults.exclude, ...INTEGRATION],
 		},
 	};
+
 	const integration: Project = {
 		extends: "./vitest.config.ts",
 		test: {
@@ -29,6 +30,7 @@ export function workspaceProjects({
 			poolOptions: { forks: { singleFork: true } },
 		},
 	};
+
 	return unitOnly ? [unit] : [unit, integration];
 }
 

@@ -45,6 +45,7 @@ export async function computeFinalPrices(
 ): Promise<RevalidatedPrice[]> {
 	const variantIds = items.map((i) => i.variantId);
 	const toolIds = Array.from(new Set(items.map((i) => i.toolId)));
+
 	const [variants, autoPromos] = await Promise.all([
 		database
 			.select({
@@ -57,11 +58,14 @@ export async function computeFinalPrices(
 			.where(inArray(toolVariant.id, variantIds)),
 		fetchAutoPromosByToolId(database, toolIds, new Date()),
 	]);
+
 	const byId = new Map(variants.map((v) => [v.id, v]));
 
 	const prices: RevalidatedPrice[] = [];
+
 	for (const item of items) {
 		const variant = byId.get(item.variantId);
+
 		// Variante removida, hidden ou sem preço: pula daqui. A action devolve
 		// esses ids em `unavailable`; place-order segue como barreira final.
 		if (
@@ -72,20 +76,25 @@ export async function computeFinalPrices(
 		) {
 			continue;
 		}
+
 		const base = numericToCents(variant.priceAmount);
 		let final = base;
+
 		for (const promo of autoPromos.get(item.toolId) ?? []) {
 			const candidate = effectiveAutoDiscountCents(
 				base,
 				promo.discountType,
 				promo.discountValue
 			);
+
 			if (candidate < final) {
 				final = candidate;
 			}
 		}
+
 		prices.push({ variantId: item.variantId, finalPriceCents: final });
 	}
+
 	return prices;
 }
 
@@ -93,22 +102,28 @@ export async function revalidateCartAction(
 	raw: z.infer<typeof schema>
 ): Promise<RevalidateCartResult> {
 	const parsed = schema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos" };
 	}
+
 	await requireCurrentClient();
+
 	try {
 		const prices = await computeFinalPrices(db, parsed.data.cartItems);
 		const priced = new Set(prices.map((p) => p.variantId));
+
 		const unavailable = parsed.data.cartItems
 			.filter((i) => !priced.has(i.variantId))
 			.map((i) => i.variantId);
+
 		return { ok: true, prices, unavailable };
 	} catch (err) {
 		log.error({
 			action: "revalidate_cart_failed",
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
+
 		return { ok: false, error: "Não foi possível atualizar os preços" };
 	}
 }

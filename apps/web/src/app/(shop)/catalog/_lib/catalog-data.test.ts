@@ -28,6 +28,7 @@ describe("fetchCatalogData (integração read-only: composição do catálogo)",
 
 		// cardExtras só contém ferramentas da página retornada
 		const ids = new Set(data.tools.map((t) => t.id));
+
 		for (const key of Object.keys(data.cardExtras)) {
 			expect(ids.has(key)).toBe(true);
 		}
@@ -36,9 +37,11 @@ describe("fetchCatalogData (integração read-only: composição do catálogo)",
 	it("cat com slug válido filtra e expõe currentCategory", async () => {
 		const tree = await getCategoryTree(db);
 		const root = tree[0];
+
 		if (!root) {
 			return; // banco sem categorias: nada a verificar
 		}
+
 		const data = await fetchCatalogData({ ...BASE, cat: root.slug });
 		const { total } = await getTools(db, { categoryId: root.id, limit: 1 });
 
@@ -52,6 +55,7 @@ describe("fetchCatalogData (integração read-only: composição do catálogo)",
 			...BASE,
 			cat: "slug-que-nao-existe-xyz",
 		});
+
 		const { total } = await getTools(db, { limit: 1 });
 
 		expect(data.total).toBe(total);

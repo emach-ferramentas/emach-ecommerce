@@ -30,11 +30,13 @@ export function ReviewSort({ current }: ReviewSortProps) {
 
 	function handleChange(value: string | null) {
 		const params = new URLSearchParams(searchParams);
+
 		if (value == null || value === "newest") {
 			params.delete("reviewSort");
 		} else {
 			params.set("reviewSort", value);
 		}
+
 		params.delete("reviewPage");
 		const qs = params.toString();
 		const href = (qs ? `${pathname}?${qs}` : pathname) as Route;

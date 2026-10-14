@@ -21,6 +21,7 @@ export class FrenetError extends Error {
 async function frenetRequest<T>(path: string, init?: RequestInit): Promise<T> {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
 	try {
 		const res = await fetch(
 			`${env.FRENET_BASE_URL.replace(TRAILING_SLASH, "")}${path}`,
@@ -34,14 +35,17 @@ async function frenetRequest<T>(path: string, init?: RequestInit): Promise<T> {
 				signal: controller.signal,
 			}
 		);
+
 		if (!res.ok) {
 			throw new FrenetError(`Frenet respondeu HTTP ${res.status}`);
 		}
+
 		return (await res.json()) as T;
 	} catch (err) {
 		if (err instanceof FrenetError) {
 			throw err;
 		}
+
 		throw new FrenetError(
 			err instanceof Error ? err.message : "falha na chamada à Frenet"
 		);

@@ -69,6 +69,7 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 	// Compositions resolvidas uma vez por render — reaproveitadas no h1Index e
 	// no map de slides (evita resolver duas vezes por slide).
 	const compositions = slides.map((b) => resolveComposition(b));
+
 	// Primeiro slide com título VISÍVEL (campo preenchido E elemento ligado) vira
 	// h1; demais títulos viram h2. Quando nenhum banner tem título visível, o
 	// <h1> sr-only garante que a página nunca fique sem h1 (SEO + a11y).
@@ -81,9 +82,11 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 		if (!api) {
 			return;
 		}
+
 		setSelectedIndex(api.selectedScrollSnap());
 		const onSelect = () => setSelectedIndex(api.selectedScrollSnap());
 		api.on("select", onSelect);
+
 		return () => {
 			api.off("select", onSelect);
 		};
@@ -93,9 +96,11 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 		if (!api || slides.length < 2 || reduceMotion || paused) {
 			return;
 		}
+
 		const id = window.setInterval(() => {
 			api.scrollNext();
 		}, AUTOPLAY_INTERVAL);
+
 		return () => window.clearInterval(id);
 	}, [api, slides.length, reduceMotion, paused]);
 
@@ -103,6 +108,7 @@ export function HeroCarousel({ banners }: { banners: HeroBanner[] }) {
 		if (reduceMotion) {
 			return;
 		}
+
 		const rect = e.currentTarget.getBoundingClientRect();
 		const relX = (e.clientX - rect.left) / rect.width - 0.5;
 		const relY = (e.clientY - rect.top) / rect.height - 0.5;

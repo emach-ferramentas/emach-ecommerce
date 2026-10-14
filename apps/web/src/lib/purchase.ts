@@ -29,6 +29,7 @@ export function sellableVariants<T extends OrderableVariant>(
 		if (a.isDefault !== b.isDefault) {
 			return a.isDefault ? -1 : 1;
 		}
+
 		return a.sortOrder - b.sortOrder;
 	});
 }
@@ -41,15 +42,19 @@ export function discountedAmount(
 	if (!promotion) {
 		return null;
 	}
+
 	const baseCents = numericToCents(priceAmount);
+
 	const discountedCents = effectiveAutoDiscountCents(
 		baseCents,
 		promotion.discountType,
 		promotion.discountValue
 	);
+
 	if (discountedCents >= baseCents) {
 		return null;
 	}
+
 	return (discountedCents / 100).toFixed(2);
 }
 
@@ -70,6 +75,7 @@ export function variantPrice(
 	const finalAmount = discounted ?? priceAmount;
 	const baseCents = numericToCents(priceAmount);
 	const finalCents = numericToCents(finalAmount);
+
 	return {
 		baseCents,
 		discountPct:

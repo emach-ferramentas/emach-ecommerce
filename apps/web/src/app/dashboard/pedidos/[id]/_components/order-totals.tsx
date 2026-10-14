@@ -30,6 +30,7 @@ export function OrderTotals({
 }: OrderTotalsProps) {
 	const hasDiscount = Number(discountAmount) > 0;
 	const shippingFree = Number(shippingAmount) === 0;
+
 	return (
 		<Panel title="Valores">
 			<SummaryRow

@@ -59,7 +59,9 @@ function HeroCta({
 	if (!(banner.ctaLabel && banner.ctaHref)) {
 		return null;
 	}
+
 	const style = CTA_VARIANT_MAP[banner.ctaVariant];
+
 	return (
 		// ctaHref vem como string do banco; typedRoutes não valida em runtime.
 		<Link
@@ -86,11 +88,14 @@ function HeroCountdown({ target }: { target: Date }) {
 		const tick = () => setParts(formatCountdown(t - Date.now()));
 		tick();
 		const id = window.setInterval(tick, 1000);
+
 		return () => window.clearInterval(id);
 	}, [target]);
+
 	if (parts === null || parts.done) {
 		return null;
 	}
+
 	return (
 		<span
 			aria-live="off"
@@ -105,9 +110,11 @@ function HeroCountdown({ target }: { target: Date }) {
 // Ficha técnica do hero (#158): valores de banner.specs como <ul> semântico.
 function HeroSpecs({ specs }: { specs: string[] | null }) {
 	const values = resolveHeroSpecs(specs);
+
 	if (values.length === 0) {
 		return null;
 	}
+
 	return (
 		<div className="max-w-[44ch] font-display text-[13px] text-white/90 uppercase tracking-[0.08em] drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] lg:text-[15px]">
 			<span aria-hidden="true" className="text-white/55">
@@ -146,7 +153,9 @@ function HeroTitle({
 	if (!banner.title) {
 		return null;
 	}
+
 	const HeadingTag = headingTag;
+
 	return (
 		<div className={cn("flex flex-col", TITLE_ALIGN_CLASS[align])}>
 			<HeadingTag className="text-balance font-display font-medium text-[clamp(44px,6vw,84px)] text-white uppercase leading-[0.9] tracking-[-0.01em] drop-shadow-[0_3px_18px_rgba(0,0,0,0.7)]">
@@ -231,9 +240,11 @@ function productImageLoadProps(
 	if (preload) {
 		return { priority: isFirst, fetchPriority: isFirst ? "high" : "auto" };
 	}
+
 	if (isFirst) {
 		return { loading: "eager" };
 	}
+
 	return {};
 }
 
@@ -250,6 +261,7 @@ export function HeroProductMotion({
 	preload = true,
 }: HeroProductMotionProps) {
 	const floatAnimate = reduceMotion ? undefined : { y: [0, -15, 0] };
+
 	const floatTransition = reduceMotion
 		? undefined
 		: ({
@@ -257,12 +269,14 @@ export function HeroProductMotion({
 				repeat: Number.POSITIVE_INFINITY,
 				ease: "easeInOut",
 			} as const);
+
 	const animate = reduceMotion
 		? { opacity: 1, scale: 1 }
 		: {
 				opacity: isActive ? 1 : 0.35,
 				scale: isActive ? 1 : 0.94,
 			};
+
 	return (
 		<m.div
 			animate={animate}

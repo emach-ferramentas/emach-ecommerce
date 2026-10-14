@@ -68,6 +68,7 @@ export async function listClientRefunds(
 	}
 
 	const orderIds = Array.from(new Set(refunds.map((r) => r.orderId)));
+
 	// Devolução é sempre do pedido inteiro (sem itens parciais — ver spec),
 	// então o preview = todos os itens do pedido. Set dedup: um pedido pode ter
 	// mais de uma devolução no histórico (ex.: uma recusada + uma nova).
@@ -90,6 +91,7 @@ export async function listClientRefunds(
 	);
 
 	const itemsByOrder = new Map<string, typeof items>();
+
 	for (const it of items) {
 		const arr = itemsByOrder.get(it.orderId) ?? [];
 		arr.push(it);
@@ -137,6 +139,7 @@ export async function getRefundForOrder(
 		)
 		.orderBy(desc(refundRequest.requestedAt))
 		.limit(1);
+
 	return row ?? null;
 }
 

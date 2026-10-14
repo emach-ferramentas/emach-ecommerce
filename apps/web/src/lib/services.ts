@@ -46,17 +46,21 @@ export async function getServices(): Promise<ServiceSummary[]> {
 	cacheLife({ revalidate: 600 });
 
 	const { services } = splitServiceTree(await getCategoryTree(db));
+
 	return await Promise.all(
 		services.map(async (service) => {
 			const { tools, total } = await getTools(db, {
 				categoryId: service.id,
 				limit: SERVICE_TOOLS_LIMIT,
 			});
+
 			const preview = sortInStockFirst(tools);
 			const inStock = preview.filter((t) => t.inStock);
+
 			const prices = inStock
 				.map(listPriceCents)
 				.filter((cents): cents is number => cents !== null);
+
 			return {
 				fromPriceCents: prices.length > 0 ? Math.min(...prices) : null,
 				href: serviceHref(service.slug),

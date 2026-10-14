@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import { deriveDrilldownLevel } from "./drilldown-level";
 
 let seq = 0;
+
 function node(name: string, children: CategoryNode[] = []): CategoryNode {
 	seq += 1;
 	const id = `id-${seq}`;
+
 	return {
 		id,
 		slug: name.toLowerCase().replace(/\s+/g, "-"),

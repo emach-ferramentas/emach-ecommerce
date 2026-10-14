@@ -27,13 +27,16 @@ export function CouponField({
 
 	const apply = async () => {
 		const trimmed = code.trim();
+
 		if (!trimmed) {
 			return;
 		}
+
 		setLoading(true);
 		setError(null);
 		const result = await applyCouponAction({ code: trimmed, cartItems });
 		setLoading(false);
+
 		if (result.ok) {
 			onApplied({
 				code: trimmed.toUpperCase(),

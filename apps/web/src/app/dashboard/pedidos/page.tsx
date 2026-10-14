@@ -34,6 +34,7 @@ async function OrdersByTab() {
 	const session = await requireCurrentClient();
 	const orders = await listClientOrders(session.user.id);
 	const counts = countByTab(orders.map((o) => o.status));
+
 	const tabs = ORDER_TABS.map((tab) => ({
 		value: tab,
 		label: ORDER_TAB_LABEL[tab],
@@ -45,9 +46,11 @@ async function OrdersByTab() {
 			tab === "all"
 				? orders
 				: orders.filter((o) => statusToTab(o.status) === tab);
+
 		if (list.length === 0) {
 			return <OrdersEmptyState statusLabel={ORDER_TAB_LABEL[tab]} />;
 		}
+
 		return (
 			<div className="space-y-4">
 				{list.map((o) => (

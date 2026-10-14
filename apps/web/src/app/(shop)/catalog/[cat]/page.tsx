@@ -21,6 +21,7 @@ interface CategoryPageProps {
 // cacheia por janela (getCategoryShell). Satisfaz o cacheComponents (≥1 param).
 export async function generateStaticParams() {
 	const slugs = await getAllCategorySlugs(db);
+
 	return slugs.map((cat) => ({ cat }));
 }
 
@@ -29,17 +30,22 @@ export async function generateMetadata({
 }: CategoryPageProps): Promise<Metadata> {
 	const { cat } = await params;
 	const category = await getCategoryShell(cat);
+
 	if (!category) {
 		return { title: "Categoria não encontrada" };
 	}
+
 	const title = category.name;
+
 	const description =
 		category.description ?? defaultCategoryDescription(category.name);
+
 	// Canonical pelo slug canônico da categoria, não pelo `cat` cru da URL.
 	const path = `/catalog/${category.slug}`;
 	// `openGraph`/`twitter` no filho SUBSTITUEM o do root (não há merge
 	// profundo): repetir imagem, locale e sufixo do título aqui é obrigatório.
 	const ogTitle = `${title} · EMACH`;
+
 	return {
 		title,
 		description,
@@ -68,9 +74,11 @@ export default async function CategoryPage({
 }: CategoryPageProps) {
 	const { cat } = await params;
 	const category = await getCategoryShell(cat);
+
 	if (!category) {
 		notFound();
 	}
+
 	return (
 		<Suspense fallback={<CatalogSkeleton />}>
 			<CatalogResults cat={cat} searchParams={searchParams} />

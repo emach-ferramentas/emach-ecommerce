@@ -21,6 +21,7 @@ export async function getVoltagesByTool(
 	toolIds: string[]
 ): Promise<Map<string, Voltage[]>> {
 	const map = new Map<string, Voltage[]>();
+
 	if (toolIds.length === 0) {
 		return map;
 	}
@@ -41,10 +42,13 @@ export async function getVoltagesByTool(
 		if (!row.voltage) {
 			continue;
 		}
+
 		const current = map.get(row.toolId) ?? [];
+
 		if (!current.includes(row.voltage)) {
 			current.push(row.voltage);
 		}
+
 		map.set(row.toolId, current);
 	}
 

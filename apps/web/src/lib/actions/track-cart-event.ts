@@ -31,17 +31,23 @@ export async function trackCartEventAction(
 ): Promise<void> {
 	try {
 		const parsed = schema.safeParse(raw);
+
 		if (!parsed.success) {
 			log.warn({ action: "cart_event_invalid_input" });
+
 			return;
 		}
+
 		const ip = getClientIp(await headers());
+
 		if (ip) {
 			const { success } = await cartEventLimiter.limit(`cart-event:${ip}`);
+
 			if (!success) {
 				return;
 			}
 		}
+
 		const session = await getCurrentClient();
 		await db.insert(cartEvent).values({
 			id: crypto.randomUUID(),

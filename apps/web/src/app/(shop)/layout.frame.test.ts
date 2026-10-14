@@ -12,20 +12,24 @@ const shopDir = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(shopDir, "../..");
 const TEST_FILE = /\.test\.tsx?$/;
 const MAIN_TAG = /<main[\s>]/;
+
 // O grupo impede que este arquivo case com a busca literal da tag, que é o
 // critério de aceite da #238.
 const HEADER_TAG = /<(?:SiteHeader)[\s/>]/;
 
 function sourceFiles(dir: string): string[] {
 	const files: string[] = [];
+
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
 		const path = join(dir, entry.name);
+
 		if (entry.isDirectory()) {
 			files.push(...sourceFiles(path));
 		} else if (entry.name.endsWith(".tsx") && !TEST_FILE.test(entry.name)) {
 			files.push(path);
 		}
 	}
+
 	return files;
 }
 
@@ -33,6 +37,7 @@ function filesMatching(dir: string, pattern: RegExp | string): string[] {
 	return sourceFiles(dir)
 		.filter((file) => {
 			const text = readFileSync(file, "utf8");
+
 			return typeof pattern === "string"
 				? text.includes(pattern)
 				: pattern.test(text);

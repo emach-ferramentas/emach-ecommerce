@@ -50,5 +50,6 @@ export default function CheckoutSuccessPage({
 async function SuccessOrderNumber({ searchParams }: SuccessPageProps) {
 	const { order } = await searchParams;
 	const number = parseOrderNumber(order);
+
 	return number ? <OrderNumber number={number} /> : null;
 }

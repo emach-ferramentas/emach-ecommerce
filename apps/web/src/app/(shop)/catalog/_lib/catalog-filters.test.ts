@@ -75,6 +75,7 @@ describe("deriveActiveFilters", () => {
 			currentCategorySlug: "furadeiras",
 			currentCategoryName: "Furadeiras",
 		});
+
 		expect(r).toHaveLength(1);
 		expect(r[0]).toMatchObject({
 			kind: "Categoria",

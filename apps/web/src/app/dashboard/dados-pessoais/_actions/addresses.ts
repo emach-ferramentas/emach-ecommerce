@@ -34,6 +34,7 @@ export async function createAddressAction(
 	raw: AddressInput
 ): Promise<ActionResultWith<{ id: string }>> {
 	const parsed = addressInputSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos" };
 	}
@@ -73,10 +74,12 @@ export async function createAddressAction(
 		});
 
 		revalidatePath("/dashboard/dados-pessoais");
+
 		return { ok: true, data: { id } };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
 		log.error({ action: "create_address_failed", clientId, error: message });
+
 		return { ok: false, error: "Não foi possível salvar o endereço" };
 	}
 }
@@ -85,6 +88,7 @@ export async function updateAddressAction(
 	raw: AddressInput & { id: string }
 ): Promise<ActionResult> {
 	const parsed = updateSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos" };
 	}
@@ -103,6 +107,7 @@ export async function updateAddressAction(
 					and(eq(clientAddress.id, id), eq(clientAddress.clientId, clientId))
 				)
 				.limit(1);
+
 			if (owned.length === 0) {
 				throw new Error("Endereço não encontrado");
 			}
@@ -128,6 +133,7 @@ export async function updateAddressAction(
 		});
 
 		revalidatePath("/dashboard/dados-pessoais");
+
 		return { ok: true };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
@@ -137,6 +143,7 @@ export async function updateAddressAction(
 			addressId: id,
 			error: message,
 		});
+
 		return { ok: false, error: "Não foi possível atualizar o endereço" };
 	}
 }
@@ -145,6 +152,7 @@ export async function deleteAddressAction(raw: {
 	id: string;
 }): Promise<ActionResult> {
 	const parsed = idSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "ID inválido" };
 	}
@@ -162,7 +170,9 @@ export async function deleteAddressAction(raw: {
 					and(eq(clientAddress.id, id), eq(clientAddress.clientId, clientId))
 				)
 				.limit(1);
+
 			const row = rows[0];
+
 			if (!row) {
 				throw new Error("Endereço não encontrado");
 			}
@@ -180,7 +190,9 @@ export async function deleteAddressAction(raw: {
 					.where(eq(clientAddress.clientId, clientId))
 					.orderBy(desc(clientAddress.updatedAt))
 					.limit(1);
+
 				const nextId = next[0]?.id;
+
 				if (nextId) {
 					await tx
 						.update(clientAddress)
@@ -191,6 +203,7 @@ export async function deleteAddressAction(raw: {
 		});
 
 		revalidatePath("/dashboard/dados-pessoais");
+
 		return { ok: true };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
@@ -200,6 +213,7 @@ export async function deleteAddressAction(raw: {
 			addressId: id,
 			error: message,
 		});
+
 		return { ok: false, error: "Não foi possível excluir o endereço" };
 	}
 }
@@ -208,6 +222,7 @@ export async function setDefaultAddressAction(raw: {
 	id: string;
 }): Promise<ActionResult> {
 	const parsed = idSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "ID inválido" };
 	}
@@ -225,6 +240,7 @@ export async function setDefaultAddressAction(raw: {
 					and(eq(clientAddress.id, id), eq(clientAddress.clientId, clientId))
 				)
 				.limit(1);
+
 			if (owned.length === 0) {
 				throw new Error("Endereço não encontrado");
 			}
@@ -243,6 +259,7 @@ export async function setDefaultAddressAction(raw: {
 		});
 
 		revalidatePath("/dashboard/dados-pessoais");
+
 		return { ok: true };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
@@ -252,6 +269,7 @@ export async function setDefaultAddressAction(raw: {
 			addressId: id,
 			error: message,
 		});
+
 		return { ok: false, error: "Não foi possível definir o endereço padrão" };
 	}
 }

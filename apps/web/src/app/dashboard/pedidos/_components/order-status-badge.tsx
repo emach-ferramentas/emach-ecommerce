@@ -31,6 +31,7 @@ const STATUS_CHIP: Record<
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
 	const { tone, icon, struck } = STATUS_CHIP[status];
+
 	return (
 		<StatusChip icon={icon} struck={struck} tone={tone}>
 			{ORDER_STATUS_BADGE[status].label}

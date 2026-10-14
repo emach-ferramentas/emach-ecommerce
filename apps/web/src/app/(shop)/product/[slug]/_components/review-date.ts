@@ -4,6 +4,7 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
 	month: "short",
 	year: "numeric",
 });
+
 const TRAILING_DOT = /\.$/u;
 
 export function formatReviewDate(date: Date): string {

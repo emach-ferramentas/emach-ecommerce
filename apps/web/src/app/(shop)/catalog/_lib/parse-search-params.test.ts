@@ -19,6 +19,7 @@ describe("parseCatalogSearchParams", () => {
 			sort: "price-asc",
 			voltage: "127V,999V,Bivolt",
 		});
+
 		expect(out.sort).toBe("price-asc");
 		expect(out.voltages).toEqual(["127V", "Bivolt"]);
 		expect(parseCatalogSearchParams({ sort: "xyz" }).sort).toBe("relevance");
@@ -29,6 +30,7 @@ describe("parseCatalogSearchParams", () => {
 			pmin: "-5",
 			pmax: "abc",
 		});
+
 		expect(out.page).toBe(1);
 		expect(out.priceMin).toBeUndefined();
 		expect(out.priceMax).toBeUndefined();
@@ -65,6 +67,7 @@ describe("parseCatalogSearchParams", () => {
 			voltage: ["127V", "220V"],
 			page: ["3", "9"],
 		});
+
 		expect(out.q).toBe("a");
 		expect(out.search).toBe("a");
 		expect(out.voltages).toEqual(["127V"]);

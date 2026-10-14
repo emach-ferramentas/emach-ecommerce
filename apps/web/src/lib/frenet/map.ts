@@ -9,9 +9,11 @@ function parseDecimal(raw: string | undefined): number {
 	if (!raw) {
 		return Number.NaN;
 	}
+
 	const normalized = raw.includes(",")
 		? raw.replace(/\./g, "").replace(",", ".")
 		: raw;
+
 	return Number.parseFloat(normalized);
 }
 
@@ -31,10 +33,12 @@ export function mapFrenetResponse(response: FrenetQuoteResponse): {
 	if (!response.ShippingSevicesArray) {
 		log.warn({ action: "frenet_response_missing_services_key" });
 	}
+
 	const services = response.ShippingSevicesArray ?? [];
 	const options: ShippingOption[] = [];
 	let discardedByError = 0;
 	let discardedByParse = 0;
+
 	for (const s of services) {
 		// O SDK oficial da Frenet (frenet-php/Magento) trata Error como boolean OU
 		// string — truthy simples descartaria um serviço válido com Error:"false".
@@ -42,8 +46,10 @@ export function mapFrenetResponse(response: FrenetQuoteResponse): {
 			discardedByError += 1;
 			continue;
 		}
+
 		const carrierId = `${s.CarrierCode ?? "NA"}-${s.ServiceCode ?? "NA"}`;
 		const price = parseDecimal(s.ShippingPrice);
+
 		if (!Number.isFinite(price)) {
 			discardedByParse += 1;
 			log.warn({
@@ -53,10 +59,13 @@ export function mapFrenetResponse(response: FrenetQuoteResponse): {
 			});
 			continue;
 		}
+
 		const days = Number.parseInt(s.DeliveryTime ?? "", 10);
+
 		const name =
 			[s.Carrier, s.ServiceDescription].filter(Boolean).join(" — ") ||
 			"Transportadora";
+
 		options.push({
 			carrierId,
 			name,
@@ -67,6 +76,7 @@ export function mapFrenetResponse(response: FrenetQuoteResponse): {
 			deliveryDays: Number.isFinite(days) ? days : 0,
 		});
 	}
+
 	// Zero opções com serviços recebidos: os contadores separam "todos com
 	// Error" (CEP legitimamente sem cobertura) de "descartados por parse"
 	// (drift de contrato) — sem eles, os dois casos logam idênticos.
@@ -78,6 +88,8 @@ export function mapFrenetResponse(response: FrenetQuoteResponse): {
 			discardedByParse,
 		});
 	}
+
 	options.sort((a, b) => a.priceCents - b.priceCents);
+
 	return { negotiate: options.length === 0, options };
 }

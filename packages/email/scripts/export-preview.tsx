@@ -10,6 +10,7 @@ import { ResetPasswordEmail } from "../src/templates/reset-password";
 import { VerifyEmailEmail } from "../src/templates/verify-email";
 
 const LOGO_PATH = "images/email/emach-logo.png";
+
 const LOGO_SOURCE = resolve(
 	import.meta.dir,
 	"../../../apps/web/public",
@@ -37,7 +38,9 @@ const previews = [
 ];
 
 await mkdir(join(outDir, "images/email"), { recursive: true });
+
 await copyFile(LOGO_SOURCE, join(outDir, LOGO_PATH));
+
 for (const { name, url, element } of previews) {
 	const html = await render(element, { pretty: true });
 	const file = join(outDir, `${name}.html`);

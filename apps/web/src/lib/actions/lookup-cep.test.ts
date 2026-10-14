@@ -3,13 +3,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("next/headers", () => ({
 	headers: vi.fn(() => Promise.resolve(new Headers())),
 }));
+
 vi.mock("@/lib/client-ip", () => ({ getClientIp: vi.fn(() => "1.2.3.4") }));
+
 vi.mock("@/lib/frenet/client", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("@/lib/frenet/client")>();
+
 	return { ...actual, fetchFrenetAddress: vi.fn() };
 });
+
 vi.mock("@/lib/rate-limit", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
+
 	return {
 		...actual,
 		cepLimiter: { limit: vi.fn(() => Promise.resolve({ success: true })) },

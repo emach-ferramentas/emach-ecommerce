@@ -16,6 +16,7 @@ const machine = createNavProgressMachine();
 export function NavigationProgress() {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
+
 	const state = useSyncExternalStore(
 		machine.subscribe,
 		machine.getState,
@@ -25,14 +26,18 @@ export function NavigationProgress() {
 	useEffect(() => {
 		const onStart = (event: Event) => {
 			const url = (event as CustomEvent<{ url?: string }>).detail?.url;
+
 			// Sem mudança de pathname/searchParams não há sinal de chegada — armar
 			// a barra a deixaria varrendo até o teto, e nada está carregando.
 			if (url && !shouldTrackNavigation(url, window.location.href)) {
 				return;
 			}
+
 			machine.start();
 		};
+
 		window.addEventListener("emach:navstart", onStart);
+
 		return () => window.removeEventListener("emach:navstart", onStart);
 	}, []);
 

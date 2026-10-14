@@ -10,6 +10,7 @@ function parseReviewSort(value: string | string[] | undefined): ReviewSortKey {
 	if (value === "rating-desc") {
 		return "rating-desc";
 	}
+
 	return "newest";
 }
 
@@ -17,7 +18,9 @@ function parseReviewPage(value: string | string[] | undefined): number {
 	if (typeof value !== "string") {
 		return 1;
 	}
+
 	const n = Number(value);
+
 	return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
 }
 

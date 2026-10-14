@@ -31,6 +31,7 @@ export function useQuickView(): OpenQuickView {
 /** Um só "Ver rápido" na árvore; os cards só pedem para abrir. */
 export function QuickViewProvider({ children }: { children: React.ReactNode }) {
 	const [slug, setSlug] = useState<string | null>(null);
+
 	return (
 		<QuickViewContext.Provider value={setSlug}>
 			{children}
@@ -63,6 +64,7 @@ function QuickViewDialog({
 				if (stale) {
 					return;
 				}
+
 				setState(
 					res.ok
 						? { status: "ready", product: res.data }
@@ -77,6 +79,7 @@ function QuickViewDialog({
 					});
 				}
 			});
+
 		return () => {
 			stale = true;
 		};
@@ -141,9 +144,11 @@ function QuickViewBody({
 	titleId: string;
 }) {
 	const { add, openSheet } = useCartActions();
+
 	const [variantId, setVariantId] = useState(() =>
 		initialVariantId(product.variants)
 	);
+
 	const [qty, setQty] = useState(1);
 	const [voltageError, setVoltageError] = useState(false);
 
@@ -151,8 +156,10 @@ function QuickViewBody({
 	const selected = product.variants.find((v) => v.id === variantId) ?? null;
 	// Sem escolha ainda, o preço mostrado é o da 1ª opção (a default).
 	const shown = selected ?? product.variants[0] ?? null;
+
 	const pricesDiffer =
 		new Set(product.variants.map((v) => v.finalAmount)).size > 1;
+
 	const installments = shown
 		? installmentLabel(numericToCents(shown.finalAmount))
 		: null;
@@ -160,8 +167,10 @@ function QuickViewBody({
 	function handleAdd() {
 		if (!selected) {
 			setVoltageError(true);
+
 			return;
 		}
+
 		add(
 			buildCartItem(
 				{

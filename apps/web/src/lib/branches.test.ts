@@ -95,6 +95,7 @@ describe("branchMapsUrl", () => {
 			city: "São Paulo",
 			state: "SP",
 		});
+
 		expect(url).toContain("https://www.google.com/maps/search/?api=1&query=");
 		expect(url).toContain(encodeURIComponent("Av. Paulista"));
 		expect(url).toContain(encodeURIComponent("São Paulo/SP"));

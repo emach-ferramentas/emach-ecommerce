@@ -11,6 +11,7 @@ export interface DescriptionParagraph {
 const CRLF = /\r\n?/g;
 const BLANK_LINE = /\n[ \t]*\n/;
 const SOFT_BREAK = /[ \t]*\n[ \t]*/g;
+
 /**
  * Único formato reconhecido: linha aberta por bullet (`- item`) ou por número
  * (`01 Disco`, `1. Manual`, `2) Chave`) — os dois jeitos que fornecedor usa pra

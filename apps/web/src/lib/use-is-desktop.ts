@@ -15,7 +15,9 @@ export function useIsDesktop(): boolean {
 		const update = () => setIsDesktop(mq.matches);
 		update();
 		mq.addEventListener("change", update);
+
 		return () => mq.removeEventListener("change", update);
 	}, []);
+
 	return isDesktop;
 }

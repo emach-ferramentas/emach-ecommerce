@@ -25,6 +25,8 @@ export function matchPriceRange(
 	if (pmin === null && pmax === null) {
 		return null;
 	}
+
 	const found = PRICE_RANGES.find((r) => r.pmin === pmin && r.pmax === pmax);
+
 	return found?.key ?? null;
 }

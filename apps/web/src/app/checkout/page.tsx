@@ -26,6 +26,7 @@ const SKELETON_BLOCKS = [
 	{ id: "frete", fields: 2 },
 	{ id: "revisao", fields: 3 },
 ] as const;
+
 const SUMMARY_ITEMS = ["item-a", "item-b"] as const;
 const SUMMARY_ROWS = ["subtotal", "frete", "total"] as const;
 const FIELD_KEYS = ["a", "b", "c", "d"] as const;
@@ -81,6 +82,7 @@ function CheckoutPageSkeleton() {
 // cacheComponents. Guarda P0 no topo, antes de qualquer dado sensível.
 async function CheckoutPageContent() {
 	const session = await requireCurrentClient("/checkout");
+
 	const [addresses, clientRow] = await Promise.all([
 		db
 			.select()
@@ -98,6 +100,7 @@ async function CheckoutPageContent() {
 			.where(eq(client.id, session.user.id))
 			.limit(1),
 	]);
+
 	const profile = clientRow[0];
 
 	return (

@@ -43,6 +43,7 @@ export const LEGACY_PATTERNS: ReadonlyArray<{ re: RegExp; token: string }> = [
 export function scanSource(source: string, file: string): LegacyHit[] {
 	const hits: LegacyHit[] = [];
 	const lines = source.split("\n");
+
 	for (const [index, text] of lines.entries()) {
 		for (const { re, token } of LEGACY_PATTERNS) {
 			if (re.test(text)) {
@@ -50,6 +51,7 @@ export function scanSource(source: string, file: string): LegacyHit[] {
 			}
 		}
 	}
+
 	return hits;
 }
 

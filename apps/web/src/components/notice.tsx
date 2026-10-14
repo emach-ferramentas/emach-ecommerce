@@ -25,6 +25,7 @@ export function Notice({
 	tone?: keyof typeof TONE;
 }) {
 	const { box, Icon, icon } = TONE[tone];
+
 	return (
 		<div
 			className={cn(

@@ -19,6 +19,7 @@ const NON_DIGIT = /\D/g;
 
 function present(value: string | null): string | null {
 	const trimmed = value?.trim();
+
 	return trimmed ? trimmed : null;
 }
 
@@ -31,9 +32,11 @@ export function formatBranchAddress(
 	const city = present(fields.city);
 	const state = present(fields.state);
 	const cep = present(fields.cep)?.replace(NON_DIGIT, "") ?? "";
+
 	if (!(street && streetNumber && city && state && CEP_DIGITS.test(cep))) {
 		return null;
 	}
+
 	const firstLine = [
 		street,
 		streetNumber,
@@ -42,6 +45,7 @@ export function formatBranchAddress(
 	]
 		.filter(Boolean)
 		.join(", ");
+
 	return [
 		firstLine,
 		`${city}/${state}, CEP ${cep.slice(0, 5)}-${cep.slice(5)}`,
@@ -70,18 +74,25 @@ export async function loadCompanyAddress(
 			.leftJoin(branch, eq(storeSettings.shippingOriginBranchId, branch.id))
 			.where(eq(storeSettings.id, "singleton"))
 			.limit(1);
+
 		const row = rows[0];
+
 		if (!row) {
 			log.warn({ action: "email_company_address_missing_settings" });
+
 			return null;
 		}
+
 		const lines = formatBranchAddress(row);
+
 		if (!lines) {
 			log.warn({ action: "email_company_address_incomplete" });
 		}
+
 		return lines;
 	} catch (error) {
 		log.error({ action: "email_company_address_failed", error });
+
 		return null;
 	}
 }

@@ -30,7 +30,9 @@ function formatDateBR(iso: string): string {
 	if (!ISO_DATE.test(iso)) {
 		return iso;
 	}
+
 	const [y, m, d] = iso.split("-");
+
 	return `${d}/${m}/${y}`;
 }
 

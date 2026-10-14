@@ -26,9 +26,11 @@ export default function DashboardPage() {
 async function AccountOverview() {
 	const session = await requireCurrentClient();
 	const orders = await listClientOrders(session.user.id);
+
 	const toPay = orders.filter(
 		(o) => o.status === "pending_payment" || o.status === "payment_failed"
 	);
+
 	const highlight = toPay[0] ?? orders[0] ?? null;
 
 	return (

@@ -11,7 +11,9 @@ export function formatCountdown(remainingMs: number): CountdownParts {
 	if (remainingMs <= 0) {
 		return { days: 0, hours: 0, minutes: 0, seconds: 0, done: true };
 	}
+
 	const totalSeconds = Math.floor(remainingMs / 1000);
+
 	return {
 		days: Math.floor(totalSeconds / 86_400),
 		hours: Math.floor((totalSeconds % 86_400) / 3600),

@@ -49,6 +49,7 @@ export function CategoryDrilldown({
 						if (isModifiedClick(e)) {
 							return;
 						}
+
 						e.preventDefault();
 						onSelect(level.back?.slug ?? null);
 					}}
@@ -95,6 +96,7 @@ export function CategoryDrilldown({
 							if (isModifiedClick(e)) {
 								return;
 							}
+
 							e.preventDefault();
 							onSelect(row.slug);
 						}}

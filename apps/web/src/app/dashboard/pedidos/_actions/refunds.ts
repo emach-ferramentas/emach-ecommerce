@@ -33,9 +33,11 @@ export async function requestRefundAction(raw: {
 	reasonText?: string;
 }): Promise<ActionResult> {
 	const parsed = schema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos" };
 	}
+
 	const session = await requireCurrentClient();
 	const clientId = session.user.id;
 	const { orderId, reasonCategory, reasonText } = parsed.data;
@@ -55,6 +57,7 @@ export async function requestRefundAction(raw: {
 		if (!orderRow) {
 			return { ok: false, error: "Pedido não encontrado" };
 		}
+
 		if (!isRefundEligibleStatus(orderRow.status)) {
 			return {
 				ok: false,
@@ -74,6 +77,7 @@ export async function requestRefundAction(raw: {
 				)
 			)
 			.limit(1);
+
 		if (active) {
 			return {
 				ok: false,
@@ -96,17 +100,20 @@ export async function requestRefundAction(raw: {
 
 		revalidatePath(`/dashboard/pedidos/${orderId}`);
 		revalidatePath("/dashboard/reembolso");
+
 		return { ok: true };
 	} catch (err) {
 		// Backstop de corrida: índice parcial único em (orderId) WHERE
 		// status IN ('requested','under_review').
 		const code = (err as { cause?: { code?: string } })?.cause?.code;
+
 		if (code === "23505") {
 			return {
 				ok: false,
 				error: "Já existe uma solicitação de devolução aberta para este pedido",
 			};
 		}
+
 		const message = err instanceof Error ? err.message : "Erro inesperado";
 		log.error({
 			action: "request_refund_failed",
@@ -114,6 +121,7 @@ export async function requestRefundAction(raw: {
 			orderId,
 			error: message,
 		});
+
 		return { ok: false, error: "Não foi possível solicitar a devolução" };
 	}
 }

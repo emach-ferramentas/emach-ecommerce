@@ -78,10 +78,12 @@ function HeroBackground({
 	const mobileBg = resolveMobileBg(banner);
 	const desktopCfg = composition.desktop.background;
 	const mobileCfg = composition.mobile.background ?? desktopCfg;
+
 	const sharedBg =
 		desktopBg != null &&
 		mobileBg === desktopBg &&
 		composition.mobile.background === undefined;
+
 	const fetchPriority = isFirst ? "high" : "auto";
 
 	return (
@@ -137,6 +139,7 @@ function HeroGlow({
 	reduceMotion: boolean;
 }) {
 	const animated = !reduceMotion && isDesktop;
+
 	return (
 		<m.div
 			animate={animated ? { opacity: [0.6, 1, 0.6] } : undefined}
@@ -182,9 +185,11 @@ function HeroPositionedProduct({
 		viewport === "mobile"
 			? (banner.productImageMobileUrl ?? banner.productImageUrl)
 			: banner.productImageUrl;
+
 	if (url == null) {
 		return null;
 	}
+
 	// Sem productImageMobileUrl, a camada mobile (posicionada OU empilhada, ver
 	// hero-safe-stack.tsx) cai pro mesmo productImageUrl do desktop — as duas
 	// <Image priority> duplicariam o preload do mesmo asset. Desktop só cede
@@ -194,7 +199,9 @@ function HeroPositionedProduct({
 	// majoritário e sempre mantém priority.
 	const mobileClaimsSameUrl =
 		mobileProductRenders && banner.productImageMobileUrl == null;
+
 	const preload = viewport === "mobile" || !mobileClaimsSameUrl;
+
 	return (
 		<div
 			className={cn(
@@ -242,14 +249,17 @@ function HeroPositionedElement({
 	headingTag: "h1" | "h2";
 }) {
 	const align = ALIGN_BY_COL[placement.anchor.charAt(1)] ?? "center";
+
 	const content = renderHeroElement(elementKey, banner, {
 		align,
 		ctaFull: false,
 		headingTag,
 	});
+
 	if (content === null) {
 		return null;
 	}
+
 	return (
 		<div
 			className={cn(
@@ -279,12 +289,14 @@ export function HeroSlide({
 	...motion
 }: HeroSlideProps) {
 	const partition = partitionMobileElements(composition);
+
 	// Produto mobile só reivindica preload quando vai de fato renderizar
 	// (empilhado OU posicionado) — `{hidden:true}` deixa o produto fora dos
 	// dois grupos, então ninguém no mobile reivindica.
 	const mobileProductRenders =
 		partition.stacked.includes("product") ||
 		partition.positioned.some(([key]) => key === "product");
+
 	// Contrato §gradiente: só título/subtítulo contam (specs não). Mesma regra
 	// do h1Index (hero-carousel.tsx): campo preenchido E elemento LIGADO na
 	// composition — sem elemento ligado, sem gradiente (nada visível pra proteger).
@@ -293,6 +305,7 @@ export function HeroSlide({
 			composition.desktop.elements.title !== undefined) ||
 		(banner.subtitle != null &&
 			composition.desktop.elements.subtitle !== undefined);
+
 	const headingTag = isH1 ? "h1" : "h2";
 
 	return (
@@ -328,9 +341,11 @@ export function HeroSlide({
 			{/* Desktop: todo elemento ligado é posicionado, na ordem fixa (z estável). */}
 			{SAFE_STACK_ORDER.map((key) => {
 				const placement = composition.desktop.elements[key];
+
 				if (placement === undefined) {
 					return null;
 				}
+
 				if (key === "product") {
 					return (
 						<HeroPositionedProduct
@@ -343,6 +358,7 @@ export function HeroSlide({
 						/>
 					);
 				}
+
 				return (
 					<HeroPositionedElement
 						banner={banner}

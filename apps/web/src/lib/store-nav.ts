@@ -45,7 +45,9 @@ export async function getStoreNav(): Promise<StoreNav> {
 		getCategoryTree(db),
 		getServices(),
 	]);
+
 	const { categories } = splitServiceTree(tree);
+
 	return {
 		categories: categories.map((c) => ({
 			href: `/catalog/${c.slug}` as Route,

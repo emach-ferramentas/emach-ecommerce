@@ -34,6 +34,7 @@ function TrackingCode({
 			toast.error("Não foi possível copiar");
 		}
 	};
+
 	return (
 		<div className="grid grid-cols-1 gap-4 rounded-[3px] border border-line bg-canteiro px-4 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
 			<div>
@@ -70,9 +71,11 @@ function TrackingBody({
 	if (negative) {
 		return null;
 	}
+
 	if (trackingCode) {
 		return <TrackingCode code={trackingCode} method={method} />;
 	}
+
 	return (
 		<p className="rounded-[3px] border border-line bg-canteiro px-4 py-3.5 text-[14px] text-ink-2">
 			{placeholderMessage(status)}
@@ -84,6 +87,7 @@ function placeholderMessage(status: OrderStatus): string {
 	if (status === "pending_payment" || status === "payment_failed") {
 		return "Aguardando confirmação de pagamento. O código de rastreio aparece aqui quando o pedido for enviado.";
 	}
+
 	return "Pedido em preparação. O código de rastreio aparece aqui assim que sair para entrega.";
 }
 
@@ -93,6 +97,7 @@ function HistoryTimeline({ history }: { history: OrderHistoryEntry[] }) {
 			<p className="text-[14px] text-ink-muted">Sem histórico registrado.</p>
 		);
 	}
+
 	return (
 		<ol className="space-y-3.5">
 			{history.map((h) => (

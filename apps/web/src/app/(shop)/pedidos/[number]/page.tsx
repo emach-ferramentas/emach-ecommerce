@@ -135,7 +135,9 @@ async function OrderConfirmationContent({
 		.from(order)
 		.where(and(eq(order.number, number), eq(order.clientId, session.user.id)))
 		.limit(1);
+
 	const orderRow = orderRows[0];
+
 	if (!orderRow) {
 		notFound();
 	}
@@ -150,11 +152,13 @@ async function OrderConfirmationContent({
 	const accountOrderHref = `/dashboard/pedidos/${orderRow.id}` as Route;
 	const current = `Pedido ${orderRow.number}`;
 	const status = <OrderStatusBadge status={orderRow.status} />;
+
 	const createdAt = orderRow.createdAt.toLocaleString("pt-BR", {
 		timeZone: "America/Sao_Paulo",
 		dateStyle: "short",
 		timeStyle: "short",
 	});
+
 	const actions = (
 		<>
 			<EmachLinkButton href={accountOrderHref} size="lg" variant="dark">

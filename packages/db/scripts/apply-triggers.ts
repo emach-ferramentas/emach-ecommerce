@@ -12,6 +12,7 @@ async function main() {
 
 	const client = new Client({ connectionString: env.DATABASE_URL });
 	await client.connect();
+
 	try {
 		await client.query(sql);
 		console.log("[apply-triggers] OK");

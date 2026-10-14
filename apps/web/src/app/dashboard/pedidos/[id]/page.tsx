@@ -55,14 +55,17 @@ async function OrderDetail({ params }: PageProps) {
 	const { order, items, history, reviewedToolIds } = detail;
 	const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 	const refund = await getRefundForOrder(session.user.id, order.id);
+
 	const canRequestRefund =
 		isRefundEligibleStatus(order.status) && !hasActiveRefund(refund);
+
 	const negativeAt =
 		order.canceledAt ?? order.refundedAt ?? order.returnedAt ?? null;
 
 	// phone/document são additionalFields do Better Auth, não inferidos no tipo
 	// da sessão — cast necessário (mesmo padrão de dashboard/dados-pessoais).
 	const u = session.user as { phone?: string | null; document?: string | null };
+
 	const buyer = {
 		name: session.user.name,
 		email: session.user.email,

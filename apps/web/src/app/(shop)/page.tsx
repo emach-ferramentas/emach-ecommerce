@@ -70,23 +70,28 @@ export default function HomePage() {
 
 function distinctCounts(lists: { id: string; inStock: boolean }[][]) {
 	const byId = new Map<string, boolean>();
+
 	for (const list of lists) {
 		for (const tool of list) {
 			byId.set(tool.id, tool.inStock);
 		}
 	}
+
 	let inStock = 0;
+
 	for (const value of byId.values()) {
 		if (value) {
 			inStock += 1;
 		}
 	}
+
 	return { inStock, total: byId.size };
 }
 
 async function HomeContent() {
 	const { banners, extrasByTool, featuredPromotion, services, shelves } =
 		await loadHome();
+
 	const byService = shelves.by === "service";
 	const counts = distinctCounts(services.map((s) => s.preview));
 

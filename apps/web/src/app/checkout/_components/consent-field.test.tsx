@@ -17,9 +17,11 @@ function mountConsent() {
 		validationLogic: revalidateLogic(),
 		validators: { onDynamic: schema },
 	});
+
 	const field = new FieldApi({ form, name: "acceptTos" });
 	form.mount();
 	field.mount();
+
 	return { form, field };
 }
 

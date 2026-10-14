@@ -12,6 +12,7 @@ const {
 	logWarn,
 } = vi.hoisted(() => {
 	const valuesFn = vi.fn();
+
 	return {
 		values: valuesFn,
 		insert: vi.fn(() => ({ values: valuesFn })),
@@ -24,12 +25,17 @@ const {
 });
 
 vi.mock("@emach/db", () => ({ db: { insert } }));
+
 vi.mock("@/lib/session", () => ({ getCurrentClient }));
+
 vi.mock("@/lib/rate-limit", () => ({ cartEventLimiter: { limit } }));
+
 vi.mock("@/lib/client-ip", () => ({ getClientIp }));
+
 vi.mock("@/lib/evlog", () => ({
 	log: { error: logError, warn: logWarn },
 }));
+
 vi.mock("next/headers", () => ({
 	headers: vi.fn(async () => new Headers()),
 }));

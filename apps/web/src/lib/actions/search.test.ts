@@ -1,15 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@emach/db", () => ({ db: {} }));
+
 vi.mock("next/headers", () => ({
 	headers: vi.fn(() => Promise.resolve(new Headers())),
 }));
+
 vi.mock("@/lib/client-ip", () => ({ getClientIp: vi.fn(() => "1.2.3.4") }));
+
 vi.mock("@/lib/rate-limit", () => ({
 	searchLimiter: { limit: vi.fn(() => Promise.resolve({ success: true })) },
 }));
+
 vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
+
 vi.mock("@emach/db/queries/tools", () => ({ searchTools: vi.fn() }));
+
 vi.mock("@/lib/auto-promo", () => ({ fetchAutoPromosByToolId: vi.fn() }));
 
 import { searchTools } from "@emach/db/queries/tools";

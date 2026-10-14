@@ -32,6 +32,7 @@ export function getRedis(): Redis | null {
 
 	if (!(url && token)) {
 		cached = null;
+
 		return cached;
 	}
 
@@ -51,6 +52,7 @@ export function getRedis(): Redis | null {
 		retry: { retries: 1 },
 		signal: () => AbortSignal.timeout(2000),
 	});
+
 	return cached;
 }
 

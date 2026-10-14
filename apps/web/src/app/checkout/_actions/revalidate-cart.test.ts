@@ -6,6 +6,7 @@ import { disableGlobalPromos } from "@/lib/test-helpers";
 import { computeFinalPrices } from "./revalidate-cart";
 
 const ROLLBACK = Symbol("rollback");
+
 async function withRollback(
 	fn: (tx: typeof db) => Promise<void>
 ): Promise<void> {
@@ -43,6 +44,7 @@ async function seedToolWithVariant(
 		barcode: `BARCODE-${variantId}`,
 		priceAmount: price,
 	});
+
 	return { toolId, variantId };
 }
 

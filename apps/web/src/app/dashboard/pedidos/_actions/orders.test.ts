@@ -23,6 +23,7 @@ vi.mock("@emach/db", () => {
 		}),
 		update: (table: unknown) => {
 			state.updatedTables.push(table);
+
 			return {
 				set: () => ({
 					where: () => ({
@@ -36,18 +37,23 @@ vi.mock("@emach/db", () => {
 		insert: (table: unknown) => ({
 			values: (values: unknown) => {
 				state.inserts.push({ table, values });
+
 				return Promise.resolve();
 			},
 		}),
 	};
+
 	return {
 		db: { transaction: async (cb: (t: typeof tx) => unknown) => cb(tx) },
 	};
 });
 
 vi.mock("@/lib/session", () => ({ requireCurrentClient }));
+
 vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
+
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+
 vi.mock("@/lib/orders/rebuy-query", () => ({ getRebuyItems: vi.fn() }));
 
 import { cancelOrderAction } from "./orders";

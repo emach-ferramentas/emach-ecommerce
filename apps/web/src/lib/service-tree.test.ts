@@ -8,6 +8,7 @@ function node(
 	productCount = 1
 ): CategoryNode {
 	const slug = path.split("/").at(-1) ?? path;
+
 	return {
 		children,
 		depth: path.split("/").length - 2,
@@ -38,6 +39,7 @@ describe("isServicePath", () => {
 describe("splitServiceTree", () => {
 	const reboco = node("/servicos/reboco-e-acabamento");
 	const furar = node("/servicos/furar-e-parafusar");
+
 	const tree = [
 		node("/eletricas", [node("/eletricas/furadeiras")]),
 		node("/servicos", [reboco, furar]),

@@ -30,6 +30,7 @@ function addressLines(address: unknown): string[] {
 	const a = (address ?? {}) as AddressSnapshot;
 	const street = [a.street, a.number].filter(Boolean).join(", ");
 	const locality = [a.neighborhood, a.city].filter(Boolean).join(", ");
+
 	return [
 		a.recipient,
 		street && a.complement ? `${street} — ${a.complement}` : street,
@@ -46,12 +47,14 @@ function toProps(
 	const summary = [
 		{ label: "Subtotal", value: fmtNumericBRL(order.subtotalAmount) },
 	];
+
 	if (numericToCents(order.discountAmount) > 0) {
 		summary.push({
 			label: "Desconto do cupom",
 			value: `- ${fmtNumericBRL(order.discountAmount)}`,
 		});
 	}
+
 	summary.push({
 		label: order.shippingMethod ? `Frete (${order.shippingMethod})` : "Frete",
 		value: fmtNumericBRL(order.shippingAmount),
@@ -92,9 +95,11 @@ export async function sendOrderReceivedEmail({
 			getClientOrderDetail(clientId, orderId),
 			loadCompanyAddress(db),
 		]);
+
 		if (!detail) {
 			throw new Error("Pedido não encontrado");
 		}
+
 		await sendEmail({
 			to,
 			subject: `Pedido ${detail.order.number} recebido`,

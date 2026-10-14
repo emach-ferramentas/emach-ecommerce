@@ -81,6 +81,7 @@ function PageLink({
 			</span>
 		);
 	}
+
 	return (
 		<Link
 			className={PAGE_LINK_CLASS}
@@ -89,6 +90,7 @@ function PageLink({
 				if (isModifiedClick(e)) {
 					return;
 				}
+
 				e.preventDefault();
 				onNavigate();
 			}}
@@ -119,6 +121,7 @@ function CatalogEmpty({
 	const what = searchTerm
 		? `Nenhum produto da loja combina com "${searchTerm}"${filters.length > 1 ? " e os filtros marcados" : ""}.`
 		: "Nenhum produto da loja atende a todos os filtros marcados.";
+
 	return (
 		<div className="rounded-[5px] border border-line-strong border-dashed bg-paper px-[18px] py-6 md:px-7 md:py-9">
 			<h2 className="font-display font-extrabold text-[30px] uppercase leading-none">
@@ -188,9 +191,11 @@ export function CatalogContent({
 	const router = useRouter();
 	const [isPending, startTransition] = useTransition();
 	const [filterOpen, setFilterOpen] = useState(false);
+
 	const [pminLocal, setPminLocal] = useState<string>(
 		priceMin == null ? "" : String(priceMin)
 	);
+
 	const [pmaxLocal, setPmaxLocal] = useState<string>(
 		priceMax == null ? "" : String(priceMax)
 	);
@@ -244,6 +249,7 @@ export function CatalogContent({
 		const next = voltages.includes(v)
 			? voltages.filter((x) => x !== v)
 			: [...voltages, v];
+
 		navigate({ voltage: next.length > 0 ? next : null });
 	}
 
@@ -266,11 +272,13 @@ export function CatalogContent({
 	const showFrom = total === 0 ? 0 : (page - 1) * pageSize + 1;
 	const showTo = Math.min(page * pageSize, total);
 	const searchTerm = query.trim();
+
 	const title =
 		currentCategory?.name ??
 		(searchTerm ? `Busca: “${searchTerm}”` : "Catálogo");
 
 	let countText = plural(total, "produto", "produtos");
+
 	if (total > pageSize) {
 		countText += `, mostrando ${showFrom} a ${showTo}`;
 	}

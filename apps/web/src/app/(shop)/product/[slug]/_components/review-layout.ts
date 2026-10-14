@@ -6,9 +6,11 @@ export function reviewLayoutMode(total: number): ReviewLayoutMode {
 	if (total <= 1) {
 		return "single";
 	}
+
 	if (total <= 3) {
 		return "duo";
 	}
+
 	return "grid";
 }
 

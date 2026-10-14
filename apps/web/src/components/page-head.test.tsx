@@ -24,6 +24,7 @@ describe("PageHead", () => {
 				Realizado em 01/10/2026
 			</PageHead>
 		);
+
 		expect(html).toContain("Realizado em 01/10/2026");
 		expect(html).toContain("<span>chip</span>");
 	});

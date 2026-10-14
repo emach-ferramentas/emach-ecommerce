@@ -11,6 +11,7 @@ export function warnRedisMissingOnce(): void {
 	if (warned || process.env.NODE_ENV !== "production") {
 		return;
 	}
+
 	warned = true;
 	log.warn({ action: "redis_not_configured" });
 }

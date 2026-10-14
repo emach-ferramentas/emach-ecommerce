@@ -23,9 +23,11 @@ export async function cancelOrderAction(raw: {
 	orderId: string;
 }): Promise<ActionResult> {
 	const parsed = orderIdSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "ID inválido" };
 	}
+
 	const session = await requireCurrentClient();
 	const clientId = session.user.id;
 	const { orderId } = parsed.data;
@@ -41,9 +43,11 @@ export async function cancelOrderAction(raw: {
 				.from(order)
 				.where(and(eq(order.id, orderId), eq(order.clientId, clientId)))
 				.limit(1);
+
 			if (!row) {
 				return { ok: false as const, error: "Pedido não encontrado" };
 			}
+
 			if (!CANCELABLE.has(row.status)) {
 				return {
 					ok: false as const,
@@ -58,6 +62,7 @@ export async function cancelOrderAction(raw: {
 				.set({ status: "canceled", canceledAt: new Date() })
 				.where(and(eq(order.id, orderId), eq(order.status, row.status)))
 				.returning({ id: order.id });
+
 			if (updated.length === 0) {
 				return {
 					ok: false as const,
@@ -93,6 +98,7 @@ export async function cancelOrderAction(raw: {
 			revalidatePath("/dashboard/pedidos");
 			revalidatePath(`/dashboard/pedidos/${orderId}`);
 		}
+
 		return result;
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
@@ -102,6 +108,7 @@ export async function cancelOrderAction(raw: {
 			orderId,
 			error: message,
 		});
+
 		return { ok: false, error: "Não foi possível cancelar o pedido" };
 	}
 }
@@ -124,19 +131,24 @@ export async function rebuyAction(raw: {
 	orderId: string;
 }): Promise<ActionResult<{ items: RebuySnapshot[]; skipped: number }>> {
 	const parsed = orderIdSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "ID inválido" };
 	}
+
 	const session = await requireCurrentClient();
 	const clientId = session.user.id;
 	const { orderId } = parsed.data;
 
 	try {
 		const rows = await getRebuyItems(clientId, orderId);
+
 		if (rows === null) {
 			return { ok: false, error: "Pedido não encontrado" };
 		}
+
 		const available = rows.filter((r) => r.available);
+
 		const items: RebuySnapshot[] = available.map((r) => ({
 			toolId: r.toolId,
 			variantId: r.variantId,
@@ -150,13 +162,16 @@ export async function rebuyAction(raw: {
 			categorySlug: r.categorySlug,
 			quantity: r.quantity,
 		}));
+
 		if (items.length === 0) {
 			return { ok: false, error: "Nenhum item disponível para recompra" };
 		}
+
 		return { ok: true, data: { items, skipped: rows.length - items.length } };
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Erro inesperado";
 		log.error({ action: "rebuy_failed", clientId, orderId, error: message });
+
 		return { ok: false, error: "Não foi possível montar a recompra" };
 	}
 }

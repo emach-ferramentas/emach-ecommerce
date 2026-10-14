@@ -38,6 +38,7 @@ export function QtyStepper({
 	value,
 }: QtyStepperProps) {
 	const sizeClass = SIZE_CLASS[size];
+
 	return (
 		<fieldset
 			className={cn(

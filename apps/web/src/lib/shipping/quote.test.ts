@@ -9,11 +9,15 @@ vi.mock("@emach/db", () => ({
 		})),
 	},
 }));
+
 vi.mock("@emach/db/queries/shipping", () => ({ getActiveBoxes: vi.fn() }));
+
 vi.mock("@emach/db/queries/store-settings", () => ({
 	getShippingSettings: vi.fn(),
 }));
+
 vi.mock("@/lib/frenet/client", () => ({ fetchFrenetQuote: vi.fn() }));
+
 vi.mock("@/lib/frenet/cache", () => ({
 	buildQuoteCacheKey: vi.fn(() => "cache-key"),
 	getCachedQuote: vi.fn(),
@@ -157,6 +161,7 @@ describe("quoteShipping (adapter Frenet)", () => {
 				},
 			],
 		};
+
 		vi.mocked(getCachedQuote).mockResolvedValue(cached);
 
 		const result = await quoteShipping({

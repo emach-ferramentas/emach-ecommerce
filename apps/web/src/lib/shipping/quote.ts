@@ -36,6 +36,7 @@ function effectiveInsuranceCents(
 	if (settings.insurancePolicy === "none") {
 		return 0;
 	}
+
 	return Math.min(
 		declaredValueCents,
 		Math.round(settings.insuranceCapAmount * 100)
@@ -51,6 +52,7 @@ export async function quoteShipping(
 	input: QuoteShippingInput
 ): Promise<{ negotiate: boolean; options: ShippingOption[] }> {
 	const toolIds = Array.from(new Set(input.items.map((i) => i.toolId)));
+
 	const [boxes, settings, toolRows] = await Promise.all([
 		getActiveBoxes(db),
 		getShippingSettings(db),
@@ -73,17 +75,20 @@ export async function quoteShipping(
 	// não tem como ser cotada: "a combinar" sem gastar chamada, com warn pra
 	// ser corrigível no catálogo.
 	const missingDims = toolRows.filter((row) => !hasShippingDims(row));
+
 	if (missingDims.length > 0) {
 		log.warn({
 			action: "shipping_negotiate_missing_dims",
 			toolIds: missingDims.map((row) => row.id),
 		});
+
 		return { negotiate: true, options: [] };
 	}
 
 	const items = buildQuoteItems(toolRows.filter(hasShippingDims), input.items);
 	const packages = packItems(items, boxes);
 	const outOfCatalog = packages.filter((p) => p.outOfCatalog);
+
 	if (outOfCatalog.length > 0) {
 		// Sem este warn, "negotiate por falta de caixa" (dado de catálogo
 		// corrigível no dashboard) é indistinguível de "Frenet sem serviço".
@@ -94,6 +99,7 @@ export async function quoteShipping(
 				(p) => `${p.lengthCm}x${p.widthCm}x${p.heightCm}cm:${p.weightKg}kg`
 			),
 		});
+
 		return { negotiate: true, options: [] };
 	}
 
@@ -105,27 +111,33 @@ export async function quoteShipping(
 	// dashboard. Ambos entram na chave de cache → setting mudou, chave muda,
 	// sem invalidação manual.
 	const originCepDigits = (settings.originCep ?? "").replace(/\D/g, "");
+
 	if (settings.originCep != null && originCepDigits.length !== 8) {
 		log.warn({
 			action: "shipping_origin_cep_invalid",
 			originBranchId: settings.originBranchId,
 		});
 	}
+
 	const sellerCep =
 		originCepDigits.length === 8
 			? originCepDigits
 			: env.FRENET_SELLER_CEP.replace(/\D/g, "");
+
 	const declaredValueCents = effectiveInsuranceCents(
 		input.declaredValueCents ?? 0,
 		settings
 	);
+
 	const cacheKey = buildQuoteCacheKey({
 		sellerCep,
 		destinationCep,
 		declaredValueCents,
 		packages,
 	});
+
 	const cached = await getCachedQuote(cacheKey);
+
 	if (cached) {
 		return cached;
 	}
@@ -143,12 +155,16 @@ export async function quoteShipping(
 			Quantity: 1,
 		})),
 	});
+
 	const result = mapFrenetResponse(response);
+
 	if (result.negotiate) {
 		// Contraparte do warn de packing: aqui a Frenet respondeu, mas nenhum
 		// serviço cotou (CEP sem cobertura ou todos com Error por serviço).
 		log.warn({ action: "shipping_negotiate_no_services", destinationCep });
 	}
+
 	await setCachedQuote(cacheKey, result);
+
 	return result;
 }

@@ -24,6 +24,7 @@ interface ProductImageProps {
 
 const WRAPPER_BASE =
 	"absolute inset-0 overflow-hidden transition-transform duration-[var(--card-dur-image)] ease-[var(--card-ease)] motion-reduce:transition-none";
+
 const ZOOM_ON_HOVER =
 	"group-hover:scale-[1.04] motion-reduce:group-hover:scale-100";
 
@@ -63,6 +64,7 @@ export function ProductImage({
 	}
 
 	const Icon = CATEGORY_ICONS[categorySlug] ?? Wrench;
+
 	return (
 		<div
 			className={cn(

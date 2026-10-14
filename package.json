@@ -33,9 +33,11 @@
     "db:studio": "turbo -F @emach/db db:studio",
     "db:generate": "echo 'LEGACY: schema sync e via CI PR do dashboard. Em dev use db:push.' && exit 1",
     "db:migrate": "echo 'LEGACY: pasta migrations/ removida. Use db:push + db:apply-triggers.' && exit 1",
-    "check": "ultracite check",
+    "check": "ultracite check && bun run lint:slop",
     "check:env": "bun scripts/check-vercel-env.ts",
-    "fix": "ultracite fix",
+    "fix": "bun node_modules/.bin/oxlint --fix && ultracite fix",
+    "lint:slop": "bun node_modules/.bin/oxlint",
+    "prepare": "lefthook install",
     "clean": "bash scripts/clean.sh",
     "clean-all": "bash scripts/clean.sh -y --cache",
     "clean-dry": "bash scripts/clean.sh --dry-run"
@@ -43,7 +45,10 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@emach/config": "workspace:*",
+    "@oxlint/plugins": "1.78.0",
     "@types/node": "catalog:",
+    "lefthook": "2.2.2",
+    "oxlint": "1.78.0",
     "turbo": "^2.9.14",
     "typescript": "^6.0.3",
     "ultracite": "7.7.0"

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { runEvlog } = vi.hoisted(() => ({ runEvlog: vi.fn() }));
+
 vi.mock("evlog/next", () => ({ evlogMiddleware: () => runEvlog }));
 
 import { proxy } from "./proxy";
@@ -18,6 +19,7 @@ describe("proxy — categoria legada", () => {
 		const res = await proxy(
 			new NextRequest(`${ORIGIN}/catalog?cat=serras&sort=price-asc`)
 		);
+
 		expect(res.status).toBe(308);
 		expect(res.headers.get("location")).toBe(
 			`${ORIGIN}/catalog/serras?sort=price-asc`

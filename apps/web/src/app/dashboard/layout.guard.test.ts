@@ -21,6 +21,7 @@ describe("guarda estrutural de /dashboard (#98)", () => {
 			join(dashboardDir, "_components/dashboard-chrome.tsx"),
 			"utf8"
 		);
+
 		expect(chrome).toContain(`await ${GUARD}()`);
 	});
 
@@ -37,6 +38,7 @@ describe("guarda estrutural de /dashboard (#98)", () => {
 			resolve(dashboardDir, "../../lib/session.ts"),
 			"utf8"
 		);
+
 		expect(session).toContain("authEcommerce.api.getSession");
 		expect(session).toContain('redirect("/login")');
 	});

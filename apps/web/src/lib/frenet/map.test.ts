@@ -26,6 +26,7 @@ describe("mapFrenetResponse", () => {
 				},
 			],
 		});
+
 		expect(result.negotiate).toBe(false);
 		expect(result.options).toEqual([
 			{
@@ -63,6 +64,7 @@ describe("mapFrenetResponse", () => {
 				},
 			],
 		});
+
 		expect(result.options).toHaveLength(1);
 		expect(result.options[0]?.carrierId).toBe("COR-40010");
 	});
@@ -87,6 +89,7 @@ describe("mapFrenetResponse", () => {
 				},
 			],
 		});
+
 		expect(result.options).toEqual([
 			{
 				carrierId: "JAD-3",
@@ -126,6 +129,7 @@ describe("mapFrenetResponse", () => {
 				},
 			],
 		});
+
 		expect(result.options).toHaveLength(1);
 		expect(result.options[0]?.carrierId).toBe("COR-40010");
 		expect(result.negotiate).toBe(false);
@@ -154,6 +158,7 @@ describe("mapFrenetResponse", () => {
 				},
 			],
 		});
+
 		expect(result.options.map((o) => o.priceCents)).toEqual([4590, 123_456]);
 	});
 
@@ -171,6 +176,7 @@ describe("mapFrenetResponse", () => {
 				},
 			],
 		});
+
 		expect(result.options[0]?.priceCents).toBe(0);
 		expect(result.negotiate).toBe(false);
 	});

@@ -20,10 +20,13 @@ export function CancelOrderButton({
 	function onClick() {
 		if (!confirming) {
 			setConfirming(true);
+
 			return;
 		}
+
 		start(async () => {
 			const res = await cancelOrderAction({ orderId });
+
 			if (res.ok) {
 				toast.success("Pedido cancelado");
 				router.refresh();
@@ -38,6 +41,7 @@ export function CancelOrderButton({
 		if (pending) {
 			return "Cancelando";
 		}
+
 		return confirming ? "Confirmar cancelamento?" : "Cancelar pedido";
 	}
 

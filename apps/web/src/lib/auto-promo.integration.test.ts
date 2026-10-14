@@ -8,6 +8,7 @@ import { autoPromoToolIdsFromMap, fetchAutoPromosByToolId } from "./auto-promo";
 // (VITEST_UNIT_ONLY=1 / lista INTEGRATION em vitest.config.ts); roda local com
 // `bun run --filter=web test`.
 const ROLLBACK = Symbol("rollback");
+
 async function withRollback(
 	fn: (tx: typeof db) => Promise<void>
 ): Promise<void> {
@@ -23,6 +24,7 @@ async function withRollback(
 		}
 	}
 }
+
 describe("auto-promo helper (integração)", () => {
 	it("fetchAutoPromosByToolId pega promo específica vigente", async () => {
 		await withRollback(async (tx) => {

@@ -26,6 +26,7 @@ function StarInput({
 }) {
 	const [hover, setHover] = useState(0);
 	const clearHover = () => setHover(0);
+
 	return (
 		// biome-ignore lint/a11y/noNoninteractiveElementInteractions: onMouseLeave só limpa o hover visual; a interação real está nos <button> filhos
 		<fieldset
@@ -86,14 +87,17 @@ export function ReviewSheet({
 		if (!next) {
 			reset();
 		}
+
 		onOpenChange(next);
 	}
 
 	function submit() {
 		if (rating < 1) {
 			toast.error("Escolha uma nota");
+
 			return;
 		}
+
 		startTransition(async () => {
 			const res = await createReviewAction({
 				orderId,
@@ -102,6 +106,7 @@ export function ReviewSheet({
 				title,
 				body,
 			});
+
 			if (res.ok) {
 				toast.success("Avaliação enviada para moderação");
 				handleOpenChange(false);

@@ -68,6 +68,7 @@ describe("legacyToComposition", () => {
 			hasSubtitle: false,
 			hasCountdown: false,
 		});
+
 		expect(Object.keys(c.desktop.elements).sort()).toEqual(["cta", "product"]);
 	});
 
@@ -82,11 +83,13 @@ describe("legacyToComposition", () => {
 			hero_center: ["tc", "mc", "bc"],
 			text_right: ["tc", "mc", "br"],
 		};
+
 		for (const [layout, [title, product, cta]] of Object.entries(trios)) {
 			const c = legacyToComposition({
 				...ALL_ON,
 				layout: layout as Parameters<typeof legacyToComposition>[0]["layout"],
 			});
+
 			expect(c.desktop.elements.title?.anchor, layout).toBe(title);
 			expect(c.desktop.elements.product?.anchor ?? null, layout).toBe(product);
 			expect(c.desktop.elements.cta?.anchor, layout).toBe(cta);
@@ -106,6 +109,7 @@ describe("deriveHasFlagsFromBanner", () => {
 			ctaLabel: "Ver",
 			ctaHref: null,
 		});
+
 		expect(flags).toEqual({
 			hasTitle: true,
 			hasSubtitle: false,
@@ -172,10 +176,12 @@ describe("resolveComposition", () => {
 
 	it("inválida não-nula converte E loga com bannerId", () => {
 		const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
 		const bad = {
 			...VALID,
 			version: 2,
 		} as unknown as ResolvableBanner["composition"];
+
 		const c = resolveComposition(makeBanner({ composition: bad }));
 		expect(c.desktop.elements.product?.anchor).toBe("tc");
 		expect(spy).toHaveBeenCalledTimes(1);

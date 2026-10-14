@@ -39,10 +39,12 @@ export function PhotoGallery({
 		const track = trackRef.current;
 		const clamped = Math.max(0, Math.min(count - 1, next));
 		setIndex(clamped);
+
 		if (track) {
 			const reduce = window.matchMedia(
 				"(prefers-reduced-motion: reduce)"
 			).matches;
+
 			track.scrollTo({
 				left: clamped * track.clientWidth,
 				behavior: reduce ? "auto" : "smooth",
@@ -52,12 +54,15 @@ export function PhotoGallery({
 
 	function onScroll() {
 		const track = trackRef.current;
+
 		if (!track) {
 			return;
 		}
+
 		const current = Math.round(
 			track.scrollLeft / Math.max(1, track.clientWidth)
 		);
+
 		if (current !== index) {
 			setIndex(current);
 		}

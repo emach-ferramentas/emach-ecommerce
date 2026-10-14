@@ -18,6 +18,7 @@ export function ReviewItemButton({
 	toolId: string;
 }) {
 	const [open, setOpen] = useState(false);
+
 	if (reviewed) {
 		return (
 			<span className="inline-flex items-center gap-1 font-semibold text-[13.5px] text-ok">
@@ -26,6 +27,7 @@ export function ReviewItemButton({
 			</span>
 		);
 	}
+
 	return (
 		<>
 			<EmachButton onClick={() => setOpen(true)} size="md" variant="line">

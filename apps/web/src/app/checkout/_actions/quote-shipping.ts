@@ -38,6 +38,7 @@ export async function quoteShippingAction(
 	await requireCurrentClient();
 
 	const parsed = inputSchema.safeParse(rawInput);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos para cotação" };
 	}
@@ -47,8 +48,10 @@ export async function quoteShippingAction(
 	// mútuo entre usuários sem-IP. Em prod (Vercel) o IP sempre existe via
 	// x-forwarded-for.
 	const ip = getClientIp(await headers());
+
 	if (ip) {
 		const { success } = await shippingLimiter.limit(`shipping:${ip}`);
+
 		if (!success) {
 			return { ok: false, error: RATE_LIMIT_MESSAGE };
 		}
@@ -58,12 +61,14 @@ export async function quoteShippingAction(
 
 	try {
 		const { options, negotiate } = await quoteShipping(parsed.data);
+
 		return { ok: true, options, negotiate };
 	} catch (err) {
 		log.error({
 			action: "quote_shipping_failed",
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
+
 		return { ok: false, error: "Não foi possível calcular o frete." };
 	}
 }

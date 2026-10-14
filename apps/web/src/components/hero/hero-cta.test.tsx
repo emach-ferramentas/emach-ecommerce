@@ -8,6 +8,7 @@ import {
 
 const BASE =
 	"cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[2px] border font-sans font-semibold tracking-[0.04em] transition-all duration-180 focus-visible:outline-2 focus-visible:outline-emach-red focus-visible:outline-offset-2 active:translate-y-px active:brightness-90 active:duration-75 disabled:pointer-events-none disabled:opacity-60 aria-busy:pointer-events-none motion-reduce:active:translate-y-0";
+
 const BASE_TRANSPARENT = BASE.replace("border ", "border border-transparent ");
 const LG = "h-13 px-[30px] text-sm";
 
@@ -48,6 +49,7 @@ function renderCta(
 			{ ctaFull, headingTag: "h2" }
 		)
 	);
+
 	return html.match(ANCHOR);
 }
 

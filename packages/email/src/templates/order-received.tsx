@@ -69,6 +69,7 @@ function Amount({
 	strong?: boolean;
 }) {
 	const weight = strong ? { fontWeight: 800, fontSize: "17px" } : {};
+
 	return (
 		<Row>
 			<Column>

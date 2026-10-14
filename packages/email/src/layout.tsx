@@ -28,11 +28,13 @@ export const color = {
 // Gmail app) cai em Arial, que tem métrica próxima.
 const ARCHIVO_WOFF2 =
 	"https://fonts.gstatic.com/s/archivo/v25/k3kPo8UDI-1M0wlSV9XAw6lQkqWY8Q82sLydOxI.woff2";
+
 const FONT_STACK = "Archivo, Arial, Helvetica, sans-serif";
 
 // Mesmo CNPJ do rodapé do site (apps/web/src/components/site-footer.tsx).
 const COMPANY = "EMACH Ferramentas";
 const CNPJ = "04.128.615/0001-59";
+
 const TAGLINE =
 	"Ferramentas e acessórios para obra, organizados pelo serviço que você vai fazer.";
 

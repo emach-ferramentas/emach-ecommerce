@@ -21,9 +21,11 @@ export function cardAction(
 	if (!tool.inStock) {
 		return "notify";
 	}
+
 	if (listPriceCents(tool) === null) {
 		return "view";
 	}
+
 	return voltages.length > 1 ? "choose-voltage" : "add";
 }
 
@@ -32,6 +34,7 @@ export function voltageSummary(voltages: Voltage[]): string | null {
 	if (voltages.length === 0) {
 		return null;
 	}
+
 	return voltages.map((v) => voltageLabel(v).name).join(" ou ");
 }
 

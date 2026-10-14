@@ -4,7 +4,9 @@ function toCents(amount: string | null): number | null {
 	if (amount === null) {
 		return null;
 	}
+
 	const value = Number(amount);
+
 	return Number.isFinite(value) ? Math.round(value * 100) : null;
 }
 
@@ -21,10 +23,13 @@ export function listPriceCents(
 		discountedAmount: string | null;
 		priceAmount: string | null;
 	};
+
 	const base = toCents(priceAmount);
+
 	if (base === null) {
 		return null;
 	}
+
 	return toCents(discountedAmount) ?? base;
 }
 

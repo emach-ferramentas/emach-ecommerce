@@ -48,13 +48,17 @@ function createInMemoryStorage(): RateLimitStorage {
 	return {
 		get(key) {
 			const entry = store.get(key);
+
 			if (!entry) {
 				return Promise.resolve(undefined);
 			}
+
 			if (Date.now() >= entry.expiresAt) {
 				store.delete(key);
+
 				return Promise.resolve(undefined);
 			}
+
 			return Promise.resolve(entry.data);
 		},
 		set(key, value) {
@@ -62,6 +66,7 @@ function createInMemoryStorage(): RateLimitStorage {
 				data: value,
 				expiresAt: Date.now() + RATE_LIMIT_WINDOW_SECONDS * 1000,
 			});
+
 			return Promise.resolve();
 		},
 	};
@@ -74,11 +79,13 @@ function createRedisStorage(
 		async get(key) {
 			try {
 				const data = await redis.get<RateLimitData>(RATE_LIMIT_PREFIX + key);
+
 				return data ?? undefined;
 			} catch (error) {
 				// Fail-open: um blip do Redis não pode derrubar o login. Pior caso,
 				// uma janela sem rate limit; melhor que indisponibilidade total.
 				log.warn({ action: "rate-limit", msg: "redis get failed", error });
+
 				return;
 			}
 		},

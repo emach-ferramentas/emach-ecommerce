@@ -20,6 +20,7 @@ export async function primaryImageByToolId(
 	if (toolIds.length === 0) {
 		return new Map();
 	}
+
 	const rows = await database
 		.select({ toolId: toolImage.toolId, url: toolImage.url })
 		.from(toolImage)
@@ -29,11 +30,14 @@ export async function primaryImageByToolId(
 		// O first-wins abaixo só depende de `asc(sortOrder)`, mas dropar o
 		// `asc(toolId)` impediria o índice de servir o ORDER BY (forçaria sort).
 		.orderBy(asc(toolImage.toolId), asc(toolImage.sortOrder));
+
 	const map = new Map<string, string>();
+
 	for (const r of rows) {
 		if (!map.has(r.toolId)) {
 			map.set(r.toolId, r.url); // primeira = menor sortOrder
 		}
 	}
+
 	return map;
 }

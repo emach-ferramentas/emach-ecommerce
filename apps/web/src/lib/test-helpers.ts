@@ -36,5 +36,6 @@ export async function seedTool(tx: typeof db): Promise<string> {
 		widthCm: "10.00",
 		heightCm: "10.00",
 	});
+
 	return id;
 }

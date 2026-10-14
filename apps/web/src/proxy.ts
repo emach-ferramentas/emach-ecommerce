@@ -17,6 +17,7 @@ export async function proxy(req: NextRequest): Promise<Response> {
 	// URL legada de categoria (`/catalog?cat=x`) → rota própria. 308 preserva
 	// método e é tratado como permanente pelo Google.
 	const legacy = legacyCategoryRedirect(req.nextUrl);
+
 	if (legacy) {
 		return NextResponse.redirect(legacy, 308);
 	}
@@ -39,10 +40,12 @@ export async function proxy(req: NextRequest): Promise<Response> {
 		const token =
 			req.cookies.get("ecommerce.session_token") ??
 			req.cookies.get("__Secure-ecommerce.session_token");
+
 		if (!token) {
 			const url = req.nextUrl.clone();
 			url.pathname = "/login";
 			url.searchParams.set("redirect", req.nextUrl.pathname);
+
 			return NextResponse.redirect(url);
 		}
 	}

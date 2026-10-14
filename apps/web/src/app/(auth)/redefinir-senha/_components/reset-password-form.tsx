@@ -20,8 +20,10 @@ export function ResetPasswordForm() {
 		onSubmit: async ({ value }) => {
 			if (!token) {
 				toast.error("Token ausente ou inválido.");
+
 				return;
 			}
+
 			await authClient.resetPassword(
 				{ newPassword: value.password, token },
 				{

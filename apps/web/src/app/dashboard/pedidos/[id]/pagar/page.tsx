@@ -33,13 +33,17 @@ async function Payment({ params }: PageProps) {
 	const { id } = await params;
 	const session = await requireCurrentClient();
 	const detail = await getClientOrderDetail(session.user.id, id);
+
 	if (!detail) {
 		notFound();
 	}
+
 	const { order } = detail;
+
 	if (order.status !== "pending_payment" && order.status !== "payment_failed") {
 		redirect(`/dashboard/pedidos/${id}`);
 	}
+
 	return (
 		<div className="pb-12">
 			<PageHead title="Pagamento">Pedido #{order.number}</PageHead>

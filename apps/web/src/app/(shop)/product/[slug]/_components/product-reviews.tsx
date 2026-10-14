@@ -36,9 +36,11 @@ function sumDistribution(
 function recommendPct(distribution: ToolDetail["reviewStats"]["distribution"]) {
 	const positive = distribution[4] + distribution[5];
 	const total = sumDistribution(distribution);
+
 	if (total === 0) {
 		return 0;
 	}
+
 	return Math.round((positive / total) * 100);
 }
 
@@ -135,6 +137,7 @@ function DistributionBars({
 	distribution: ToolDetail["reviewStats"]["distribution"];
 }) {
 	const totalReviews = sumDistribution(distribution);
+
 	const bars = ([5, 4, 3, 2, 1] as const).map((star) => ({
 		star,
 		pct:
@@ -188,6 +191,7 @@ export function ProductReviews({
 	const firstReview = reviews[0];
 
 	let lowCountContent: ReactNode;
+
 	if (firstReview === undefined) {
 		// ?reviewPage fora do alcance com n baixo (URL manipulada).
 		lowCountContent = (

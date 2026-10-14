@@ -5,13 +5,17 @@ function maskDocument(doc: string | null): string {
 	if (!doc) {
 		return "—";
 	}
+
 	const d = normalizeDocument(doc);
+
 	if (d.length === 11) {
 		return `***.***.${d.slice(6, 9)}-${d.slice(9)}`;
 	}
+
 	if (d.length === 14) {
 		return `**.***.***/${d.slice(8, 12)}-${d.slice(12)}`;
 	}
+
 	return "—";
 }
 

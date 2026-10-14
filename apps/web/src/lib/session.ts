@@ -19,12 +19,16 @@ export const requireCurrentClient = async (
 	returnTo?: string
 ): Promise<EcommerceSession> => {
 	const session = await getCurrentClient();
+
 	if (!session?.user) {
 		const target = safeRedirect(returnTo, "");
+
 		if (target) {
 			redirect(`/login?${new URLSearchParams({ redirect: target })}`);
 		}
+
 		redirect("/login");
 	}
+
 	return session;
 };

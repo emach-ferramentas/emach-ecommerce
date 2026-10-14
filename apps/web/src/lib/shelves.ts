@@ -34,6 +34,7 @@ export async function getShelves(): Promise<Shelves> {
 	cacheLife({ revalidate: 600 });
 
 	const services = await getServices();
+
 	if (services.length > 0) {
 		return {
 			by: "service",
@@ -53,13 +54,16 @@ export async function getShelves(): Promise<Shelves> {
 
 	// Sem ofícios cadastrados, a vitrine cai para as categorias-raiz.
 	const { categories } = splitServiceTree(await getCategoryTree(db));
+
 	const shelves = await Promise.all(
 		categories.map(async (category): Promise<Shelf> => {
 			const { tools, total } = await getTools(db, {
 				categoryId: category.id,
 				limit: SHELF_LIMIT,
 			});
+
 			const items = sortInStockFirst(tools);
+
 			return {
 				href: `/catalog/${category.slug}` as Route,
 				imageSrc: items[0]?.primaryImage?.url ?? null,
@@ -71,6 +75,7 @@ export async function getShelves(): Promise<Shelves> {
 			};
 		})
 	);
+
 	return {
 		by: "category",
 		shelves: shelves.filter((s) => s.items.length > 0),

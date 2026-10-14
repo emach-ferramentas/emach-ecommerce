@@ -4,6 +4,7 @@ export type SortKey =
 	| "price-desc"
 	| "name-asc"
 	| "newest";
+
 export type VoltageKey = "127V" | "220V" | "Bivolt" | "380V";
 
 export interface FilterState {
@@ -55,27 +56,34 @@ export function buildHref(current: FilterState, updates: FilterUpdate): string {
 	if (q) {
 		params.set("q", q);
 	}
+
 	if (sort && sort !== "relevance") {
 		params.set("sort", sort);
 	}
+
 	if (voltage && voltage.length > 0) {
 		params.set("voltage", voltage.join(","));
 	}
+
 	if (pmin != null) {
 		params.set("pmin", String(pmin));
 	}
+
 	if (pmax != null) {
 		params.set("pmax", String(pmax));
 	}
+
 	if (promo) {
 		params.set("promo", "1");
 	}
+
 	if (page && page > 1) {
 		params.set("page", String(page));
 	}
 
 	const path = cat ? `/catalog/${encodeURIComponent(cat)}` : "/catalog";
 	const qs = params.toString();
+
 	return qs ? `${path}?${qs}` : path;
 }
 

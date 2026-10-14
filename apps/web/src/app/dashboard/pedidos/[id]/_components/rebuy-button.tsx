@@ -21,14 +21,18 @@ export function RebuyButton({
 	function onClick() {
 		start(async () => {
 			const res = await rebuyAction({ orderId });
+
 			if (!res.ok) {
 				toast.error(res.error);
+
 				return;
 			}
+
 			for (const item of res.data.items) {
 				const { quantity, ...snapshot } = item;
 				add(snapshot, quantity);
 			}
+
 			const { items, skipped } = res.data;
 			toast.success(
 				skipped > 0

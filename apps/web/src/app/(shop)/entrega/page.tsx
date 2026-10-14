@@ -40,6 +40,7 @@ async function getPickupBranches(): Promise<PickupBranch[]> {
 	"use cache";
 	cacheLife({ revalidate: 600 });
 	const rows = await getActiveBranches();
+
 	return rows.map((row) => ({
 		id: row.id,
 		name: row.name,
@@ -51,9 +52,11 @@ async function getPickupBranches(): Promise<PickupBranch[]> {
 
 async function PickupBranchList() {
 	const branches = await getPickupBranches();
+
 	if (branches.length === 0) {
 		return null;
 	}
+
 	return (
 		<section className="scroll-mt-6 py-8" id="filiais">
 			<h2 className={INSTITUTIONAL_H2_CLASS}>Onde nos encontrar</h2>

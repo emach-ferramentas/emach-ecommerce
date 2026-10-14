@@ -36,6 +36,7 @@ export async function lookupCepAction(
 	rawCep: string
 ): Promise<LookupCepResult> {
 	const parsed = cepSchema.safeParse(rawCep);
+
 	if (!parsed.success) {
 		return { ok: false, reason: "not_found" };
 	}
@@ -44,8 +45,10 @@ export async function lookupCepAction(
 	// sem IP (dev/edge sem proxy) → fail-open + log, evitando bucket "anon"
 	// compartilhado que causaria DoS mútuo.
 	const ip = getClientIp(await headers());
+
 	if (ip) {
 		const { success } = await cepLimiter.limit(`cep:${ip}`);
+
 		if (!success) {
 			return { ok: false, reason: "unavailable" };
 		}
@@ -55,12 +58,14 @@ export async function lookupCepAction(
 
 	try {
 		const address = await fetchFrenetAddress(parsed.data);
+
 		// Sem City/UF = CEP inexistente na base (a Frenet devolve 200 com body
 		// vazio + Message). Street/District podem faltar em CEP rural — a UI
 		// preenche o que vier e o cliente completa.
 		if (!(address.City && address.UF)) {
 			return { ok: false, reason: "not_found" };
 		}
+
 		return {
 			ok: true,
 			data: {
@@ -76,6 +81,7 @@ export async function lookupCepAction(
 			action: "lookup_cep_failed",
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
+
 		return { ok: false, reason: "unavailable" };
 	}
 }

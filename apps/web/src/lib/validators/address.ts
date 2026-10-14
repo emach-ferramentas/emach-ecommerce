@@ -17,4 +17,5 @@ export const addressInputSchema = addressFieldsSchema.extend({
 });
 
 export type AddressFields = z.infer<typeof addressFieldsSchema>;
+
 export type AddressInput = z.infer<typeof addressInputSchema>;

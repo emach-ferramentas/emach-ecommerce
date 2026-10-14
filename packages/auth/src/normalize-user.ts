@@ -20,16 +20,21 @@ function normalizeDocumentForWrite(raw: unknown): string | null | undefined {
 	if (typeof raw !== "string") {
 		return;
 	}
+
 	const trimmed = raw.trim();
+
 	if (trimmed === "") {
 		return null;
 	}
+
 	const document = normalizeDocument(trimmed);
+
 	if (!isValidCpfCnpj(document)) {
 		throw new APIError("BAD_REQUEST", {
 			message: "CPF ou CNPJ inválido.",
 		});
 	}
+
 	return document;
 }
 
@@ -40,16 +45,21 @@ function normalizePhoneForWrite(raw: unknown): string | null | undefined {
 	if (typeof raw !== "string") {
 		return;
 	}
+
 	const trimmed = raw.trim();
+
 	if (trimmed === "") {
 		return null;
 	}
+
 	const phone = onlyDigits(trimmed);
+
 	if (!isValidPhone(phone)) {
 		throw new APIError("BAD_REQUEST", {
 			message: "Telefone inválido.",
 		});
 	}
+
 	return phone;
 }
 
@@ -60,13 +70,17 @@ export function normalizeUserForWrite<T>(data: T): T {
 	const document = normalizeDocumentForWrite(
 		(data as { document?: unknown }).document
 	);
+
 	const phone = normalizePhoneForWrite((data as { phone?: unknown }).phone);
 	let out = data;
+
 	if (document !== undefined) {
 		out = { ...out, document };
 	}
+
 	if (phone !== undefined) {
 		out = { ...out, phone };
 	}
+
 	return out;
 }

@@ -27,6 +27,7 @@ export default function PersonalDataPage() {
 
 async function PersonalData() {
 	const session = await requireCurrentClient();
+
 	const user = session.user as {
 		name: string;
 		email: string;

@@ -34,6 +34,7 @@ async function getServiceKit(serviceSlugs: string[], toolId: string) {
 	const summaries = (await getServices()).filter((s) => slugs.has(s.slug));
 	const seen = new Set([toolId]);
 	const items: ToolListItem[] = [];
+
 	for (const summary of summaries) {
 		for (const tool of summary.preview) {
 			if (!seen.has(tool.id)) {
@@ -42,8 +43,10 @@ async function getServiceKit(serviceSlugs: string[], toolId: string) {
 			}
 		}
 	}
+
 	const kit = sortInStockFirst(items).slice(0, KIT_LIMIT);
 	const photo = summaries.find((s) => s.imageSrc) ?? null;
+
 	return {
 		extras: await getCardExtras(kit.map((t) => t.id)),
 		kit,
@@ -60,10 +63,12 @@ export async function ServiceKit({ services, toolId }: ServiceKitProps) {
 	if (services.length === 0) {
 		return null;
 	}
+
 	const { extras, kit, photo } = await getServiceKit(
 		services.map((s) => s.slug),
 		toolId
 	);
+
 	if (kit.length === 0) {
 		return null;
 	}
@@ -105,6 +110,7 @@ export async function ServiceKit({ services, toolId }: ServiceKitProps) {
 						const toolExtras = extras[tool.id] ?? { specs: [], voltages: [] };
 						const volt = voltageSummary(toolExtras.voltages);
 						const detail = [...toolExtras.specs, ...(volt ? [volt] : [])];
+
 						return (
 							<li
 								className="grid grid-cols-[52px_minmax(0,1fr)] items-center gap-x-2.5 gap-y-1 border-line border-b p-3 last:border-b-0 md:grid-cols-[64px_minmax(0,1fr)_auto_minmax(0,190px)] md:gap-x-3.5 md:px-[18px]"

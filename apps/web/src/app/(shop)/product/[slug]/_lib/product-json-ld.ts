@@ -78,7 +78,9 @@ function gtinFrom(barcode: string | null): string | undefined {
 	if (!barcode) {
 		return;
 	}
+
 	const digits = barcode.trim();
+
 	return ONLY_DIGITS.test(digits) && GTIN_LENGTHS.has(digits.length)
 		? digits
 		: undefined;
@@ -96,8 +98,10 @@ export function priceValidUntil(
 	if (promotion?.endsAt && promotion.endsAt > now) {
 		return isoDate(promotion.endsAt);
 	}
+
 	const next = new Date(now);
 	next.setUTCFullYear(next.getUTCFullYear() + 1);
+
 	return isoDate(next);
 }
 
@@ -108,15 +112,19 @@ function finalPriceAmount(
 	if (!promotion) {
 		return priceAmount;
 	}
+
 	const baseCents = numericToCents(priceAmount);
+
 	const discountedCents = effectiveAutoDiscountCents(
 		baseCents,
 		promotion.discountType,
 		promotion.discountValue
 	);
+
 	if (discountedCents >= baseCents) {
 		return priceAmount;
 	}
+
 	return (discountedCents / 100).toFixed(2);
 }
 
@@ -130,6 +138,7 @@ function productSku(
 	variants: ProductJsonLdInput["variants"]
 ): { sku: string } | null {
 	const v = variants.find((x) => x.priceAmount !== null) ?? variants[0];
+
 	return v ? { sku: v.sku } : null;
 }
 
@@ -143,11 +152,13 @@ export function buildProductJsonLd(
 	const validUntil = priceValidUntil(input.activePromotion, opts.now);
 
 	const offers: Offer[] = [];
+
 	for (const v of variants) {
 		// Offer sem `price` é inválida no Rich Results — variante sem preço não vira Offer.
 		if (v.priceAmount === null) {
 			continue;
 		}
+
 		const gtin = gtinFrom(v.barcode);
 		offers.push({
 			"@id": `${url}#offer-${encodeURIComponent(v.sku)}`,
@@ -166,6 +177,7 @@ export function buildProductJsonLd(
 	}
 
 	const firstOffer = offers[0];
+
 	const rating =
 		reviewStats.count > 0 && reviewStats.avg !== null
 			? {
@@ -203,6 +215,7 @@ export function buildBreadcrumbJsonLd(input: {
 	slug: string;
 }): BreadcrumbJsonLd {
 	const base = input.baseUrl.replace(TRAILING_SLASHES, "");
+
 	const items = [
 		{ item: `${base}/`, name: "Início" },
 		{ item: `${base}/catalog`, name: "Catálogo" },
@@ -216,6 +229,7 @@ export function buildBreadcrumbJsonLd(input: {
 			: []),
 		{ item: `${base}/product/${input.slug}`, name: input.productName },
 	];
+
 	return {
 		"@context": "https://schema.org",
 		"@type": "BreadcrumbList",

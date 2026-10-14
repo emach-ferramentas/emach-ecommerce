@@ -20,6 +20,7 @@ export function StarRating({ rating, className, size = 13 }: StarRatingProps) {
 		>
 			{STARS.map((position) => {
 				const isFilled = position <= filled;
+
 				return (
 					<Star
 						aria-hidden

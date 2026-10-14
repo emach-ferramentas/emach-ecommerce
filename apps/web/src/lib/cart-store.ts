@@ -25,8 +25,10 @@ export function loadCart(): CartItem[] {
 	if (typeof window === "undefined") {
 		return [];
 	}
+
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
+
 		return raw ? (JSON.parse(raw) as CartItem[]) : [];
 	} catch {
 		return [];
@@ -47,6 +49,7 @@ export function addToCart(
 	qty = 1
 ): CartItem[] {
 	const existing = items.find((i) => i.variantId === snapshot.variantId);
+
 	const next = existing
 		? items.map((i) =>
 				i.variantId === snapshot.variantId
@@ -54,7 +57,9 @@ export function addToCart(
 					: i
 			)
 		: [...items, { ...snapshot, quantity: qty }];
+
 	saveCart(next);
+
 	return next;
 }
 
@@ -69,7 +74,9 @@ export function updateQty(
 			: items.map((i) =>
 					i.variantId === variantId ? { ...i, quantity: qty } : i
 				);
+
 	saveCart(next);
+
 	return next;
 }
 
@@ -79,6 +86,7 @@ export function removeFromCart(
 ): CartItem[] {
 	const next = items.filter((i) => i.variantId !== variantId);
 	saveCart(next);
+
 	return next;
 }
 
@@ -100,17 +108,24 @@ export function reconcilePrices(
 	priceByVariantId: Map<string, string>
 ): CartItem[] {
 	let changed = false;
+
 	const next = items.map((i) => {
 		const fresh = priceByVariantId.get(i.variantId);
+
 		if (fresh != null && fresh !== i.priceAmount) {
 			changed = true;
+
 			return { ...i, priceAmount: fresh };
 		}
+
 		return i;
 	});
+
 	if (!changed) {
 		return items;
 	}
+
 	saveCart(next);
+
 	return next;
 }

@@ -74,6 +74,7 @@ describe("openingHoursFor", () => {
 			...hours,
 			weekdays: { ...hours.weekdays, opensAt: null },
 		});
+
 		expect(out).toEqual([
 			{
 				"@type": "OpeningHoursSpecification",
@@ -92,6 +93,7 @@ describe("buildSiteGraph", () => {
 			branches: [branch],
 			sameAs: ["https://instagram.com/emach"],
 		});
+
 		expect(graph["@context"]).toBe("https://schema.org");
 		const [org, site, store] = graph["@graph"];
 		expect(org).toMatchObject({
@@ -139,6 +141,7 @@ describe("buildSiteGraph", () => {
 			branches: [{ ...branch, phone: null, businessHours: null }],
 			sameAs: [],
 		});
+
 		const [org, , store] = graph["@graph"];
 		expect(org).not.toHaveProperty("sameAs");
 		expect(store).not.toHaveProperty("telephone");
@@ -151,6 +154,7 @@ describe("buildSiteGraph", () => {
 			branches: [branch, { ...branch, id: "b2", name: "Filial Norte" }],
 			sameAs: [],
 		});
+
 		const stores = graph["@graph"].slice(2);
 		expect(stores.map((s) => s["@id"])).toEqual([
 			`${BASE}/#branch-b1`,
@@ -168,6 +172,7 @@ describe("buildSiteGraph", () => {
 			branches: [],
 			sameAs: [],
 		});
+
 		expect(graph["@graph"][0]).toMatchObject({ url: `${BASE}/` });
 	});
 });

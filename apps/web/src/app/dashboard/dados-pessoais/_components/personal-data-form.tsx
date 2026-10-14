@@ -137,6 +137,7 @@ function FieldError({ message }: { message: string | null }) {
 	if (!message) {
 		return null;
 	}
+
 	return (
 		<p className="emach-field__error" role="alert">
 			{message}
@@ -180,10 +181,13 @@ function NameCard({
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 		const parsed = nameSchema.safeParse(value);
+
 		if (!parsed.success) {
 			setError(parsed.error.issues[0]?.message ?? "Inválido");
+
 			return;
 		}
+
 		setIsSaving(true);
 		await authClient.updateUser(
 			{ name: value } as Parameters<typeof authClient.updateUser>[0],
@@ -228,6 +232,7 @@ function EmailCard({ email, verified }: { email: string; verified: boolean }) {
 
 	const handleVerify = async () => {
 		setSending(true);
+
 		try {
 			await authClient.sendVerificationEmail(
 				{ email, callbackURL: "/dashboard/dados-pessoais" },
@@ -300,9 +305,11 @@ function PhoneCard({
 }) {
 	const router = useRouter();
 	const [mode, setMode] = useState<"read" | "edit">("read");
+
 	const [value, setValue] = useState(
 		initialValue ? maskPhone(initialValue) : ""
 	);
+
 	const [error, setError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -331,10 +338,13 @@ function PhoneCard({
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 		const parsed = phoneSchema.safeParse(value);
+
 		if (!parsed.success) {
 			setError(parsed.error.issues[0]?.message ?? "Inválido");
+
 			return;
 		}
+
 		const digits = onlyDigits(value);
 		setIsSaving(true);
 		await authClient.updateUser(
@@ -392,12 +402,15 @@ function DocumentCard({
 }) {
 	const router = useRouter();
 	const [mode, setMode] = useState<"read" | "edit">("read");
+
 	const [accountType, setAccountType] = useState<AccountType>(
 		detectAccountType(initialValue)
 	);
+
 	const [value, setValue] = useState(
 		initialValue ? maskCpfCnpj(initialValue) : ""
 	);
+
 	const [error, setError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -428,6 +441,7 @@ function DocumentCard({
 		if (next === accountType) {
 			return;
 		}
+
 		setAccountType(next);
 		setValue("");
 		setError(null);
@@ -443,10 +457,13 @@ function DocumentCard({
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 		const parsed = documentSchema.safeParse(value);
+
 		if (!parsed.success) {
 			setError(accountType === "PJ" ? "CNPJ inválido" : "CPF inválido");
+
 			return;
 		}
+
 		const document = normalizeDocument(value);
 		setIsSaving(true);
 		await authClient.updateUser(

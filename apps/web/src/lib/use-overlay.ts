@@ -9,12 +9,16 @@ function cycleFocus(container: HTMLElement, e: KeyboardEvent) {
 	const focusables = Array.from(
 		container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
 	);
+
 	const first = focusables[0];
 	const last = focusables.at(-1);
+
 	if (!(first && last)) {
 		return;
 	}
+
 	const active = document.activeElement as HTMLElement | null;
+
 	if (e.shiftKey && active === first) {
 		e.preventDefault();
 		last.focus();
@@ -58,22 +62,29 @@ export function useOverlay(
 		if (!open) {
 			return;
 		}
+
 		const previouslyFocused = document.activeElement as HTMLElement | null;
+
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				onCloseRef.current();
+
 				return;
 			}
+
 			if (e.key === "Tab" && panelRef.current) {
 				cycleFocus(panelRef.current, e);
 			}
 		};
+
 		document.addEventListener("keydown", onKey);
 		const prevOverflow = document.body.style.overflow;
 		document.body.style.overflow = "hidden";
+
 		if (autoFocus) {
 			panelRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
 		}
+
 		return () => {
 			document.removeEventListener("keydown", onKey);
 			document.body.style.overflow = prevOverflow;

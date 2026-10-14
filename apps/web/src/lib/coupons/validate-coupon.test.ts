@@ -58,6 +58,7 @@ async function seedPromotion(
 		active: true,
 		endsAt: opts.endsAt ?? null,
 	});
+
 	return id;
 }
 
@@ -76,9 +77,11 @@ describe("validateCoupon", () => {
 		await withRollback(async (tx) => {
 			const toolId = await seedTool(tx);
 			await seedPromotion(tx, "OFF10", { discountValue: "10.00" });
+
 			const result = await validateCoupon(tx, "OFF10", [
 				line(toolId, 10_000, 2),
 			]);
+
 			expect(result).toEqual(
 				expect.objectContaining({ ok: true, discountCents: 2000 })
 			);
@@ -166,19 +169,23 @@ describe("validateCoupon", () => {
 		await withRollback(async (tx) => {
 			const inTool = await seedTool(tx);
 			const outTool = await seedTool(tx);
+
 			const couponId = await seedPromotion(tx, "MINESCOPO", {
 				appliesToAll: false,
 				minOrderAmount: "200.00",
 			});
+
 			await tx
 				.insert(promotionTool)
 				.values({ promotionId: couponId, toolId: inTool });
+
 			// Carrinho R$ 450 (in R$ 150 + out R$ 300), mas só R$ 150 elegível < R$ 200.
 			// Se o mínimo olhasse o carrinho todo (450 ≥ 200), passaria — não deve.
 			const result = await validateCoupon(tx, "MINESCOPO", [
 				line(inTool, 15_000),
 				line(outTool, 30_000),
 			]);
+
 			expect(result.ok).toBe(false);
 			expect((result as { error: string }).error).toMatch(RE_MIN_ORDER);
 		});
@@ -187,10 +194,12 @@ describe("validateCoupon", () => {
 	it("exclui itens com auto-promo ativa da base", async () => {
 		await withRollback(async (tx) => {
 			const toolId = await seedTool(tx);
+
 			const autoId = await seedPromotion(tx, "AUTO-X", {
 				type: "promotion",
 				appliesToAll: false,
 			});
+
 			await tx.insert(promotionTool).values({ promotionId: autoId, toolId });
 			await seedPromotion(tx, "CUPOM", { discountValue: "10.00" });
 			const result = await validateCoupon(tx, "CUPOM", [line(toolId, 10_000)]);
@@ -206,17 +215,21 @@ describe("validateCoupon", () => {
 		await withRollback(async (tx) => {
 			const inTool = await seedTool(tx);
 			const outTool = await seedTool(tx);
+
 			const couponId = await seedPromotion(tx, "ESCOPO", {
 				appliesToAll: false,
 				discountValue: "10.00",
 			});
+
 			await tx
 				.insert(promotionTool)
 				.values({ promotionId: couponId, toolId: inTool });
+
 			const result = await validateCoupon(tx, "ESCOPO", [
 				line(inTool, 10_000),
 				line(outTool, 10_000),
 			]);
+
 			expect(result).toEqual(
 				expect.objectContaining({ ok: true, discountCents: 1000 })
 			);
@@ -227,12 +240,14 @@ describe("validateCoupon", () => {
 		await withRollback(async (tx) => {
 			const toolId = await seedTool(tx);
 			await seedPromotion(tx, "CUPOM", { discountValue: "10.00" });
+
 			const result = await validateCoupon(
 				tx,
 				"CUPOM",
 				[line(toolId, 10_000)],
 				new Set([toolId])
 			);
+
 			expect(result).toEqual({
 				ok: false,
 				error: "Cupom não cobre nenhum item do carrinho",
@@ -245,12 +260,14 @@ describe("validateCoupon", () => {
 		await withRollback(async (tx) => {
 			const toolId = await seedTool(tx);
 			await seedPromotion(tx, "CUPOM", { discountValue: "10.00" });
+
 			const result = await validateCoupon(
 				tx,
 				"CUPOM",
 				[line(toolId, 10_000)],
 				new Set()
 			);
+
 			expect(result).toEqual(
 				expect.objectContaining({ ok: true, discountCents: 1000 })
 			);

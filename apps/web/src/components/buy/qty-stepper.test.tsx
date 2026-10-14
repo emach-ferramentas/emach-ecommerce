@@ -9,6 +9,7 @@ const BUTTON_TAG = {
 	"Diminuir quantidade": /<button aria-label="Diminuir quantidade"[^>]*>/,
 	"Aumentar quantidade": /<button aria-label="Aumentar quantidade"[^>]*>/,
 } as const;
+
 const FIELDSET_TAG = /<fieldset[^>]*>/;
 const CLASS_ATTR = /class="([^"]*)"/;
 const DISABLED_ATTR = ' disabled=""';
@@ -50,6 +51,7 @@ describe("QtyStepper", () => {
 		const html = renderToStaticMarkup(
 			<QtyStepper onChange={noop} value={20} />
 		);
+
 		expect(buttonTag(html, "Aumentar quantidade")).toContain(DISABLED_ATTR);
 	});
 
@@ -64,13 +66,16 @@ describe("QtyStepper", () => {
 				value={1}
 			/>
 		);
+
 		const fieldset = html.match(FIELDSET_TAG)?.[0] ?? "";
 		expect(classesOf(fieldset)).not.toContain("h-[52px]");
+
 		for (const label of Object.keys(
 			BUTTON_TAG
 		) as (keyof typeof BUTTON_TAG)[]) {
 			expect(classesOf(buttonTag(html, label))).toContain("size-11");
 		}
+
 		expect(buttonTag(html, "Diminuir quantidade")).not.toContain(DISABLED_ATTR);
 		expect(html).toContain(
 			'<legend class="sr-only">Quantidade de Furadeira X</legend>'

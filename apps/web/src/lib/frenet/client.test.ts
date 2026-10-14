@@ -22,6 +22,7 @@ afterEach(() => {
 describe("fetchFrenetQuote", () => {
 	it("faz POST /shipping/quote com header token e retorna o JSON", async () => {
 		const payload = { ShippingSevicesArray: [] };
+
 		const spy = vi
 			.spyOn(globalThis, "fetch")
 			.mockResolvedValue(

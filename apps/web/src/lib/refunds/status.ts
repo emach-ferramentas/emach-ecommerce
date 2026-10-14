@@ -37,6 +37,7 @@ export const REFUND_REASON_OPTIONS = [
 ] as const satisfies readonly RefundReason[];
 
 export const REFUND_TABS = ["em_andamento", "finalizado"] as const;
+
 export type RefundTab = (typeof REFUND_TABS)[number];
 
 export const REFUND_TAB_LABEL: Record<RefundTab, string> = {
@@ -63,9 +64,11 @@ export function countRefundsByTab(
 		em_andamento: 0,
 		finalizado: 0,
 	};
+
 	for (const s of statuses) {
 		counts[STATUS_TO_TAB[s]] += 1;
 	}
+
 	return counts;
 }
 
@@ -83,6 +86,7 @@ export const REFUND_STEPPER_PHASES = [
 	"approved",
 	"refunded",
 ] as const;
+
 export type RefundStepperPhase = (typeof REFUND_STEPPER_PHASES)[number];
 
 export type RefundStepState = "done" | "current" | "upcoming" | "ok";
@@ -91,6 +95,7 @@ function refundRank(status: RefundStatus): number {
 	if (status === "rejected") {
 		return -1; // terminal-negativo: o card pula o stepper e mostra a recusa
 	}
+
 	return (REFUND_STEPPER_PHASES as readonly RefundStatus[]).indexOf(status) + 1;
 }
 
@@ -100,14 +105,18 @@ export function refundStepDisplayState(
 ): RefundStepState {
 	const rank = refundRank(status);
 	const phaseRank = REFUND_STEPPER_PHASES.indexOf(phase) + 1;
+
 	if (rank < 0) {
 		return "upcoming";
 	}
+
 	if (rank > phaseRank) {
 		return "done";
 	}
+
 	if (rank === phaseRank) {
 		return phase === "refunded" ? "ok" : "current";
 	}
+
 	return "upcoming";
 }

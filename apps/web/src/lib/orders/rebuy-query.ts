@@ -32,6 +32,7 @@ export async function getRebuyItems(
 		.from(order)
 		.where(and(eq(order.id, orderId), eq(order.clientId, clientId)))
 		.limit(1);
+
 	if (!owned) {
 		return null;
 	}
@@ -44,6 +45,7 @@ export async function getRebuyItems(
 		})
 		.from(orderItem)
 		.where(eq(orderItem.orderId, orderId));
+
 	if (items.length === 0) {
 		return [];
 	}
@@ -89,11 +91,13 @@ export async function getRebuyItems(
 	const variantById = new Map(variants.map((v) => [v.id, v]));
 	const toolById = new Map(tools.map((t) => [t.id, t]));
 	const catByTool = new Map<string, { name: string; slug: string }>();
+
 	for (const c of cats) {
 		if (!catByTool.has(c.toolId)) {
 			catByTool.set(c.toolId, { name: c.name, slug: c.slug });
 		}
 	}
+
 	const stockByVariant = new Map(stock.map((s) => [s.variantId, s.total]));
 
 	return items.map((i) => {
@@ -101,6 +105,7 @@ export async function getRebuyItems(
 		const t = toolById.get(i.toolId);
 		const cat = catByTool.get(i.toolId) ?? null;
 		const total = stockByVariant.get(i.variantId) ?? 0;
+
 		return {
 			toolId: i.toolId,
 			variantId: i.variantId,

@@ -26,6 +26,7 @@ export function buildOrderSteps(status: OrderStatus): StepperStep[] {
 			status === "delivered" && phase === "delivered"
 				? "ok"
 				: orderStepDisplayState(status, phase);
+
 		return {
 			key: phase,
 			label: PHASE_META[phase].label,

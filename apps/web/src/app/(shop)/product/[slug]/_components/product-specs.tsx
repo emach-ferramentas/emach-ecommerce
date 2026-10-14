@@ -19,6 +19,7 @@ const sectionTitle =
 /** "Sobre o produto" (descrição) ao lado da ficha técnica em tabela. */
 export function ProductSpecs({ attributes, sku, tool }: ProductSpecsProps) {
 	const paragraphs = toDescriptionParagraphs(tool.description);
+
 	const rows: { label: string; value: string }[] = [...attributes]
 		.sort((a, b) => a.sortOrder - b.sortOrder)
 		.map((attr) => ({
@@ -26,12 +27,15 @@ export function ProductSpecs({ attributes, sku, tool }: ProductSpecsProps) {
 			value: formatAttribute(attr),
 		}))
 		.filter((row) => row.value !== EMPTY_ATTRIBUTE);
+
 	if (tool.manufacturerName) {
 		rows.push({ label: PRODUCT_COPY.brand, value: tool.manufacturerName });
 	}
+
 	if (tool.model) {
 		rows.push({ label: PRODUCT_COPY.model, value: tool.model });
 	}
+
 	if (sku) {
 		rows.push({ label: PRODUCT_COPY.code, value: sku });
 	}

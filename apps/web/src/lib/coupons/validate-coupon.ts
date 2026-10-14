@@ -61,10 +61,12 @@ function couponDiscountCents(
 	eligibleSubtotalCents: number
 ): number {
 	const value = Number(discountValue);
+
 	const raw =
 		discountType === "fixed"
 			? Math.round(value * 100)
 			: Math.round((eligibleSubtotalCents * value) / 100);
+
 	return Math.max(0, Math.min(raw, eligibleSubtotalCents));
 }
 
@@ -75,9 +77,11 @@ export async function validateCoupon(
 	autoPromoToolIds?: Set<string>
 ): Promise<CouponValidation> {
 	const code = rawCode.trim();
+
 	if (!code) {
 		return { ok: false, error: "Cupom inválido", reason: "empty" };
 	}
+
 	const now = new Date();
 
 	const [promo] = await tx
@@ -94,12 +98,15 @@ export async function validateCoupon(
 	if (!promo?.active) {
 		return { ok: false, error: "Cupom inválido", reason: "invalid" };
 	}
+
 	if (promo.startsAt && promo.startsAt > now) {
 		return { ok: false, error: "Cupom inválido", reason: "invalid" };
 	}
+
 	if (promo.endsAt && promo.endsAt <= now) {
 		return { ok: false, error: "Cupom expirado", reason: "expired" };
 	}
+
 	if (
 		promo.maxRedemptions !== null &&
 		promo.redemptionCount >= promo.maxRedemptions
@@ -111,6 +118,7 @@ export async function validateCoupon(
 
 	// Escopo: null = vale para todos; senão restringe ao promotion_tool do cupom.
 	let scopeToolIds: Set<string> | null = null;
+
 	if (!promo.appliesToAll) {
 		const scoped = await tx
 			.select({ toolId: promotionTool.toolId })
@@ -121,6 +129,7 @@ export async function validateCoupon(
 					inArray(promotionTool.toolId, toolIds)
 				)
 			);
+
 		scopeToolIds = new Set(scoped.map((r) => r.toolId));
 	}
 
@@ -129,8 +138,10 @@ export async function validateCoupon(
 		autoPromoToolIdsFromMap(await fetchAutoPromosByToolId(tx, toolIds, now));
 
 	let eligibleSubtotalCents = 0;
+
 	for (const line of lines) {
 		const inScope = scopeToolIds === null || scopeToolIds.has(line.toolId);
+
 		if (inScope && !autoPromoSet.has(line.toolId)) {
 			eligibleSubtotalCents += line.basePriceCents * line.quantity;
 		}
@@ -149,6 +160,7 @@ export async function validateCoupon(
 	// desconto. O cliente precisa atingir o mínimo nos itens que o cupom cobre.
 	if (promo.minOrderAmount !== null) {
 		const minCents = numericToCents(promo.minOrderAmount);
+
 		if (eligibleSubtotalCents < minCents) {
 			return {
 				ok: false,

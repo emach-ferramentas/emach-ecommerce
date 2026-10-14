@@ -30,6 +30,7 @@ describe("countRefundsByTab", () => {
 			"rejected",
 			"rejected",
 		]);
+
 		expect(counts.em_andamento).toBe(2);
 		expect(counts.finalizado).toBe(3);
 	});
@@ -51,6 +52,7 @@ describe("REFUND_STATUS_BADGE / REFUND_REASON_OPTIONS", () => {
 			expect(REFUND_STATUS_BADGE[s].label.length).toBeGreaterThan(0);
 			expect(REFUND_STATUS_BADGE[s].tone.length).toBeGreaterThan(0);
 		}
+
 		// spot-check de valor: pega swap acidental de label
 		expect(REFUND_STATUS_BADGE.requested.label).toBe("Solicitado");
 		expect(REFUND_STATUS_BADGE.rejected.label).toBe("Recusado");

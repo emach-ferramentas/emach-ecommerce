@@ -48,10 +48,12 @@ export function ProductCard({
 	const Heading = `h${headingLevel}` as const;
 	const href = `/product/${tool.slug}` as Route;
 	const priceCents = listPriceCents(tool);
+
 	const hasDiscount =
 		tool.defaultVariant.discountedAmount != null &&
 		priceCents !== null &&
 		Number(tool.defaultVariant.priceAmount) * 100 > priceCents;
+
 	const voltageText = voltageSummary(extras.voltages);
 	const specs = [...extras.specs, ...(voltageText ? [voltageText] : [])];
 	const compact = size === "compact";

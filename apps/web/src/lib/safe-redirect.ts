@@ -20,8 +20,10 @@ function toSafePath(raw: string | null | undefined): string | null {
 	if (!(raw && SAFE_PATH_RE.test(raw))) {
 		return null;
 	}
+
 	const url = new URL(raw, "http://local");
 	const path = `${url.pathname.replace(REPEATED_SLASHES_RE, "/")}${url.search}`;
+
 	return SAFE_PATH_RE.test(path) && !AUTH_PATH_RE.test(path) ? path : null;
 }
 
@@ -37,6 +39,7 @@ export function loginHref(pathname: string): {
 	query?: { redirect: string };
 } {
 	const redirect = toSafePath(pathname);
+
 	return redirect
 		? { pathname: "/login", query: { redirect } }
 		: { pathname: "/login" };

@@ -17,6 +17,7 @@ export function ShippingAddress({ address }: { address: unknown }) {
 	const streetLine = [a.street, a.number].filter(Boolean).join(", ");
 	const localityLine = [a.neighborhood, a.city].filter(Boolean).join(", ");
 	const stateSuffix = a.state ? ` — ${a.state}` : "";
+
 	const zipLine = [a.zipCode ? `CEP ${a.zipCode}` : null, a.country]
 		.filter(Boolean)
 		.join(" · ");

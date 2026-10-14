@@ -93,12 +93,16 @@ export function openingHoursFor(
 	if (!hours) {
 		return [];
 	}
+
 	const out: OpeningHoursSpecification[] = [];
+
 	for (const group of DAY_GROUPS) {
 		const period = hours[group.key];
+
 		if (!(period?.isOpen && period.opensAt && period.closesAt)) {
 			continue;
 		}
+
 		if (period.breakStart && period.breakEnd) {
 			out.push(
 				spec(group.days, period.opensAt, period.breakStart),
@@ -108,6 +112,7 @@ export function openingHoursFor(
 			out.push(spec(group.days, period.opensAt, period.closesAt));
 		}
 	}
+
 	return out;
 }
 
@@ -118,15 +123,18 @@ function digitsOnly(value: string | null): string {
 /** Telefone BR em E.164 (+55DDDNÚMERO). Devolve undefined se não parecer BR. */
 function e164(phone: string | null): string | undefined {
 	const digits = digitsOnly(phone);
+
 	if (digits.length === 10 || digits.length === 11) {
 		return `+55${digits}`;
 	}
+
 	if (
 		(digits.length === 12 || digits.length === 13) &&
 		digits.startsWith("55")
 	) {
 		return `+${digits}`;
 	}
+
 	return;
 }
 
@@ -170,10 +178,13 @@ function buildHardwareStore(base: string, branch: BranchRow): HardwareStore {
 	]
 		.filter(Boolean)
 		.join(", ");
+
 	const postalCode =
 		digitsOnly(branch.cep).length === 8 ? formatCep(branch.cep) : null;
+
 	const telephone = e164(branch.phone);
 	const hours = openingHoursFor(branch.businessHours);
+
 	return {
 		"@type": "HardwareStore",
 		"@id": `${base}/#branch-${branch.id}`,
@@ -195,6 +206,7 @@ function buildHardwareStore(base: string, branch: BranchRow): HardwareStore {
 
 export function buildSiteGraph(input: SiteGraphInput): SiteGraph {
 	const base = input.baseUrl.replace(TRAILING_SLASHES, "");
+
 	return {
 		"@context": "https://schema.org",
 		"@graph": [

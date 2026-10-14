@@ -13,6 +13,7 @@ export async function getCategoryShell(
 ): Promise<CategoryDetail | null> {
 	"use cache";
 	cacheLife({ revalidate: 600 });
+
 	return await getCategoryBySlug(db, slug);
 }
 

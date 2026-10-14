@@ -8,6 +8,7 @@ describe("getClientIp", () => {
 			"x-real-ip": "203.0.113.5",
 			"x-forwarded-for": "1.2.3.4",
 		});
+
 		expect(getClientIp(h)).toBe("203.0.113.5");
 	});
 

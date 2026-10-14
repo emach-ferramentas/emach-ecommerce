@@ -21,6 +21,7 @@ const STATUS_CHIP: Record<RefundStatus, { tone: ChipTone; icon: LucideIcon }> =
 
 export function RefundStatusBadge({ status }: { status: RefundStatus }) {
 	const { tone, icon } = STATUS_CHIP[status];
+
 	return (
 		<StatusChip icon={icon} tone={tone}>
 			{REFUND_STATUS_BADGE[status].label}

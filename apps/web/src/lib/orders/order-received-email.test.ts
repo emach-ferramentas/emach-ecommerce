@@ -10,10 +10,15 @@ const { getClientOrderDetail, sendEmail, logError, loadCompanyAddress } =
 	}));
 
 vi.mock("@/lib/orders/queries", () => ({ getClientOrderDetail }));
+
 vi.mock("@emach/email/send", () => ({ sendEmail }));
+
 vi.mock("@emach/email/company-address", () => ({ loadCompanyAddress }));
+
 vi.mock("@emach/db", () => ({ db: {} }));
+
 vi.mock("@/lib/evlog", () => ({ log: { error: logError } }));
+
 vi.mock("@emach/env/web", () => ({
 	env: { NEXT_PUBLIC_SITE_URL: "https://loja.example.com.br" },
 }));
@@ -86,9 +91,11 @@ describe("sendOrderReceivedEmail", () => {
 
 		expect(getClientOrderDetail).toHaveBeenCalledWith("c1", "o1");
 		expect(sendEmail).toHaveBeenCalledTimes(1);
+
 		const [{ to, subject, react }] = sendEmail.mock.calls[0] as [
 			{ to: string; subject: string; react: { props: Props } },
 		];
+
 		expect(to).toBe("ana@example.com");
 		expect(subject).toContain("2026-000123");
 		const p = react.props;
@@ -124,6 +131,7 @@ describe("sendOrderReceivedEmail", () => {
 		const [{ react }] = sendEmail.mock.calls[0] as [
 			{ react: { props: Props } },
 		];
+
 		expect(react.props.summary.map((r) => r.label)).toEqual([
 			"Subtotal",
 			"Frete",
@@ -139,6 +147,7 @@ describe("sendOrderReceivedEmail", () => {
 		const [{ react }] = sendEmail.mock.calls[0] as [
 			{ react: { props: Props } },
 		];
+
 		expect(react.props.companyAddress).toBeNull();
 		expect(react.props.orderNumber).toBe("2026-000123");
 	});

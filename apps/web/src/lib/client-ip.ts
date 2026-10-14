@@ -12,16 +12,19 @@
  */
 export function getClientIp(headers: Headers): string | null {
 	const realIp = headers.get("x-real-ip")?.trim();
+
 	if (realIp) {
 		return realIp;
 	}
 
 	const forwarded = headers.get("x-forwarded-for");
+
 	if (forwarded) {
 		const hops = forwarded
 			.split(",")
 			.map((part) => part.trim())
 			.filter(Boolean);
+
 		return hops.at(-1) ?? null;
 	}
 

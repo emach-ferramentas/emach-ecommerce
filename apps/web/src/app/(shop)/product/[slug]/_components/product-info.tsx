@@ -80,15 +80,18 @@ export function ProductInfo({
 
 	const price = variantPrice(shown.priceAmount, activePromotion);
 	const anyInStock = options.some((v) => stockByVariant[v.id]);
+
 	const inStockVoltages = options
 		.filter((v) => stockByVariant[v.id] && v.voltage)
 		.map((v) => voltageLabel(v.voltage).name);
+
 	const pricesDiffer =
 		new Set(
 			options.map(
 				(v) => variantPrice(v.priceAmount, activePromotion).finalAmount
 			)
 		).size > 1;
+
 	const installments = installmentLabel(price.finalCents);
 
 	/** Variante pronta para o carrinho, ou `null` pedindo a voltagem antes. */
@@ -96,11 +99,13 @@ export function ProductInfo({
 		if (selected && stockByVariant[selected.id]) {
 			return selected;
 		}
+
 		setVoltageError(true);
 		pickerRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
 		pickerRef.current?.querySelector<HTMLInputElement>("input:enabled")?.focus({
 			preventScroll: true,
 		});
+
 		return null;
 	}
 
@@ -114,18 +119,22 @@ export function ProductInfo({
 
 	function handleAddToCart() {
 		const variant = requireVariant();
+
 		if (!variant) {
 			return;
 		}
+
 		add(cartItem(variant), qty);
 		openSheet();
 	}
 
 	function handleBuyNow() {
 		const variant = requireVariant();
+
 		if (!variant) {
 			return;
 		}
+
 		clear();
 		add(cartItem(variant), qty);
 		startNavigation(() => {

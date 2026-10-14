@@ -31,7 +31,8 @@
       "!**/.svelte-kit",
       "!**/wrangler.jsonc",
       "!**/.source",
-      "!**/convex/_generated"
+      "!**/convex/_generated",
+      "!tools/oxlint/anti-slop"
     ]
   },
   "formatter": {

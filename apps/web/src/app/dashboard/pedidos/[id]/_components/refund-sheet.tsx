@@ -45,6 +45,7 @@ export function RefundSheet({
 		if (!next) {
 			reset();
 		}
+
 		onOpenChange(next);
 	}
 
@@ -55,6 +56,7 @@ export function RefundSheet({
 				reasonCategory: reason,
 				reasonText: text,
 			});
+
 			if (res.ok) {
 				toast.success("Solicitação de devolução enviada");
 				handleOpenChange(false);

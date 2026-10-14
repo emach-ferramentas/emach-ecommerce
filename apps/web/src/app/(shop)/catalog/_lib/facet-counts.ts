@@ -93,6 +93,7 @@ function buildPredicates(input: FacetCountsInput, flags: PredicateFlags): SQL {
 			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id) >= ${input.priceMin}`
 		);
 	}
+
 	if (flags.withPrice && typeof input.priceMax === "number") {
 		filters.push(
 			sql`(SELECT MIN(price_amount) FROM tool_variant WHERE tool_id = t.id) <= ${input.priceMax}`
@@ -116,18 +117,21 @@ export async function getFacetCounts(
 		withPromo: true,
 		withVoltage: true,
 	});
+
 	const exceptPrice = buildPredicates(input, {
 		withCategory: true,
 		withPrice: false,
 		withPromo: true,
 		withVoltage: true,
 	});
+
 	const exceptVoltage = buildPredicates(input, {
 		withCategory: true,
 		withPrice: true,
 		withPromo: true,
 		withVoltage: false,
 	});
+
 	const exceptPromo = buildPredicates(input, {
 		withCategory: true,
 		withPrice: true,
@@ -137,12 +141,15 @@ export async function getFacetCounts(
 
 	const priceBuckets = PRICE_RANGES.map((r) => {
 		const conds: SQL[] = [];
+
 		if (r.pmin !== null) {
 			conds.push(sql`s.minp >= ${r.pmin}`);
 		}
+
 		if (r.pmax !== null) {
 			conds.push(sql`s.minp <= ${r.pmax}`);
 		}
+
 		return sql`COUNT(*) FILTER (WHERE ${sql.join(conds, sql` AND `)})::int AS ${sql.raw(`"${r.key}"`)}`;
 	});
 
@@ -194,14 +201,17 @@ export async function getFacetCounts(
 	]);
 
 	const byCategory: Record<string, number> = {};
+
 	for (const row of activeCategoriesRes.rows) {
 		byCategory[row.id] = 0;
 	}
+
 	for (const row of categoryRes.rows) {
 		byCategory[row.category_id] = Number(row.n) || 0;
 	}
 
 	const priceRow = priceRes.rows[0];
+
 	const byPriceRange = Object.fromEntries(
 		PRICE_RANGES.map((r) => [r.key, Number(priceRow?.[r.key]) || 0])
 	) as Record<PriceRangeKey, number>;
@@ -212,6 +222,7 @@ export async function getFacetCounts(
 		Bivolt: 0,
 		"380V": 0,
 	};
+
 	for (const row of voltageRes.rows) {
 		byVoltage[row.voltage] = Number(row.n) || 0;
 	}

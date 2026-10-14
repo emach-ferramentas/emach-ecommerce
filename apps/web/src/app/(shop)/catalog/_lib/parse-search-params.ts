@@ -60,6 +60,7 @@ function parseVoltages(value: string | undefined): VoltageKey[] {
 	if (!value) {
 		return [];
 	}
+
 	return value
 		.split(",")
 		.filter((v): v is VoltageKey =>
@@ -76,15 +77,19 @@ function parseNonNegative(value: string | undefined): number | undefined {
 	if (!value) {
 		return;
 	}
+
 	const n = Number(value);
+
 	return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
 function parsePage(value: string | undefined): number {
 	const n = parseNonNegative(value);
+
 	if (n === undefined) {
 		return 1;
 	}
+
 	return Math.min(MAX_PAGE, Math.max(1, Math.floor(n)));
 }
 
@@ -93,6 +98,7 @@ export function parseCatalogSearchParams(
 ): ParsedCatalogParams {
 	const q = (first(params.q) ?? "").slice(0, MAX_QUERY_LENGTH);
 	const trimmed = q.trim();
+
 	return {
 		onlyPromo: first(params.promo) === "1",
 		page: parsePage(first(params.page)),

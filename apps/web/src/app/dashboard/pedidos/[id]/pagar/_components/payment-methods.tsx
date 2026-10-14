@@ -18,6 +18,7 @@ import { fmtNumericBRL } from "@/lib/format";
 // O webhook do Asaas confirma o pagamento e muda o status do pedido para "paid".
 const MOCK_PIX =
 	"00020126580014br.gov.bcb.pix0136mock-emach-asaas-pendente5204000053039865802BR";
+
 const MOCK_BOLETO = "23793.38128 60007.827136 42000.063305 9 00000000000000";
 
 export function PaymentMethods({

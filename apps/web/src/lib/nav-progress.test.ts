@@ -129,6 +129,7 @@ describe("createNavProgressMachine", () => {
 			doneMs: 250,
 			maxMs: 8000,
 		});
+
 		m.start();
 		vi.advanceTimersByTime(150 + 8000);
 		expect(m.getState()).toBe("done");

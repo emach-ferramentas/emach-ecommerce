@@ -20,5 +20,6 @@ export function isAccountNavActive(
 	if (pathname === href) {
 		return true;
 	}
+
 	return !exact && pathname.startsWith(`${href}/`);
 }

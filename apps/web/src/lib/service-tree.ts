@@ -18,12 +18,15 @@ export function isServicePath(path: string): boolean {
 
 function withoutServiceNodes(nodes: CategoryNode[]): CategoryNode[] {
 	const kept: CategoryNode[] = [];
+
 	for (const node of nodes) {
 		if (isServicePath(node.path)) {
 			continue;
 		}
+
 		kept.push({ ...node, children: withoutServiceNodes(node.children) });
 	}
+
 	return kept;
 }
 
@@ -36,6 +39,7 @@ export interface ServiceTreeSplit {
 
 export function splitServiceTree(tree: CategoryNode[]): ServiceTreeSplit {
 	const root = tree.find((node) => node.path === SERVICES_ROOT_PATH);
+
 	return {
 		categories: withoutServiceNodes(tree),
 		services: root ? root.children : [],

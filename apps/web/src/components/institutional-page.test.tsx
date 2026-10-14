@@ -66,6 +66,7 @@ describe("InstitutionalPage", () => {
 		const withExtra = render({
 			extraTocItems: [{ id: "filiais", title: "Onde nos encontrar" }],
 		});
+
 		expect(withExtra).toContain('href="#filiais"');
 		expect(withExtra).toContain("Onde nos encontrar");
 	});

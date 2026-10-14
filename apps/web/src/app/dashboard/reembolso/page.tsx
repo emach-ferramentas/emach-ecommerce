@@ -34,6 +34,7 @@ async function RefundsByTab() {
 	const session = await requireCurrentClient();
 	const refunds = await listClientRefunds(session.user.id);
 	const counts = countRefundsByTab(refunds.map((r) => r.status));
+
 	const tabs = REFUND_TABS.map((tab) => ({
 		value: tab,
 		label: REFUND_TAB_LABEL[tab],
@@ -42,9 +43,11 @@ async function RefundsByTab() {
 
 	function refundsIn(tab: RefundTab) {
 		const list = refunds.filter((r) => statusToRefundTab(r.status) === tab);
+
 		if (list.length === 0) {
 			return <RefundsEmptyState tabLabel={REFUND_TAB_LABEL[tab]} />;
 		}
+
 		return (
 			<div className="space-y-4">
 				{list.map((refund) => (

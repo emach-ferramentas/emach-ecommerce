@@ -17,9 +17,11 @@ export async function getProductShell(
 	"use cache";
 	cacheLife({ revalidate: 600 });
 	const detail = await getToolBySlug(db, slug);
+
 	if (!detail) {
 		return null;
 	}
+
 	// Relógio lido AQUI (escopo cacheado). Fora dele, `cacheComponents` proíbe
 	// `new Date()` antes de dado dinâmico (next-prerender-current-time) — o
 	// JSON-LD da PDP consome este instante em vez de ler o relógio no render.

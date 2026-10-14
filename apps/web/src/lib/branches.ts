@@ -42,10 +42,13 @@ export function formatCep(cep: string | null) {
 	if (!cep) {
 		return null;
 	}
+
 	const digits = cep.replace(/\D/g, "");
+
 	if (digits.length !== 8) {
 		return cep;
 	}
+
 	return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
@@ -53,13 +56,17 @@ export function formatPhone(phone: string | null) {
 	if (!phone) {
 		return null;
 	}
+
 	const digits = phone.replace(/\D/g, "");
+
 	if (digits.length === 11) {
 		return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 	}
+
 	if (digits.length === 10) {
 		return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
 	}
+
 	return phone;
 }
 
@@ -71,11 +78,13 @@ export function formatBusinessPeriod(
 	if (!(period?.isOpen && period.opensAt && period.closesAt)) {
 		return "Fechado";
 	}
+
 	// Intervalo parcial (só um dos campos): o Zod do dashboard garante
 	// ambos-ou-nenhum, mas o jsonb não tem constraint — degrada pra turno único.
 	if (period.breakStart && period.breakEnd) {
 		return `${period.opensAt}–${period.breakStart} · ${period.breakEnd}–${period.closesAt}`;
 	}
+
 	return `${period.opensAt}–${period.closesAt}`;
 }
 
@@ -90,6 +99,7 @@ export function getBusinessHoursRows(
 	if (!hours) {
 		return null;
 	}
+
 	return [
 		{ label: "Seg–sex", value: formatBusinessPeriod(hours.weekdays) },
 		{ label: "Sábado", value: formatBusinessPeriod(hours.saturday) },
@@ -108,6 +118,7 @@ export function formatBranchAddress(row: {
 	const streetLine = [row.street, row.streetNumber].filter(Boolean).join(", ");
 	const cityLine = [row.city, row.state].filter(Boolean).join("/");
 	const cep = formatCep(row.cep);
+
 	return [streetLine, row.neighborhood, cityLine, cep ? `CEP ${cep}` : null]
 		.filter(Boolean)
 		.join(" - ");
@@ -121,8 +132,10 @@ export function branchMapsUrl(row: {
 	state: string | null;
 }): string {
 	const locality = [row.city, row.state].filter(Boolean).join("/");
+
 	const query = [row.street, row.streetNumber, row.neighborhood, locality]
 		.filter(Boolean)
 		.join(", ");
+
 	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }

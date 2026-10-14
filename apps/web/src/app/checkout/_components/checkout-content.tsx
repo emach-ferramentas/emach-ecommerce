@@ -46,7 +46,7 @@ const CHECKOUT_FORM_ID = "checkout-form";
 const formatUf = (raw: string): string =>
 	onlyLetters(raw).toUpperCase().slice(0, 2);
 
-const newAddressFormShape = z.object({
+const newAddressFormSchema = z.object({
 	zipCode: z.string(),
 	street: z.string(),
 	number: z.string(),
@@ -62,7 +62,7 @@ const checkoutSchema = z
 		phone: z.string().refine(isValidPhone, "Telefone inválido"),
 		document: z.string().refine(isValidCpfCnpj, "CPF ou CNPJ inválido"),
 		addressId: z.string().min(1, "Selecione ou cadastre um endereço"),
-		newAddress: newAddressFormShape,
+		newAddress: newAddressFormSchema,
 		acceptTos: z.literal(true, {
 			error: () => ({ message: "Aceite os termos para continuar" }),
 		}),
@@ -75,10 +75,13 @@ const checkoutSchema = z
 		if (data.addressId !== NEW_ADDRESS_ID) {
 			return;
 		}
+
 		const result = addressFieldsSchema.safeParse(data.newAddress);
+
 		if (result.success) {
 			return;
 		}
+
 		for (const issue of result.error.issues) {
 			ctx.addIssue({
 				code: "custom",
@@ -108,6 +111,7 @@ export function CheckoutContent({
 	emailVerified,
 }: CheckoutContentProps) {
 	const router = useRouter();
+
 	const {
 		items,
 		clear,
@@ -116,15 +120,18 @@ export function CheckoutContent({
 		hydrated,
 		subtotalCents: subtotal,
 	} = useCart();
+
 	const submittedRef = useRef(false);
 	const revalidatedRef = useRef(false);
 	const [resendingVerification, setResendingVerification] = useState(false);
 
 	const [shippingStatus, setShippingStatus] = useState<ShippingStatus>("idle");
 	const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+
 	const [selectedCarrierId, setSelectedCarrierId] = useState<string | null>(
 		null
 	);
+
 	const [destinationCep, setDestinationCep] = useState("");
 	const [quoteNonce, setQuoteNonce] = useState(0);
 
@@ -155,6 +162,7 @@ export function CheckoutContent({
 		if (revalidatedRef.current || items.length === 0) {
 			return;
 		}
+
 		revalidatedRef.current = true;
 		(async () => {
 			const result = await revalidateCartAction({
@@ -163,8 +171,10 @@ export function CheckoutContent({
 					variantId: i.variantId,
 				})),
 			});
+
 			if (result.ok) {
 				const unavailable = new Set(result.unavailable);
+
 				for (const item of items) {
 					if (unavailable.has(item.variantId)) {
 						remove(item.variantId);
@@ -173,12 +183,14 @@ export function CheckoutContent({
 						);
 					}
 				}
+
 				const fresh = new Map(
 					result.prices.map((p) => [
 						p.variantId,
 						(p.finalPriceCents / 100).toFixed(2),
 					])
 				);
+
 				reconcile(fresh);
 			}
 		})();
@@ -215,12 +227,16 @@ export function CheckoutContent({
 			// pedido legítimo. O botão já desabilita; guarda cobre submit implícito.
 			if (shippingStatus === "loading") {
 				toast.error("Aguarde o recálculo do frete");
+
 				return;
 			}
+
 			if (selectedShippingCents === null) {
 				toast.error("Selecione uma opção de frete");
+
 				return;
 			}
+
 			const result = await createOrderAction({
 				name: value.name.trim(),
 				phone: onlyDigits(value.phone),
@@ -252,6 +268,7 @@ export function CheckoutContent({
 
 			if (!result.ok) {
 				toast.error(result.error);
+
 				return;
 			}
 
@@ -270,24 +287,30 @@ export function CheckoutContent({
 		if (address.street) {
 			form.setFieldValue("newAddress.street", address.street);
 		}
+
 		if (address.neighborhood) {
 			form.setFieldValue("newAddress.neighborhood", address.neighborhood);
 		}
+
 		form.setFieldValue("newAddress.city", address.city);
 		form.setFieldValue("newAddress.state", address.state);
 	});
 
 	const watchedAddressId = useStore(form.store, (s) => s.values.addressId);
+
 	const watchedNewCep = useStore(
 		form.store,
 		(s) => s.values.newAddress.zipCode
 	);
+
 	useEffect(() => {
 		const saved = addresses.find((a) => a.id === watchedAddressId);
+
 		const cepRaw =
 			watchedAddressId === NEW_ADDRESS_ID
 				? watchedNewCep
 				: (saved?.zipCode ?? "");
+
 		setDestinationCep(onlyDigits(cepRaw).slice(0, 8));
 	}, [watchedAddressId, watchedNewCep, addresses]);
 
@@ -297,19 +320,24 @@ export function CheckoutContent({
 			setShippingStatus("idle");
 			setShippingOptions([]);
 			setSelectedCarrierId(null);
+
 			return;
 		}
+
 		let cancelled = false;
 		setShippingStatus("loading");
+
 		const handle = setTimeout(async () => {
 			const result = await quoteShippingAction({
 				destinationCep,
 				items: items.map((i) => ({ toolId: i.toolId, quantity: i.quantity })),
 				declaredValueCents: subtotal,
 			});
+
 			if (cancelled) {
 				return;
 			}
+
 			if (result.ok) {
 				setShippingOptions(result.options);
 				setSelectedCarrierId(result.options[0]?.carrierId ?? null);
@@ -320,6 +348,7 @@ export function CheckoutContent({
 				setShippingStatus("error");
 			}
 		}, 600);
+
 		return () => {
 			cancelled = true;
 			clearTimeout(handle);
@@ -332,15 +361,19 @@ export function CheckoutContent({
 	// estado de loading se solta mesmo se sendVerificationEmail lançar.
 	const handleResendVerification = async () => {
 		setResendingVerification(true);
+
 		try {
 			const { error } = await authClient.sendVerificationEmail({
 				email: clientEmail,
 				callbackURL: "/checkout",
 			});
+
 			if (error) {
 				toast.error("Não foi possível reenviar agora. Tente novamente.");
+
 				return;
 			}
+
 			toast.success(
 				"E-mail de confirmação reenviado. Verifique sua caixa de entrada."
 			);
@@ -525,6 +558,7 @@ export function CheckoutContent({
 																				const next = onlyDigits(
 																					e.target.value
 																				).slice(0, 8);
+
 																				field.handleChange(next);
 																				cepAutofill.maybeLookup(next);
 																			}}
@@ -709,7 +743,9 @@ function formatAddressLabel(addr: ClientAddress): string {
 		addr.neighborhood,
 		`${addr.city}/${addr.state}`,
 	];
+
 	const label = addr.label ? ` — ${addr.label}` : "";
 	const def = addr.isDefault ? " ★" : "";
+
 	return `${parts.join(" · ")}${label}${def}`;
 }

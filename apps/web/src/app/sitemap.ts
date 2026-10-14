@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	// Sob `use cache`, `new Date()` congela no momento da geração do cache
 	// (lastModified refresca a cada ~24h). Aceitável para um sitemap.
 	const now = new Date();
+
 	const staticRoutes: MetadataRoute.Sitemap = [
 		{ url: `${BASE_URL}/`, lastModified: now, priority: 1 },
 		{ url: `${BASE_URL}/catalog`, lastModified: now, priority: 0.9 },

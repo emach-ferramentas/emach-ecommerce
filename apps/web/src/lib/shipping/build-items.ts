@@ -41,11 +41,14 @@ export function buildQuoteItems(
 	cartItems: { toolId: string; quantity: number }[]
 ): QuoteItem[] {
 	const byId = new Map(toolRows.map((t) => [t.id, t]));
+
 	return cartItems.map((item) => {
 		const t = byId.get(item.toolId);
+
 		if (!t) {
 			throw new Error(`Ferramenta ${item.toolId} não encontrada`);
 		}
+
 		return {
 			heightCm: Number(t.heightCm),
 			lengthCm: Number(t.lengthCm),

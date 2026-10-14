@@ -15,6 +15,7 @@ describe("hasPrice", () => {
 			{ id: "a", priceAmount: "10.00" },
 			{ id: "b", priceAmount: null },
 		];
+
 		const priced = variants.filter(hasPrice);
 		expect(priced.map((v) => v.id)).toEqual(["a"]);
 		// `priceAmount` é string após o filtro — compila sem `!`.

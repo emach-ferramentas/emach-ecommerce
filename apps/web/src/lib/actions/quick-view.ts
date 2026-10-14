@@ -50,17 +50,22 @@ export async function quickViewAction(
 	raw: unknown
 ): Promise<ActionResultWith<QuickViewProduct>> {
 	const parsed = inputSchema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Produto inválido." };
 	}
+
 	const { slug } = parsed.data;
 
 	try {
 		const ip = getClientIp(await headers());
+
 		if (ip) {
 			const { success } = await quickViewLimiter.limit(`quick-view:${ip}`);
+
 			if (!success) {
 				log.warn({ action: "quick_view_rate_limited" });
+
 				return {
 					ok: false,
 					error: "Muitas consultas seguidas. Aguarde alguns segundos.",
@@ -71,6 +76,7 @@ export async function quickViewAction(
 		}
 
 		const detail = await getProductShell(slug);
+
 		if (!detail) {
 			return { ok: false, error: "Produto não encontrado." };
 		}
@@ -78,6 +84,7 @@ export async function quickViewAction(
 		const attributes = [...detail.attributes].sort(
 			(a, b) => a.sortOrder - b.sortOrder
 		);
+
 		return {
 			ok: true,
 			data: {
@@ -90,6 +97,7 @@ export async function quickViewAction(
 				toolId: detail.tool.id,
 				variants: sellableVariants(detail.variants).map((v) => {
 					const price = variantPrice(v.priceAmount, detail.activePromotion);
+
 					return {
 						baseAmount: v.priceAmount,
 						discountPct: price.discountPct,
@@ -108,6 +116,7 @@ export async function quickViewAction(
 			error: err instanceof Error ? err.message : "erro inesperado",
 			slug,
 		});
+
 		return { ok: false, error: "Não foi possível abrir o produto agora." };
 	}
 }

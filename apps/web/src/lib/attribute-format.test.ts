@@ -25,6 +25,7 @@ describe("specChips", () => {
 			kind: "select",
 			options: [{ label: "Metal duro", value: "metal_duro" }],
 		});
+
 		expect(specChips([material], 3)).toEqual(["Metal duro"]);
 	});
 
@@ -43,6 +44,7 @@ describe("specChips", () => {
 			],
 			2
 		);
+
 		expect(chips).toEqual(["1.200 W", "até 800 RPM"]);
 	});
 });

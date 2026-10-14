@@ -136,6 +136,7 @@ export async function listClientOrders(
 	}
 
 	const orderIds = orders.map((o) => o.id);
+
 	const items = await db
 		.select(ORDER_ITEM_COLUMNS)
 		.from(orderItem)
@@ -147,6 +148,7 @@ export async function listClientOrders(
 	);
 
 	const itemsByOrder = new Map<string, typeof items>();
+
 	for (const it of items) {
 		const arr = itemsByOrder.get(it.orderId) ?? [];
 		arr.push(it);
@@ -155,6 +157,7 @@ export async function listClientOrders(
 
 	return orders.map((o) => {
 		const its = itemsByOrder.get(o.id) ?? [];
+
 		return {
 			id: o.id,
 			number: o.number,

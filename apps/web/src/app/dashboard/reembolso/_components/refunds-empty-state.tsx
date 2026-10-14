@@ -6,6 +6,7 @@ interface RefundsEmptyStateProps {
 
 export function RefundsEmptyState({ tabLabel }: RefundsEmptyStateProps) {
 	const text = `Você não tem devoluções em "${tabLabel}".`;
+
 	return (
 		<div className="flex flex-col items-center rounded-[5px] border border-line bg-paper px-6 py-14 text-center">
 			<RotateCcw

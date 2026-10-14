@@ -87,6 +87,7 @@ describe("e-mail de pedido recebido", () => {
 				plainText: true,
 			})
 		).toLowerCase();
+
 		for (const banned of [
 			"nota fiscal",
 			"nf-e",
@@ -107,6 +108,7 @@ describe("e-mail de pedido recebido", () => {
 				<OrderReceivedEmail {...props} companyAddress={COMPANY_ADDRESS} />
 			)
 		);
+
 		const [street, city] = COMPANY_ADDRESS.map((line) => footer.indexOf(line));
 		expect(street).toBeGreaterThan(footer.indexOf("Ferramentas e acessórios"));
 		expect(city).toBeGreaterThan(street ?? -1);

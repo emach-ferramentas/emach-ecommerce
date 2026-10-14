@@ -25,9 +25,12 @@ export function HeaderBar({ nav }: { nav: StoreNav }) {
 			setPulse(true);
 			const t = window.setTimeout(() => setPulse(false), 450);
 			prevCount.current = totalCount;
+
 			return () => window.clearTimeout(t);
 		}
+
 		prevCount.current = totalCount;
+
 		return;
 	}, [totalCount]);
 

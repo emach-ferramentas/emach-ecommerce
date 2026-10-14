@@ -36,21 +36,26 @@ const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
 	account_not_linked:
 		"Este e-mail já tem cadastro com senha e ainda não foi confirmado. Entre com e-mail e senha ou confirme o e-mail antes de usar o Google.",
 };
+
 const GOOGLE_ERROR_FALLBACK =
 	"Não foi possível entrar com o Google. Tente de novo ou entre com e-mail e senha.";
 
 export function LoginForm() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
+
 	const [mode, setMode] = useState<"sign-in" | "sign-up">(() =>
 		searchParams.get("modo") === "cadastro" ? "sign-up" : "sign-in"
 	);
+
 	const [isGooglePending, setIsGooglePending] = useState(false);
 	const redirectTo = safeRedirect(searchParams.get("redirect"), "/dashboard");
 	const googleErrorCode = searchParams.get("error");
+
 	const googleError = googleErrorCode
 		? (GOOGLE_ERROR_MESSAGES[googleErrorCode] ?? GOOGLE_ERROR_FALLBACK)
 		: null;
+
 	const { data: session, isPending } = authClient.useSession();
 
 	useEffect(() => {
@@ -61,6 +66,7 @@ export function LoginForm() {
 
 	const handleGoogleSignIn = async () => {
 		setIsGooglePending(true);
+
 		try {
 			const result = await authClient.signIn.social({
 				callbackURL: redirectTo,
@@ -127,10 +133,13 @@ export function LoginForm() {
 				password: value.password,
 				name: value.name,
 			};
+
 			const phoneDigits = onlyDigits(value.phone);
+
 			if (phoneDigits) {
 				payload.phone = phoneDigits;
 			}
+
 			await authClient.signUp.email(payload, {
 				onSuccess: () => {
 					toast.success("Conta criada com sucesso");

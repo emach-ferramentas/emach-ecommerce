@@ -11,6 +11,7 @@ import { consentLog } from "../src/schema/consent-log";
 
 async function main() {
 	const id = process.argv[2];
+
 	if (!id) {
 		console.error("uso: bun run scripts/anonymize-client.ts <client-id>");
 		process.exit(1);
@@ -18,6 +19,7 @@ async function main() {
 
 	await db.transaction(async (tx) => {
 		const [existing] = await tx.select().from(client).where(eq(client.id, id));
+
 		if (!existing) {
 			throw new Error(`client ${id} não encontrado`);
 		}
@@ -27,6 +29,7 @@ async function main() {
 			.update(id)
 			.digest("hex")
 			.slice(0, 12);
+
 		const anonEmail = `deleted-${hash}@anonymized.local`;
 
 		await tx

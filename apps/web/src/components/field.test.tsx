@@ -40,6 +40,7 @@ describe("Field", () => {
 			error: ["Telefone inválido", "Informe o DDD"],
 			hint: "Com DDD",
 		});
+
 		const input = inputOf(html);
 		expect(input).toContain('aria-invalid="true"');
 		expect(input).toContain('aria-describedby="phone-hint phone-error"');
@@ -72,6 +73,7 @@ function NestedStreet() {
 		defaultValues: { newAddress: { street: "Rua 21 de Abril" } },
 		validators: { onChange: addressSchema },
 	});
+
 	return (
 		<form.Field name="newAddress.street">
 			{(field) => (
@@ -102,9 +104,11 @@ describe("TextField", () => {
 				value: "123",
 			},
 		};
+
 		const html = renderToStaticMarkup(
 			<TextField field={field} id="document" label="CPF ou CNPJ" />
 		);
+
 		expect(inputOf(html)).toContain('aria-invalid="true"');
 		expect(html).toContain("CPF ou CNPJ inválido");
 	});
@@ -116,9 +120,11 @@ describe("TextField", () => {
 			name: "email",
 			state: { meta: { errors: [] }, value: "" },
 		};
+
 		const html = renderToStaticMarkup(
 			<TextField field={field} label="E-mail" type="email" />
 		);
+
 		expect(inputOf(html)).toContain('name="email"');
 	});
 
@@ -134,9 +140,11 @@ describe("TextField", () => {
 				value: "123",
 			},
 		};
+
 		const html = renderToStaticMarkup(
 			<TextField field={field} label="Senha" type="password" />
 		);
+
 		const input = inputOf(html);
 		expect(input).toContain('type="password"');
 		expect(input).toContain('id="password"');

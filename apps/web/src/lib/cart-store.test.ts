@@ -40,6 +40,7 @@ describe("cartSubtotalCents", () => {
 			{ ...item("v1", "899.90"), quantity: 2 },
 			{ ...item("v2", "0.10"), quantity: 3 },
 		];
+
 		expect(cartSubtotalCents(items)).toBe(180_010);
 	});
 

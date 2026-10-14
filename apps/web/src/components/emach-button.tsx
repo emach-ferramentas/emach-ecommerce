@@ -33,6 +33,7 @@ const buttonVariants = cva(
 export type ButtonVariant = NonNullable<
 	VariantProps<typeof buttonVariants>["variant"]
 >;
+
 type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface ButtonStyle {

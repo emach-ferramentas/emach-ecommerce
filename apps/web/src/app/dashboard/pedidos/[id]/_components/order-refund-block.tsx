@@ -26,6 +26,7 @@ export function OrderRefundBlock({
 }: OrderRefundBlockProps) {
 	if (refund.status === "refunded") {
 		const date = refund.resolvedAt ? DATE_FMT.format(refund.resolvedAt) : "—";
+
 		return (
 			<Row
 				label="Reembolso"
@@ -58,6 +59,7 @@ export function OrderRefundBlock({
 		refund.status === "approved"
 			? "Aprovada · estorno em processamento"
 			: "Em andamento";
+
 	return <Row label="Devolução" text={text} variant={variant} />;
 }
 
@@ -73,6 +75,7 @@ function Row({
 	variant: "card" | "page";
 }) {
 	const danger = tone === "danger";
+
 	return (
 		<div
 			className={cn(

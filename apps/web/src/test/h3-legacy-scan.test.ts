@@ -99,6 +99,7 @@ describe("scanSource", () => {
 		const source = ["<div>", '  <p className="text-gray-60">', "</div>"].join(
 			"\n"
 		);
+
 		expect(scanSource(source, "y.tsx")).toEqual([
 			{ file: "y.tsx", line: 2, token: "gray-(10|20|50|55|60)" },
 		]);

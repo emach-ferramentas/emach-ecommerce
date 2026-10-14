@@ -15,6 +15,7 @@ import dotenv from "dotenv";
  */
 
 const envPath = resolve(import.meta.dirname, ".env");
+
 if (existsSync(envPath)) {
 	dotenv.config({ path: envPath, quiet: true });
 }
@@ -27,6 +28,7 @@ const DUMMIES = [`https://test.invalid/${"x".repeat(48)}`, "12345678"];
 for (const schema of [serverSchema, clientSchema]) {
 	for (const [key, validator] of Object.entries(schema)) {
 		const required = !validator.safeParse(undefined).success;
+
 		if (required && process.env[key] == null) {
 			process.env[key] =
 				DUMMIES.find((d) => validator.safeParse(d).success) ?? DUMMIES[0];

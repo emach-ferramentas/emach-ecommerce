@@ -19,30 +19,38 @@ function dbCategory(udt: string): string {
 	if (["text", "varchar", "bpchar", "char", "citext"].includes(udt)) {
 		return "string";
 	}
+
 	if (udt === "bool") {
 		return "boolean";
 	}
+
 	if (["int2", "int4", "int8", "numeric", "float4", "float8"].includes(udt)) {
 		return "number";
 	}
+
 	if (["timestamp", "timestamptz", "date", "time"].includes(udt)) {
 		return "datetime";
 	}
+
 	if (["json", "jsonb"].includes(udt)) {
 		return "json";
 	}
+
 	return udt;
 }
 
 /** Categoria coarse do tipo Drizzle (a partir de `getSQLType()`). */
 function drizzleCategory(sqlType: string): string {
 	const t = sqlType.toLowerCase();
+
 	if (t.startsWith("text") || t.startsWith("varchar") || t.startsWith("char")) {
 		return "string";
 	}
+
 	if (t === "boolean") {
 		return "boolean";
 	}
+
 	if (
 		t.startsWith("integer") ||
 		t.startsWith("smallint") ||
@@ -53,6 +61,7 @@ function drizzleCategory(sqlType: string): string {
 	) {
 		return "number";
 	}
+
 	if (
 		t.startsWith("timestamp") ||
 		t.startsWith("date") ||
@@ -60,9 +69,11 @@ function drizzleCategory(sqlType: string): string {
 	) {
 		return "datetime";
 	}
+
 	if (t.startsWith("json")) {
 		return "json";
 	}
+
 	return t;
 }
 
@@ -73,6 +84,7 @@ interface DbColumn {
 }
 
 const client = new Client({ connectionString: env.DATABASE_URL });
+
 await client.connect();
 
 let driftCount = 0;
@@ -81,7 +93,9 @@ for (const exported of Object.values(schema)) {
 	if (!is(exported, PgTable)) {
 		continue;
 	}
+
 	const { name, columns } = getTableConfig(exported);
+
 	const res = await client.query<DbColumn>(
 		"SELECT column_name, is_nullable, udt_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1",
 		[name]
@@ -99,11 +113,14 @@ for (const exported of Object.values(schema)) {
 
 	for (const col of columns) {
 		const dbCol = dbByName.get(col.name);
+
 		if (!dbCol) {
 			issues.push(`coluna fantasma (schema, não DB): ${col.name}`);
 			continue;
 		}
+
 		const dbNotNull = dbCol.is_nullable === "NO";
+
 		if (dbNotNull !== col.notNull) {
 			issues.push(
 				`${col.name}: nullability — schema ${
@@ -111,8 +128,10 @@ for (const exported of Object.values(schema)) {
 				}, DB ${dbNotNull ? "NOT NULL" : "nullable"}`
 			);
 		}
+
 		const schemaCat = drizzleCategory(col.getSQLType());
 		const dbCat = dbCategory(dbCol.udt_name);
+
 		if (schemaCat !== dbCat) {
 			issues.push(
 				`${col.name}: tipo — schema ${schemaCat} (${col.getSQLType()}), DB ${dbCat} (${dbCol.udt_name})`
@@ -129,6 +148,7 @@ for (const exported of Object.values(schema)) {
 	if (issues.length > 0) {
 		driftCount++;
 		process.stdout.write(`✗ ${name}:\n`);
+
 		for (const issue of issues) {
 			process.stdout.write(`    ${issue}\n`);
 		}
@@ -143,4 +163,5 @@ if (driftCount > 0) {
 	process.stdout.write(`\n${driftCount} tabela(s) com drift.\n`);
 	process.exit(1);
 }
+
 process.stdout.write("\nSchema Drizzle bate com a DB.\n");

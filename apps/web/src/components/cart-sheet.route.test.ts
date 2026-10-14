@@ -10,8 +10,10 @@ import { describe, expect, it } from "vitest";
 
 const dir = dirname(fileURLToPath(import.meta.url));
 const read = (file: string) => readFileSync(join(dir, file), "utf8");
+
 const CLOSE_ON_PATHNAME =
 	/use(?:Layout)?Effect\(\(\) => \{\s*if \(pathname\) \{\s*onOpenChangeRef\.current\(false\);\s*\}\s*\}, \[pathname\]\)/;
+
 const UNMOUNT_CLEANUP = /use(?:Layout)?Effect\(\(\) => \(\) =>/;
 
 describe("gaveta do carrinho na troca de rota", () => {

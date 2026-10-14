@@ -8,6 +8,7 @@ describe("Notice", () => {
 		const html = renderToStaticMarkup(
 			<Notice>Ambiente de demonstração: nenhum pagamento é cobrado.</Notice>
 		);
+
 		expect(html).not.toContain('role="alert"');
 		expect(html).toContain("lucide-info");
 		expect(html).toContain("Ambiente de demonstração");
@@ -17,6 +18,7 @@ describe("Notice", () => {
 		const html = renderToStaticMarkup(
 			<Notice tone="error">Não foi possível entrar com o Google.</Notice>
 		);
+
 		expect(html).toContain('role="alert"');
 		expect(html).toContain("lucide-circle-alert");
 	});
@@ -27,6 +29,7 @@ describe("Notice", () => {
 				Confirme seu e-mail.
 			</Notice>
 		);
+
 		expect(html).toContain('<button type="button">Verificar e-mail</button>');
 	});
 });

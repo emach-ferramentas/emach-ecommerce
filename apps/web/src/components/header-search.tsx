@@ -21,9 +21,11 @@ function catalogSearchHref(term: string): Route {
 function Highlight({ text, query }: { text: string; query: string }) {
 	const q = query.trim().toLowerCase();
 	const idx = q ? text.toLowerCase().indexOf(q) : -1;
+
 	if (idx === -1) {
 		return text;
 	}
+
 	return (
 		<>
 			{text.slice(0, idx)}
@@ -58,21 +60,27 @@ export function HeaderSearch({ className }: { className?: string }) {
 
 	useEffect(() => {
 		const term = query.trim();
+
 		if (term.length < 2) {
 			setResults([]);
 			setError(null);
 			setLoading(false);
+
 			return;
 		}
+
 		// Resposta de um termo antigo pode chegar depois da do termo atual.
 		let stale = false;
 		setLoading(true);
+
 		const handle = window.setTimeout(async () => {
 			try {
 				const res = await searchToolsAction(term);
+
 				if (stale) {
 					return;
 				}
+
 				setResults(res.ok ? res.data.slice(0, MAX_SUGGESTIONS) : []);
 				setError(res.ok ? null : res.error);
 			} catch {
@@ -86,6 +94,7 @@ export function HeaderSearch({ className }: { className?: string }) {
 				}
 			}
 		}, 250);
+
 		return () => {
 			stale = true;
 			window.clearTimeout(handle);
@@ -96,12 +105,15 @@ export function HeaderSearch({ className }: { className?: string }) {
 		if (!open) {
 			return;
 		}
+
 		const onPointer = (e: PointerEvent) => {
 			if (!formRef.current?.contains(e.target as Node)) {
 				setOpen(false);
 			}
 		};
+
 		document.addEventListener("pointerdown", onPointer);
+
 		return () => document.removeEventListener("pointerdown", onPointer);
 	}, [open]);
 
@@ -114,6 +126,7 @@ export function HeaderSearch({ className }: { className?: string }) {
 
 	function submit(e: React.FormEvent) {
 		e.preventDefault();
+
 		if (term) {
 			close();
 			router.push(catalogSearchHref(term));
@@ -133,17 +146,23 @@ export function HeaderSearch({ className }: { className?: string }) {
 		if (e.key === "Escape") {
 			close();
 			inputRef.current?.focus();
+
 			return;
 		}
+
 		if (!showList || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) {
 			return;
 		}
+
 		const links = suggestionLinks();
+
 		if (links.length === 0) {
 			return;
 		}
+
 		e.preventDefault();
 		const current = links.indexOf(document.activeElement as HTMLAnchorElement);
+
 		if (e.key === "ArrowDown") {
 			links[(current + 1) % links.length]?.focus();
 		} else if (current <= 0) {

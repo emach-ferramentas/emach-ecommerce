@@ -111,6 +111,7 @@ export function FilterPanel({
 				<Group title="Serviço">
 					{services.map((service) => {
 						const active = service.slug === activeSlug;
+
 						return (
 							<Link
 								aria-current={active ? "page" : undefined}
@@ -121,6 +122,7 @@ export function FilterPanel({
 									if (isModifiedClick(e)) {
 										return;
 									}
+
 									e.preventDefault();
 									onSelectCategory(active ? null : service.slug);
 								}}
@@ -152,6 +154,7 @@ export function FilterPanel({
 					const selected = voltages.includes(v);
 					const count = facetCounts.byVoltage[v];
 					const disabled = count === 0 && !selected;
+
 					return (
 						<button
 							aria-pressed={selected}
@@ -177,6 +180,7 @@ export function FilterPanel({
 			<Group title="Preço">
 				{PRICE_RANGES.map((r) => {
 					const selected = matchedRange === r.key;
+
 					return (
 						<button
 							aria-pressed={selected}

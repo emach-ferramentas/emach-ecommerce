@@ -29,6 +29,7 @@ export function PromoCountdown({ endsAt }: PromoCountdownProps) {
 		const tick = () => setParts(formatCountdown(target - Date.now()));
 		tick();
 		const id = setInterval(tick, 1000);
+
 		return () => clearInterval(id);
 	}, [endsAt]);
 

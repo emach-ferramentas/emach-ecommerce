@@ -26,6 +26,7 @@ describe("inputSchema", () => {
 			...BASE_INPUT,
 			phone: "(11) 99999-8888",
 		});
+
 		expect(parsed.phone).toBe("11999998888");
 	});
 
@@ -34,6 +35,7 @@ describe("inputSchema", () => {
 			...BASE_INPUT,
 			phone: "11899998888",
 		});
+
 		expect(parsed.error?.issues.map((i) => i.path.join("."))).toEqual([
 			"phone",
 		]);
@@ -44,6 +46,7 @@ describe("inputSchema", () => {
 			...BASE_INPUT,
 			document: "12.abc.345/01de-35",
 		});
+
 		expect(parsed.document).toBe("12ABC34501DE35");
 	});
 
@@ -52,6 +55,7 @@ describe("inputSchema", () => {
 			...BASE_INPUT,
 			document: "529.982.247-25",
 		});
+
 		expect(parsed.document).toBe("52998224725");
 	});
 

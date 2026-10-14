@@ -24,6 +24,7 @@ const VARIANT = {
 	priceAmount: "199.90" as string | null,
 	visibleOnSite: true,
 };
+
 const TOOL = {
 	id: "t1",
 	name: "Furadeira",

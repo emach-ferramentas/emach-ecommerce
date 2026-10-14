@@ -36,11 +36,14 @@ function findWithParent(
 		if (n.slug === slug) {
 			return { node: n, parent };
 		}
+
 		const inChildren = findWithParent(n.children, slug, n);
+
 		if (inChildren) {
 			return inChildren;
 		}
 	}
+
 	return null;
 }
 
@@ -49,6 +52,7 @@ export function deriveDrilldownLevel(
 	activeSlug: string | null
 ): DrilldownLevel {
 	const found = activeSlug ? findWithParent(tree, activeSlug, null) : null;
+
 	if (!found) {
 		return {
 			active: null,
@@ -59,9 +63,11 @@ export function deriveDrilldownLevel(
 	}
 
 	const { node, parent } = found;
+
 	const back = parent
 		? { name: parent.name, slug: parent.slug }
 		: { name: "Todas as categorias", slug: null };
+
 	const active = { id: node.id, name: node.name, slug: node.slug };
 
 	if (node.children.length > 0) {
@@ -76,5 +82,6 @@ export function deriveDrilldownLevel(
 	const siblings = (parent ? parent.children : tree).filter(
 		(s) => s.id !== node.id
 	);
+
 	return { active, back, rows: siblings.map(toRow), rowsAreChildren: false };
 }

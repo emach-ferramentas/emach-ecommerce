@@ -3,11 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("next/headers", () => ({
 	headers: vi.fn(() => Promise.resolve(new Headers())),
 }));
+
 vi.mock("@/lib/client-ip", () => ({ getClientIp: vi.fn(() => "1.2.3.4") }));
+
 vi.mock("@/lib/rate-limit", () => ({
 	quickViewLimiter: { limit: vi.fn(() => Promise.resolve({ success: true })) },
 }));
+
 vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
+
 vi.mock("@/lib/product-detail", () => ({ getProductShell: vi.fn() }));
 
 import { log } from "@/lib/evlog";
@@ -55,9 +59,11 @@ describe("quickViewAction", () => {
 		vi.mocked(getProductShell).mockResolvedValue(SHELL);
 		const out = await quickViewAction({ slug: "lixadeira-girafa" });
 		expect(out.ok).toBe(true);
+
 		if (!out.ok) {
 			return;
 		}
+
 		expect(out.data.variants).toEqual([
 			{
 				baseAmount: "536.18",

@@ -104,6 +104,7 @@ test("os dois templates usam o mesmo layout base", async () => {
 	const [verify, reset] = await Promise.all(
 		templates.map((t) => render(t.element))
 	);
+
 	const chrome = (html: string) => html.match(/data-email-layout="[a-z]+"/g);
 	expect(chrome(verify ?? "")).toEqual([
 		'data-email-layout="header"',

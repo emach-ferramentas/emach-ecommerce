@@ -91,6 +91,7 @@ function FooterColumn({
 export async function SiteFooter() {
 	"use cache";
 	cacheLife({ revalidate: 3600 });
+
 	const [socialLinks, nav] = await Promise.all([
 		getStoreSocialLinks(db),
 		getStoreNav(),

@@ -23,8 +23,10 @@ const DATE_FMT = new Intl.DateTimeFormat("pt-BR", {
 export function OrderCard({ order }: { order: OrderListItem }) {
 	const detailsHref = `/dashboard/pedidos/${order.id}` as Route;
 	const pagarHref = `/dashboard/pedidos/${order.id}/pagar` as Route;
+
 	const isPending =
 		order.status === "pending_payment" || order.status === "payment_failed";
+
 	const terminalNeg = isTerminalNegative(order.status);
 	const canRebuy = order.status === "delivered" || terminalNeg;
 

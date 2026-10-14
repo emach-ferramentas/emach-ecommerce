@@ -36,9 +36,11 @@ export function ShippingOptions({
 			</p>
 		);
 	}
+
 	if (status === "loading") {
 		return <p className="text-[15px] text-ink-muted">Calculando frete…</p>;
 	}
+
 	if (status === "negotiate") {
 		return (
 			<Notice>
@@ -47,6 +49,7 @@ export function ShippingOptions({
 			</Notice>
 		);
 	}
+
 	if (status === "error") {
 		return (
 			<Notice
@@ -61,6 +64,7 @@ export function ShippingOptions({
 			</Notice>
 		);
 	}
+
 	if (options.length === 0) {
 		return (
 			<p className="text-[15px] text-ink-muted">
@@ -68,6 +72,7 @@ export function ShippingOptions({
 			</p>
 		);
 	}
+
 	return (
 		<RadioGroup
 			className="gap-2"

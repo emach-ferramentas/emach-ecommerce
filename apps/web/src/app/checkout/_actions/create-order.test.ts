@@ -66,6 +66,7 @@ vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
 // Mantém inputSchema/OrderError reais; só troca os efeitos colaterais pesados.
 vi.mock("../_lib/place-order", async (importActual) => {
 	const actual = await importActual<typeof import("../_lib/place-order")>();
+
 	return {
 		...actual,
 		placeOrder,
@@ -127,9 +128,11 @@ describe("createOrderAction — gate de verificação de e-mail (#93)", () => {
 		const result = await createOrderAction(VALID_INPUT);
 
 		expect(result.ok).toBe(false);
+
 		if (!result.ok) {
 			expect(result.error).toMatch(RE_EMAIL_NOT_VERIFIED);
 		}
+
 		expect(orderLimit).not.toHaveBeenCalled();
 		expect(placeOrder).not.toHaveBeenCalled();
 	});
@@ -140,9 +143,11 @@ describe("createOrderAction — gate de verificação de e-mail (#93)", () => {
 		const result = await createOrderAction(VALID_INPUT);
 
 		expect(result.ok).toBe(true);
+
 		if (result.ok) {
 			expect(result.orderNumber).toBe("2026-000001");
 		}
+
 		expect(orderLimit).toHaveBeenCalledTimes(1);
 		expect(placeOrder).toHaveBeenCalledTimes(1);
 	});

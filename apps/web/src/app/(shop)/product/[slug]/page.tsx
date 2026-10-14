@@ -35,6 +35,7 @@ interface ProductPageProps {
 // exigência do cacheComponents de ≥1 param para a rota dinâmica validar.
 export async function generateStaticParams() {
 	const slugs = await getAllToolSlugs(db);
+
 	return slugs.map((slug) => ({ slug }));
 }
 
@@ -55,6 +56,7 @@ export async function generateMetadata({
 	// `openGraph`/`twitter` no filho SUBSTITUEM o do root (não há merge
 	// profundo): repetir imagem, locale e sufixo do título aqui é obrigatório.
 	const ogTitle = `${title} · EMACH`;
+
 	return {
 		title,
 		description,
@@ -99,12 +101,15 @@ export default async function ProductPage({
 	}
 
 	const services = await getServicesForTool(detail.tool.id);
+
 	const attributes = [...detail.attributes].sort(
 		(x, y) => x.sortOrder - y.sortOrder
 	);
+
 	const video = detail.tool.videoUrl
 		? { url: detail.tool.videoUrl, poster: detail.tool.videoPosterUrl ?? null }
 		: null;
+
 	const defaultSku = sellableVariants(detail.variants)[0]?.sku ?? null;
 
 	return (

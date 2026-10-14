@@ -63,8 +63,10 @@ export async function fetchCatalogData(
 	const treePromise = getCategoryTree(db);
 
 	let currentCategory: CatalogCurrentCategory | null = null;
+
 	if (input.cat) {
 		const detail = await getCategoryBySlug(db, input.cat);
+
 		if (detail) {
 			currentCategory = {
 				description: detail.description,
@@ -75,6 +77,7 @@ export async function fetchCatalogData(
 			};
 		}
 	}
+
 	const categoryId = currentCategory?.id;
 
 	const [{ tools, total }, fullTree, facetCounts] = await Promise.all([
@@ -127,5 +130,6 @@ export async function getCatalogData(
 ): Promise<CatalogData> {
 	"use cache";
 	cacheLife({ revalidate: 600 });
+
 	return await fetchCatalogData(input);
 }

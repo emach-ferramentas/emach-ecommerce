@@ -92,6 +92,7 @@ async function seedMultiBranch(
 	});
 
 	const branchIds: string[] = [];
+
 	for (const [i, qty] of stockPerBranch.entries()) {
 		const branchId = crypto.randomUUID();
 		await tx
@@ -131,9 +132,11 @@ async function seedSecondVariant(
 
 	for (const [i, qty] of stockPerBranch.entries()) {
 		const branchId = existingBranchIds[i];
+
 		if (!branchId) {
 			throw new Error("Branch faltando para semear segunda variante");
 		}
+
 		await tx.insert(stockLevel).values({ variantId, branchId, quantity: qty });
 	}
 
@@ -186,6 +189,7 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(order)
 				.where(eq(order.id, result.orderId));
+
 			expect(ord?.branchId).toBeNull();
 			expect(ord?.status).toBe("pending_payment");
 			expect(ord?.subtotalAmount).toBe("200.00");
@@ -197,6 +201,7 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(orderItem)
 				.where(eq(orderItem.orderId, result.orderId));
+
 			expect(items).toHaveLength(1);
 			expect(items[0]?.quantity).toBe(2);
 			expect(items[0]?.barcode).toBe(`BARCODE-${variantId}`);
@@ -205,18 +210,21 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(stockLevel)
 				.where(eq(stockLevel.variantId, variantId));
+
 			expect(stocks.map((s) => s.quantity)).toEqual([10]);
 
 			const movements = await tx
 				.select()
 				.from(stockMovement)
 				.where(eq(stockMovement.orderId, result.orderId));
+
 			expect(movements).toHaveLength(0);
 
 			const consents = await tx
 				.select()
 				.from(consentLog)
 				.where(eq(consentLog.clientId, clientId));
+
 			expect(consents).toHaveLength(3);
 		});
 	});
@@ -239,6 +247,7 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(order)
 				.where(eq(order.id, result.orderId));
+
 			expect(ord?.shippingUnverified).toBe(true);
 		});
 	});
@@ -260,12 +269,14 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(order)
 				.where(eq(order.id, result.orderId));
+
 			expect(ord?.branchId).toBeNull();
 
 			const stocks = await tx
 				.select()
 				.from(stockLevel)
 				.where(eq(stockLevel.variantId, variantId));
+
 			const totalQty = stocks.reduce((s, r) => s + r.quantity, 0);
 			expect(totalQty).toBe(5);
 			expect(stocks.map((s) => s.quantity).sort()).toEqual([2, 3]);
@@ -274,6 +285,7 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(stockMovement)
 				.where(eq(stockMovement.orderId, result.orderId));
+
 			expect(movements).toHaveLength(0);
 		});
 	});
@@ -316,6 +328,7 @@ describe("placeOrder (multi-filial)", () => {
 		await withRollback(async (tx) => {
 			const seedA = await seedMultiBranch(tx, [10]);
 			const seedB = await seedSecondVariant(tx, [1], seedA.branchIds);
+
 			const input = buildInput([
 				{ toolId: seedA.toolId, variantId: seedA.variantId, quantity: 2 },
 				{ toolId: seedB.toolId, variantId: seedB.variantId, quantity: 5 },
@@ -335,6 +348,7 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(order)
 				.where(eq(order.clientId, seedA.clientId));
+
 			expect(orders).toHaveLength(0);
 		});
 	});
@@ -350,6 +364,7 @@ describe("placeOrder (multi-filial)", () => {
 			});
 
 			const input1 = buildInput([{ toolId, variantId, quantity: 1 }]);
+
 			const input2 = {
 				...buildInput([{ toolId, variantId, quantity: 1 }]),
 				document: crypto.randomUUID().slice(0, 11).replace(/-/g, "0"),
@@ -362,6 +377,7 @@ describe("placeOrder (multi-filial)", () => {
 				userAgent: null,
 				verifiedShippingCents: null,
 			});
+
 			const r2 = await placeOrder(tx, {
 				clientId: otherClientId,
 				input: input2,
@@ -377,6 +393,7 @@ describe("placeOrder (multi-filial)", () => {
 				.select()
 				.from(stockLevel)
 				.where(eq(stockLevel.variantId, variantId));
+
 			expect(stocks[0]?.quantity).toBe(1);
 		});
 	});
@@ -398,6 +415,7 @@ describe("placeOrder (multi-filial)", () => {
 				...buildInput([{ toolId, variantId, quantity: 1 }]),
 				document: takenDoc,
 			};
+
 			const call = placeOrder(tx, {
 				clientId,
 				input,
@@ -433,6 +451,7 @@ describe("placeOrder (cupom)", () => {
 				...buildInput([{ toolId, variantId, quantity: 2 }]),
 				couponCode: "OFF10",
 			};
+
 			const result = await placeOrder(tx, {
 				clientId,
 				input,
@@ -445,6 +464,7 @@ describe("placeOrder (cupom)", () => {
 				.select()
 				.from(order)
 				.where(eq(order.id, result.orderId));
+
 			expect(ord?.subtotalAmount).toBe("200.00");
 			expect(ord?.discountAmount).toBe("20.00");
 			expect(ord?.totalAmount).toBe("200.00");
@@ -454,6 +474,7 @@ describe("placeOrder (cupom)", () => {
 				.select()
 				.from(promotion)
 				.where(eq(promotion.id, couponId));
+
 			expect(promoAfter?.redemptionCount).toBe(1);
 		});
 	});
@@ -473,10 +494,12 @@ describe("placeOrder (cupom)", () => {
 				redemptionCount: 1,
 				active: true,
 			});
+
 			const input = {
 				...buildInput([{ toolId, variantId, quantity: 1 }]),
 				couponCode: "CHEIO",
 			};
+
 			// Anti-enumeração (#94): a mensagem é colapsada também neste caminho,
 			// senão createOrderAction vazaria o motivo real ("esgotado") e contornaria
 			// o controle do apply-coupon.
@@ -523,9 +546,11 @@ describe("placeOrder (cupom)", () => {
 			// está em auto-promo → base elegível do cupom = 0 → "não cobre".
 			const base = buildInput([{ toolId, variantId, quantity: 1 }]);
 			const firstItem = base.cartItems[0];
+
 			if (firstItem) {
 				firstItem.priceAmount = "80.00";
 			}
+
 			const input = { ...base, couponCode: "CUPOM" };
 			await expect(
 				placeOrder(tx, {

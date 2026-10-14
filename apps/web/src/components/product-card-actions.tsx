@@ -16,6 +16,7 @@ export function QuickViewButton({
 	slug: string;
 }) {
 	const openQuickView = useQuickView();
+
 	return (
 		<button
 			aria-label={`Ver rápido: ${name}`}
@@ -31,6 +32,7 @@ export function QuickViewButton({
 
 const buttonBase =
 	"mt-2.5 inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-[3px] border-[1.5px] px-2 text-center font-bold text-[14px] leading-tight no-underline sm:px-4 sm:text-[15px]";
+
 const darkButton = `${buttonBase} border-transparent bg-grafite text-on-dark hover:bg-black`;
 const lineButton = `${buttonBase} border-line-strong bg-paper text-ink hover:border-ink`;
 

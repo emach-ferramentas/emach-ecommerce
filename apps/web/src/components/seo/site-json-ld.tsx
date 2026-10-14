@@ -12,10 +12,12 @@ import { JsonLdScript } from "./json-ld-script";
 async function loadSiteGraph() {
 	"use cache";
 	cacheLife({ revalidate: 3600 });
+
 	const [socialLinks, branches] = await Promise.all([
 		getStoreSocialLinks(db),
 		getActiveBranches(),
 	]);
+
 	return buildSiteGraph({
 		baseUrl: env.NEXT_PUBLIC_SITE_URL,
 		branches,
@@ -26,5 +28,6 @@ async function loadSiteGraph() {
 /** Organization + WebSite + uma HardwareStore por filial, em todas as páginas do shop. */
 export async function SiteJsonLd() {
 	const data = await loadSiteGraph();
+
 	return <JsonLdScript data={data} />;
 }

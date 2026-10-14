@@ -20,14 +20,17 @@ import type { InstitutionalSection } from "@/components/institutional-page";
 // garantia/garantido/garantimos. "garante" (A LGPD garante) não casa
 // `garanti`, de propósito.
 const FORBIDDEN = /\b(troc|devolv|devolu|garanti)\w*/i;
+
 // Qualquer "N dias" na página de entrega é prazo fixo.
 const FIXED_DEADLINE = /\b\d+\s*dias?\b/i;
 
 function allText(sections: InstitutionalSection[], lede: string): string[] {
 	const out = [lede];
+
 	for (const s of sections) {
 		out.push(s.title, ...s.paragraphs, ...(s.bullets ?? []));
 	}
+
 	return out;
 }
 
@@ -61,6 +64,7 @@ describe.each([
 	it("ids de seção são únicos e parágrafos/bullets não são vazios nem repetidos", () => {
 		const ids = sections.map((s) => s.id);
 		expect(new Set(ids).size).toBe(ids.length);
+
 		for (const s of sections) {
 			const items = [...s.paragraphs, ...(s.bullets ?? [])];
 			expect(items.every((t) => t.trim().length > 0)).toBe(true);
@@ -76,6 +80,7 @@ describe("sobre", () => {
 			...aboutPillars.flatMap((p) => [p.label, p.title, p.description]),
 			...sideNotes.flatMap((n) => [n.label, n.text]),
 		];
+
 		for (const text of texts) {
 			expect(text).not.toMatch(FORBIDDEN);
 		}
@@ -99,6 +104,7 @@ describe("página de produto", () => {
 			resolve(import.meta.dirname, "../..", file),
 			"utf8"
 		);
+
 		expect(source).not.toMatch(FORBIDDEN);
 	});
 });

@@ -16,6 +16,7 @@ function plural(n: number, one: string, many: string) {
 
 function ServiceCard({ service }: { service: ServiceSummary }) {
 	const listed = service.preview.slice(0, LIST_LIMIT);
+
 	return (
 		<article className="group flex flex-col overflow-hidden rounded-[5px] border border-line bg-paper transition-[border-color,box-shadow] duration-200 ease-out hover:border-line-strong hover:shadow-pop">
 			<Link
@@ -61,6 +62,7 @@ function ServiceCard({ service }: { service: ServiceSummary }) {
 			<ul className="flex-1 max-md:hidden">
 				{listed.map((tool) => {
 					const price = listPriceCents(tool);
+
 					return (
 						<li className="border-line border-b last:border-b-0" key={tool.id}>
 							<Link

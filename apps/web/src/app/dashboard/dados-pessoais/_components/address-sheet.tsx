@@ -29,8 +29,10 @@ import {
 } from "@/lib/validators/address";
 
 const RE_CEP = /^(\d{5})(\d)/;
+
 const maskCep = (v: string): string => {
 	const d = onlyDigits(v).slice(0, 8);
+
 	return d.length > 5 ? d.replace(RE_CEP, "$1-$2") : d;
 };
 
@@ -59,6 +61,7 @@ const emptyDefaults: AddressInput = {
 function defaultsFor(mode: AddressSheetMode): AddressInput {
 	if (mode?.kind === "edit") {
 		const a = mode.address;
+
 		return {
 			label: a.label ?? "",
 			zipCode: maskCep(a.zipCode),
@@ -71,6 +74,7 @@ function defaultsFor(mode: AddressSheetMode): AddressInput {
 			isDefault: a.isDefault,
 		};
 	}
+
 	return emptyDefaults;
 }
 
@@ -86,6 +90,7 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 	}, [mode]);
 
 	const isEdit = mode?.kind === "edit";
+
 	const showIsDefaultToggle =
 		(mode?.kind === "create" && mode.hasOthers) ||
 		(mode?.kind === "edit" && !mode.address.isDefault);
@@ -100,8 +105,10 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 
 			if (!result.ok) {
 				toast.error(result.error);
+
 				return;
 			}
+
 			toast.success(isEdit ? "Endereço atualizado" : "Endereço cadastrado");
 			router.refresh();
 			onClose();
@@ -114,9 +121,11 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 		if (address.street) {
 			form.setFieldValue("street", address.street);
 		}
+
 		if (address.neighborhood) {
 			form.setFieldValue("neighborhood", address.neighborhood);
 		}
+
 		form.setFieldValue("city", address.city);
 		form.setFieldValue("state", address.state);
 	});
@@ -125,17 +134,23 @@ export function AddressSheet({ mode, onClose }: AddressSheetProps) {
 		if (!isEdit) {
 			return;
 		}
+
 		if (!confirmingDelete) {
 			setConfirmingDelete(true);
+
 			return;
 		}
+
 		setIsDeleting(true);
 		const result = await deleteAddressAction({ id: mode.address.id });
 		setIsDeleting(false);
+
 		if (!result.ok) {
 			toast.error(result.error);
+
 			return;
 		}
+
 		toast.success("Endereço removido");
 		router.refresh();
 		onClose();
@@ -352,8 +367,10 @@ function deleteButtonLabel(deleting: boolean, confirming: boolean): string {
 	if (deleting) {
 		return "Removendo...";
 	}
+
 	if (confirming) {
 		return "Confirmar remoção";
 	}
+
 	return "Remover";
 }

@@ -16,6 +16,7 @@ const v1 = {
 	priceAmount: "899.00" as string | null,
 	sku: "FX-127",
 };
+
 const v2 = {
 	barcode: "ABC",
 	id: "v2",
@@ -44,9 +45,11 @@ function buildOk(
 	opts: { baseUrl: string; now: Date }
 ): ProductJsonLd {
 	const out = buildProductJsonLd(data, opts);
+
 	if (out === null) {
 		throw new Error("esperava um Product JSON-LD, veio null");
 	}
+
 	return out;
 }
 
@@ -124,6 +127,7 @@ describe("buildProductJsonLd", () => {
 			},
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		// uma variante só → offers é objeto, não array
 		expect(data.offers).toMatchObject({
 			price: "809.10",
@@ -140,6 +144,7 @@ describe("buildProductJsonLd", () => {
 			},
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		expect(data).not.toHaveProperty("aggregateRating");
 		const offers = Array.isArray(data.offers) ? data.offers : [data.offers];
 		expect(offers[0]?.url).toBe(`${BASE}/product/t1`);
@@ -150,6 +155,7 @@ describe("buildProductJsonLd", () => {
 			{ ...input, variants: [{ ...v1, sku: "FX 127#a" }] },
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		expect(data.offers).toMatchObject({
 			"@id": `${BASE}/product/furadeira-x#offer-FX%20127%23a`,
 		});
@@ -160,6 +166,7 @@ describe("buildProductJsonLd", () => {
 			{ ...input, variants: [{ ...v1, priceAmount: null }, v2] },
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		expect(one.offers).toMatchObject({ sku: "FX-220" }); // sobrou uma → objeto
 		// Product.sku = a variante que a PDP mostra (primeira com preço).
 		expect(one.sku).toBe("FX-220");
@@ -174,6 +181,7 @@ describe("buildProductJsonLd", () => {
 			},
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		expect(none).toBeNull();
 	});
 
@@ -186,6 +194,7 @@ describe("buildProductJsonLd", () => {
 			},
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		expect(data).not.toHaveProperty("offers");
 		expect(data.aggregateRating).toMatchObject({
 			ratingValue: 4.5,
@@ -211,6 +220,7 @@ describe("buildProductJsonLd", () => {
 			},
 			{ baseUrl: BASE, now: NOW }
 		);
+
 		const offers = Array.isArray(data.offers) ? data.offers : [];
 		expect(offers.map((o) => o.gtin)).toEqual([
 			"12345678",
@@ -229,6 +239,7 @@ describe("buildBreadcrumbJsonLd", () => {
 			productName: "Furadeira X",
 			slug: "furadeira-x",
 		});
+
 		expect(data.itemListElement.map((i) => i.name)).toEqual([
 			"Início",
 			"Catálogo",
@@ -245,6 +256,7 @@ describe("buildBreadcrumbJsonLd", () => {
 			productName: "Furadeira X",
 			slug: "furadeira-x",
 		});
+
 		expect(data.itemListElement.map((i) => i.name)).toEqual([
 			"Início",
 			"Catálogo",

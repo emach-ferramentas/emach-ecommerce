@@ -11,6 +11,7 @@ const LEGACY_EXCEPTIONS: Readonly<Record<string, string>> = {
 };
 
 const FILES = filesUnder(".").filter((file) => !file.startsWith("test/"));
+
 const FILES_WITH_HITS = new Set(
 	scanForLegacyTokens(FILES).map(({ file }) => file)
 );
@@ -25,6 +26,7 @@ describe("token visual anterior ao H3 em apps/web/src", () => {
 		const unexpected = [...FILES_WITH_HITS].filter(
 			(file) => !(file in LEGACY_EXCEPTIONS)
 		);
+
 		expect(unexpected).toEqual([]);
 	});
 
@@ -32,6 +34,7 @@ describe("token visual anterior ao H3 em apps/web/src", () => {
 		const clean = Object.keys(LEGACY_EXCEPTIONS).filter(
 			(file) => !FILES_WITH_HITS.has(file)
 		);
+
 		expect(clean).toEqual([]);
 	});
 });

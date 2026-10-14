@@ -32,6 +32,7 @@ export const ORDER_TABS = [
 	"a_caminho",
 	"concluidos",
 ] as const;
+
 export type OrderTab = (typeof ORDER_TABS)[number];
 
 export const ORDER_TAB_LABEL: Record<OrderTab, string> = {
@@ -68,12 +69,15 @@ export function countByTab(statuses: OrderStatus[]): Record<OrderTab, number> {
 		a_caminho: 0,
 		concluidos: 0,
 	};
+
 	for (const s of statuses) {
 		const tab = STATUS_TO_TAB[s];
+
 		if (tab) {
 			counts[tab] += 1;
 		}
 	}
+
 	return counts;
 }
 
@@ -84,7 +88,9 @@ export const STEPPER_PHASES = [
 	"shipped",
 	"delivered",
 ] as const;
+
 export type StepperPhase = (typeof STEPPER_PHASES)[number];
+
 export type StepState = "done" | "current" | "upcoming";
 
 // Rank da fase do pedido. Derivado de STEPPER_PHASES para não dessincronizar
@@ -94,9 +100,11 @@ function statusRank(status: OrderStatus): number {
 	if (isTerminalNegative(status)) {
 		return -1;
 	}
+
 	if (status === "pending_payment" || status === "payment_failed") {
 		return 0;
 	}
+
 	return (STEPPER_PHASES as readonly OrderStatus[]).indexOf(status) + 1;
 }
 
@@ -106,14 +114,17 @@ export function stepStateFor(
 ): StepState {
 	const rank = statusRank(status);
 	const phaseRank = STEPPER_PHASES.indexOf(phase) + 1;
+
 	// rank < 0 = terminal negativo; rank = 0 = aguardando pagamento.
 	// Ambos renderizam todas as fases como "upcoming".
 	if (rank > phaseRank) {
 		return "done";
 	}
+
 	if (rank === phaseRank) {
 		return "current";
 	}
+
 	return "upcoming";
 }
 
@@ -139,5 +150,6 @@ export function orderStepDisplayState(
 	) {
 		return "current";
 	}
+
 	return stepStateFor(status, phase);
 }

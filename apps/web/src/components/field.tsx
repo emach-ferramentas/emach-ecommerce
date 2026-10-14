@@ -32,6 +32,7 @@ export function Field({ children, error = [], hint, id, label }: FieldProps) {
 	const hintId = `${id}-hint`;
 	const errorId = `${id}-error`;
 	const hasError = error.length > 0;
+
 	const describedBy =
 		[hint ? hintId : null, hasError ? errorId : null]
 			.filter(Boolean)
@@ -116,6 +117,7 @@ export function TextField({
 						),
 					value: field.state.value,
 				};
+
 				return type === "password" ? (
 					<PasswordInput {...props} className={className} />
 				) : (

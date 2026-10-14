@@ -63,6 +63,7 @@ async function getBranches(): Promise<BranchCardData[]> {
 	return rows.map((row) => {
 		const address = formatBranchAddress(row);
 		const locality = [row.city, row.state].filter(Boolean).join("/");
+
 		const mapsQuery = [row.street, row.streetNumber, row.neighborhood, locality]
 			.filter(Boolean)
 			.join(", ");

@@ -16,19 +16,23 @@ export interface SendEmailArgs {
 // mantendo o domínio, suficiente para diagnóstico de entregabilidade.
 function maskEmail(email: string): string {
 	const at = email.indexOf("@");
+
 	if (at <= 0) {
 		return "***";
 	}
+
 	const local = email.slice(0, at);
 	const domain = email.slice(at + 1);
 	// Locais de ≤2 chars não mostram prefixo — senão "a@x.com" viraria
 	// "a***@x.com" e o e-mail inteiro vazaria sem mascaramento real.
 	const head = local.length > 2 ? local.slice(0, 2) : "";
+
 	return `${head}***@${domain}`;
 }
 
 export async function sendEmail({ to, subject, react }: SendEmailArgs) {
 	const html = await render(react);
+
 	const { data, error } = await resend.emails.send({
 		from: env.EMAIL_FROM,
 		to,
@@ -57,5 +61,6 @@ export async function sendEmail({ to, subject, react }: SendEmailArgs) {
 		subject,
 		id: data?.id,
 	});
+
 	return data;
 }

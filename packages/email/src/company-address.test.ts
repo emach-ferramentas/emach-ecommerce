@@ -65,6 +65,7 @@ function dbReturning(result: () => Promise<unknown[]>): Db {
 		where: () => chain,
 		limit: result,
 	};
+
 	return { select: () => chain } as unknown as Db;
 }
 

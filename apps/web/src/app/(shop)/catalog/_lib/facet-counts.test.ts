@@ -17,6 +17,7 @@ function collectIds(nodes: CategoryNode[]): string[] {
 describe("getFacetCounts (integração read-only: consistência com getTools)", () => {
 	it("byVoltage bate com getTools filtrado pela mesma voltagem", async () => {
 		const counts = await getFacetCounts(NO_FILTERS);
+
 		for (const v of ["127V", "220V", "Bivolt", "380V"] as const) {
 			const { total } = await getTools(db, { voltage: [v], limit: 1 });
 			expect(counts.byVoltage[v] ?? 0).toBe(total);
@@ -25,12 +26,14 @@ describe("getFacetCounts (integração read-only: consistência com getTools)", 
 
 	it("byPriceRange bate com getTools pmin/pmax de cada faixa", async () => {
 		const counts = await getFacetCounts(NO_FILTERS);
+
 		for (const r of PRICE_RANGES) {
 			const { total } = await getTools(db, {
 				priceMin: r.pmin ?? undefined,
 				priceMax: r.pmax ?? undefined,
 				limit: 1,
 			});
+
 			expect(counts.byPriceRange[r.key]).toBe(total);
 		}
 	});
@@ -46,10 +49,13 @@ describe("getFacetCounts (integração read-only: consistência com getTools)", 
 			getFacetCounts(NO_FILTERS),
 			getCategoryTree(db),
 		]);
+
 		const root = tree[0];
+
 		if (!root) {
 			return; // banco sem categorias: nada a verificar
 		}
+
 		const { total } = await getTools(db, { categoryId: root.id, limit: 1 });
 		expect(counts.byCategory[root.id]).toBe(total);
 
@@ -61,15 +67,19 @@ describe("getFacetCounts (integração read-only: consistência com getTools)", 
 	it("cross-filtro: byVoltage respeita categoria ativa", async () => {
 		const tree = await getCategoryTree(db);
 		const root = tree[0];
+
 		if (!root) {
 			return;
 		}
+
 		const counts = await getFacetCounts({ ...NO_FILTERS, categoryId: root.id });
+
 		const { total } = await getTools(db, {
 			categoryId: root.id,
 			voltage: ["220V"],
 			limit: 1,
 		});
+
 		expect(counts.byVoltage["220V"] ?? 0).toBe(total);
 	});
 

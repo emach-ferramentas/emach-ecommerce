@@ -84,29 +84,37 @@ export function legacyToComposition(input: {
 }): BannerComposition {
 	const trio = LEGACY_TRIO[input.layout];
 	const elements: BannerComposition["desktop"]["elements"] = {};
+
 	// Badge/specs/countdown/subtítulo acompanham o bloco do título no legado.
 	if (input.hasBadge) {
 		elements.badge = p(trio.title);
 	}
+
 	if (input.hasTitle) {
 		elements.title = p(trio.title, 100, 44);
 	}
+
 	if (input.hasSpecs) {
 		elements.specs = p(trio.title, 100, 44);
 	}
+
 	if (input.hasSubtitle) {
 		elements.subtitle = p(trio.title, 100, 44);
 	}
+
 	if (input.hasCountdown) {
 		elements.countdown = p(trio.title);
 	}
+
 	if (input.hasProduct && trio.product !== null) {
 		// center_mid não tem slot de produto no legado — omitir, não inventar.
 		elements.product = p(trio.product, input.productScale);
 	}
+
 	if (input.hasCta) {
 		elements.cta = p(trio.cta, input.ctaScale);
 	}
+
 	return {
 		version: 1,
 		desktop: { background: { zoom: 100, focal: "mc" }, elements },
@@ -140,9 +148,11 @@ export function resolveComposition(
 ): BannerComposition {
 	if (banner.composition !== null) {
 		const parsed = compositionSchema.safeParse(banner.composition);
+
 		if (parsed.success) {
 			return parsed.data;
 		}
+
 		// console.error direto (não evlog): roda em client component, evlog é
 		// server-only — noConsole está "off" no preset ultracite deste repo
 		// (config/biome/core), então nenhum biome-ignore é necessário/efetivo
@@ -153,6 +163,7 @@ export function resolveComposition(
 			issues: parsed.error.issues.slice(0, 5),
 		});
 	}
+
 	return legacyToComposition({
 		layout: banner.layout,
 		productScale: banner.productScale,

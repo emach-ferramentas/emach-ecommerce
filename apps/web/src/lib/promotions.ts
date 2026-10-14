@@ -9,11 +9,14 @@ export function effectiveAutoDiscountCents(
 	discountValue: string
 ): number {
 	const value = Number(discountValue);
+
 	if (!Number.isFinite(value) || value <= 0) {
 		return baseCents;
 	}
+
 	if (discountType === "fixed") {
 		return Math.max(baseCents - Math.round(value * 100), 0);
 	}
+
 	return Math.round(baseCents * (1 - value / 100));
 }

@@ -52,6 +52,7 @@ export function OrderItems({
 			<ul className="divide-y divide-line border-line border-t">
 				{items.map((item) => {
 					const meta = metaLine(item);
+
 					return (
 						<li
 							className="flex items-center gap-4 px-5 py-4 md:px-6"

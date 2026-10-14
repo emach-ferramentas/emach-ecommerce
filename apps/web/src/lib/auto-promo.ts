@@ -57,6 +57,7 @@ export async function fetchAutoPromosByToolId(
 	]);
 
 	const map = new Map<string, AutoPromo[]>();
+
 	for (const toolId of toolIds) {
 		map.set(
 			toolId,
@@ -66,12 +67,14 @@ export async function fetchAutoPromosByToolId(
 			}))
 		);
 	}
+
 	for (const row of specificRows) {
 		map.get(row.toolId)?.push({
 			discountType: row.discountType,
 			discountValue: row.discountValue,
 		});
 	}
+
 	return map;
 }
 
@@ -80,10 +83,12 @@ export function autoPromoToolIdsFromMap(
 	map: Map<string, AutoPromo[]>
 ): Set<string> {
 	const set = new Set<string>();
+
 	for (const [toolId, promos] of map) {
 		if (promos.length > 0) {
 			set.add(toolId);
 		}
 	}
+
 	return set;
 }

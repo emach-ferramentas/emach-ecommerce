@@ -5,6 +5,7 @@ import { FALLBACK_BANNERS } from "./hero-fallbacks";
 describe("FALLBACK_BANNERS", () => {
 	it("todo fallback tem composition literal VÁLIDA pelo schema", () => {
 		expect(FALLBACK_BANNERS.length).toBeGreaterThan(0);
+
 		for (const banner of FALLBACK_BANNERS) {
 			const parsed = compositionSchema.safeParse(banner.composition);
 			expect(parsed.success, banner.id).toBe(true);

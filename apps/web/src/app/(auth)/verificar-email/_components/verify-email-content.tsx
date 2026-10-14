@@ -21,15 +21,19 @@ export function VerifyEmailContent() {
 	useEffect(() => {
 		if (!token) {
 			setStatus("error");
+
 			return;
 		}
+
 		authClient
 			.verifyEmail({ query: { token } })
 			.then((res) => {
 				if (res.error) {
 					setStatus("error");
+
 					return;
 				}
+
 				setStatus("success");
 				setTimeout(() => router.push("/dashboard"), 1500);
 			})

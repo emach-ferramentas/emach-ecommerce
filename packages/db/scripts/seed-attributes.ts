@@ -75,16 +75,19 @@ async function main() {
 	const cats = await db
 		.select({ id: category.id, slug: category.slug })
 		.from(category);
+
 	const bySlug = new Map(cats.map((c) => [c.slug, c.id]));
 
 	for (const s of SEEDS) {
 		const categoryId = bySlug.get(s.categorySlug);
+
 		if (!categoryId) {
 			console.warn(
 				`[seed-attributes] SKIP ${s.slug} — category ${s.categorySlug} not found`
 			);
 			continue;
 		}
+
 		await db
 			.insert(attributeDefinition)
 			.values({
@@ -104,6 +107,7 @@ async function main() {
 	const rows = await db
 		.select({ slug: attributeDefinition.slug })
 		.from(attributeDefinition);
+
 	console.log("[seed-attributes] OK", rows.map((r) => r.slug).join(", "));
 }
 

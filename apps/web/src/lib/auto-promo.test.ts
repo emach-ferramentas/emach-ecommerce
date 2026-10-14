@@ -9,6 +9,7 @@ describe("auto-promo helper", () => {
 			["a", [{ discountType: "percent", discountValue: "10.00" }]],
 			["b", []],
 		]);
+
 		const set = autoPromoToolIdsFromMap(map);
 		expect(set.has("a")).toBe(true);
 		expect(set.has("b")).toBe(false);

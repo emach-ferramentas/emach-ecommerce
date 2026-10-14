@@ -16,10 +16,12 @@ export function ProductJsonLd({ detail }: { detail: ProductShell }) {
 		baseUrl: BASE_URL,
 		now: new Date(detail.shellGeneratedAt),
 	});
+
 	// Sem Offer nem rating não há Product válido — não emite <script>.
 	if (!data) {
 		return null;
 	}
+
 	return <JsonLdScript data={data} />;
 }
 
@@ -38,5 +40,6 @@ export function BreadcrumbJsonLd({
 		productName,
 		slug,
 	});
+
 	return <JsonLdScript data={data} />;
 }

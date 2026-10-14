@@ -17,6 +17,7 @@ describe("sellableVariants", () => {
 			{ id: "b", isDefault: false, priceAmount: "10.00", sortOrder: 1 },
 			{ id: "a", isDefault: true, priceAmount: "10.00", sortOrder: 9 },
 		]);
+
 		expect(list.map((v) => v.id)).toEqual(["a", "b", "c"]);
 	});
 });
@@ -74,6 +75,7 @@ describe("buildCartItem", () => {
 			{ id: "var-220", sku: "ELT800-BR2", voltage: "220V" },
 			"482.56"
 		);
+
 		expect(item).toEqual({
 			categoryName: "Elétricas",
 			categorySlug: "eletricas",

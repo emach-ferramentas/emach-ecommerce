@@ -17,6 +17,7 @@ interface AddressesSectionProps {
 }
 
 const RE_CEP_DISPLAY = /^(\d{5})(\d{3})$/;
+
 function formatCep(zip: string): string {
 	return zip.replace(RE_CEP_DISPLAY, "$1-$2");
 }
@@ -29,11 +30,14 @@ export function AddressesSection({ addresses }: AddressesSectionProps) {
 		if (a.isDefault && !b.isDefault) {
 			return -1;
 		}
+
 		if (!a.isDefault && b.isDefault) {
 			return 1;
 		}
+
 		return b.updatedAt.getTime() - a.updatedAt.getTime();
 	});
+
 	const primary = sorted[0] ?? null;
 	const others = sorted.slice(1);
 
@@ -130,10 +134,13 @@ function AddressCard({ address, onEdit }: AddressCardProps) {
 	const handleSetDefault = () => {
 		startTransition(async () => {
 			const result = await setDefaultAddressAction({ id: address.id });
+
 			if (!result.ok) {
 				toast.error(result.error);
+
 				return;
 			}
+
 			toast.success("Endereço definido como padrão");
 			router.refresh();
 		});
@@ -142,6 +149,7 @@ function AddressCard({ address, onEdit }: AddressCardProps) {
 	const lineMain = [`${address.street}, ${address.number}`, address.complement]
 		.filter(Boolean)
 		.join(" — ");
+
 	const lineSub = [
 		address.neighborhood,
 		`${address.city}/${address.state}`,

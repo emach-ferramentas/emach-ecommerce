@@ -45,6 +45,7 @@ export function Shelf({
 	const titleId = useId();
 	const trackRef = useRef<HTMLDivElement>(null);
 	const capaRef = useRef<HTMLAnchorElement>(null);
+
 	// Nasce em `atEnd` para a capa não sair do SSR com a sombra de "tem mais"
 	// e apagá-la na hidratação quando a prateleira cabe inteira.
 	const [edges, setEdges] = useState({
@@ -55,9 +56,11 @@ export function Shelf({
 
 	function measure() {
 		const track = trackRef.current;
+
 		if (!track) {
 			return;
 		}
+
 		const max = track.scrollWidth - track.clientWidth;
 		setEdges({
 			atEnd: track.scrollLeft >= max - 2,
@@ -70,18 +73,23 @@ export function Shelf({
 	useEffect(() => {
 		measure();
 		window.addEventListener("resize", measure);
+
 		return () => window.removeEventListener("resize", measure);
 	}, []);
 
 	function page(direction: 1 | -1) {
 		const track = trackRef.current;
+
 		if (!track) {
 			return;
 		}
+
 		const capaWidth = capaRef.current?.offsetWidth ?? 0;
+
 		const reduce = window.matchMedia(
 			"(prefers-reduced-motion: reduce)"
 		).matches;
+
 		track.scrollBy({
 			left: direction * (track.clientWidth - capaWidth),
 			behavior: reduce ? "auto" : "smooth",

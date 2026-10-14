@@ -25,6 +25,7 @@ export function useRemoveWithUndo() {
 		if (pending.current.has(id)) {
 			return;
 		}
+
 		pending.current.add(id);
 		const item = items.find((i) => i.variantId === id);
 		setRemoving(id);
@@ -32,6 +33,7 @@ export function useRemoveWithUndo() {
 			remove(id);
 			pending.current.delete(id);
 			setRemoving((cur) => (cur === id ? null : cur));
+
 			if (item) {
 				const { quantity, ...snapshot } = item;
 				toast("Item removido do carrinho", {

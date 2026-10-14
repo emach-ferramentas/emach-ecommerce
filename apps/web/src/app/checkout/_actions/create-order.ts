@@ -40,9 +40,11 @@ export async function createOrderAction(
 	rawInput: CreateOrderInput
 ): Promise<CreateOrderResult> {
 	const parsed = inputSchema.safeParse(rawInput);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos" };
 	}
+
 	const input = parsed.data;
 
 	const session = await requireCurrentClient();
@@ -53,6 +55,7 @@ export async function createOrderAction(
 	}
 
 	const { success } = await orderLimiter.limit(`order:${clientId}`);
+
 	if (!success) {
 		return { ok: false, error: RATE_LIMIT_MESSAGE };
 	}
@@ -74,6 +77,7 @@ export async function createOrderAction(
 		let shippingServiceCode: string | null = null;
 		let verifiedShippingCents: number | null = null;
 		const destinationCep = await resolveDestinationCep(db, input, clientId);
+
 		if (destinationCep) {
 			// Valor declarado p/ o seguro de frete derivado dos preços VERIFICADOS
 			// (prepareLines valida contra o DB e lança em mismatch) — o priceAmount
@@ -81,10 +85,12 @@ export async function createOrderAction(
 			// subdeclarado reduziria o seguro. Custa 1 leitura extra fora da
 			// transação; dentro dela o placeOrder re-executa como autoridade.
 			const { lines } = await prepareLines(db, input);
+
 			const declaredValueCents = lines.reduce(
 				(sum, l) => sum + l.lineTotalCents,
 				0
 			);
+
 			// Em paralelo com o anti-fraude: o CEP existe na base da Frenet? A
 			// cotação cota preço real até pra CEP inexistente, então "preço bate"
 			// não prova endereço entregável. not_found definitivo → pedido criado,
@@ -103,9 +109,11 @@ export async function createOrderAction(
 				}),
 				cepKnownToFrenet(destinationCep),
 			]);
+
 			if (cepKnown === false) {
 				log.warn({ action: "order_cep_not_found", destinationCep, clientId });
 			}
+
 			shippingUnverified =
 				shippingCheck.shippingUnverified || cepKnown === false;
 			shippingMethod = shippingCheck.shippingMethod;
@@ -125,6 +133,7 @@ export async function createOrderAction(
 				verifiedShippingCents,
 			})
 		);
+
 		after(() =>
 			sendOrderReceivedEmail({
 				clientId,
@@ -133,6 +142,7 @@ export async function createOrderAction(
 				name: input.name,
 			})
 		);
+
 		return { ok: true, ...result };
 	} catch (err) {
 		const rawMessage = err instanceof Error ? err.message : "Erro inesperado";
@@ -141,8 +151,10 @@ export async function createOrderAction(
 			clientId,
 			error: rawMessage,
 		});
+
 		const userError =
 			err instanceof OrderError ? err.message : GENERIC_ORDER_ERROR;
+
 		return { ok: false, error: userError };
 	}
 }

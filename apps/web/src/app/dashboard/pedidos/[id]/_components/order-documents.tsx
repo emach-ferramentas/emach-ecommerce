@@ -19,6 +19,7 @@ export function OrderDocuments({
 	paymentReceiptUrl,
 }: OrderDocumentsProps) {
 	const hasNfe = Boolean(nfeNumber || nfeUrl || nfeXmlUrl);
+
 	if (!(hasNfe || paymentReceiptUrl)) {
 		return null;
 	}

@@ -53,6 +53,7 @@ const PG_UNIQUE_VIOLATION = "23505";
 function isDocumentUniqueViolation(err: unknown): boolean {
 	const cause = (err as { cause?: { code?: string; constraint?: string } })
 		?.cause;
+
 	return (
 		cause?.code === PG_UNIQUE_VIOLATION &&
 		cause?.constraint === "client_document_unique"
@@ -133,10 +134,13 @@ async function buildAddressSnapshot(params: {
 				)
 			)
 			.limit(1);
+
 		const row = rows[0];
+
 		if (!row) {
 			throw new OrderError("Endereço não encontrado");
 		}
+
 		return {
 			addressId: row.id,
 			snapshot: {
@@ -158,6 +162,7 @@ async function buildAddressSnapshot(params: {
 	}
 
 	const id = crypto.randomUUID();
+
 	const isDefault =
 		(
 			await tx
@@ -234,9 +239,11 @@ function assertVariantsFound(
 ): void {
 	const found = new Set(variantRows.map((v) => v.id));
 	const missing = cartItems.find((i) => !found.has(i.variantId));
+
 	if (!missing) {
 		return;
 	}
+
 	const name = toolRows.find((t) => t.id === missing.toolId)?.name;
 	throw new OrderError(
 		name
@@ -287,6 +294,7 @@ export async function prepareLines(
 	]);
 
 	assertVariantsFound(input.cartItems, variantRows, toolRows);
+
 	if (variantRows.length !== variantIds.length) {
 		throw new OrderError("Variante inválida no carrinho");
 	}
@@ -295,12 +303,15 @@ export async function prepareLines(
 	const variantById = new Map(variantRows.map((v) => [v.id, v]));
 
 	const lines: PreparedLine[] = [];
+
 	for (const cartItem of input.cartItems) {
 		const variant = variantById.get(cartItem.variantId);
 		const toolRow = toolById.get(cartItem.toolId);
+
 		if (!(variant && toolRow) || variant.toolId !== cartItem.toolId) {
 			throw new OrderError("Inconsistência cart/DB");
 		}
+
 		// Defesa final: bloqueia variante hidden mesmo se o cliente manipular o
 		// frontend ou se a variante virou hidden depois de adicionada ao carrinho.
 		// O catálogo e o PDP já filtram variantes hidden, então em fluxo normal
@@ -308,28 +319,35 @@ export async function prepareLines(
 		if (!variant.visibleOnSite) {
 			throw new OrderError(`Variante indisponível para venda: ${toolRow.name}`);
 		}
+
 		// Variante sem preço (rascunho do dashboard, sync #216) não é vendável:
 		// mesma barreira, mesma mensagem.
 		if (!hasPrice(variant)) {
 			throw new OrderError(`Variante indisponível para venda: ${toolRow.name}`);
 		}
+
 		const promos = autoPromosByToolId.get(cartItem.toolId) ?? [];
 		const basePriceCents = numericToCents(variant.priceAmount);
 		let finalPriceCents = basePriceCents;
+
 		for (const promo of promos) {
 			const candidate = effectiveAutoDiscountCents(
 				basePriceCents,
 				promo.discountType,
 				promo.discountValue
 			);
+
 			if (candidate < finalPriceCents) {
 				finalPriceCents = candidate;
 			}
 		}
+
 		const submittedCents = numericToCents(cartItem.priceAmount);
+
 		if (Math.abs(submittedCents - finalPriceCents) > PRICE_TOLERANCE_CENTS) {
 			throw new OrderError("Preços atualizados, refaça o checkout");
 		}
+
 		lines.push({
 			cartItem,
 			variant,
@@ -368,7 +386,9 @@ export async function resolveDestinationCep(
 					.limit(1)
 			)[0]?.zipCode
 		: input.newAddress?.zipCode;
+
 	const cep = raw?.replace(/\D/g, "") ?? "";
+
 	return cep.length === 8 ? cep : null;
 }
 
@@ -383,6 +403,7 @@ export async function resolveDestinationCep(
 export async function cepKnownToFrenet(cep: string): Promise<boolean | null> {
 	try {
 		const address = await fetchFrenetAddress(cep);
+
 		// Mesma regra do lookup-cep: sem City/UF = inexistente na base (a Frenet
 		// devolve 200 com body vazio + Message).
 		return Boolean(address.City && address.UF);
@@ -391,6 +412,7 @@ export async function cepKnownToFrenet(cep: string): Promise<boolean | null> {
 			action: "order_cep_lookup_failed",
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
+
 		return null;
 	}
 }
@@ -427,6 +449,7 @@ export async function assertShippingQuoted(params: {
 	shippingCents: number | null;
 }> {
 	let quote: Awaited<ReturnType<typeof quoteShipping>>;
+
 	try {
 		quote = await quoteShipping({
 			destinationCep: params.destinationCep,
@@ -446,6 +469,7 @@ export async function assertShippingQuoted(params: {
 			shippingCents: params.shippingCents,
 			error: err instanceof Error ? err.message : "erro inesperado",
 		});
+
 		return {
 			shippingUnverified: true,
 			shippingMethod: null,
@@ -453,22 +477,27 @@ export async function assertShippingQuoted(params: {
 			shippingCents: null,
 		};
 	}
+
 	// Nenhum serviço cotável p/ o CEP/pacote → frete a combinar; sem opção a casar.
 	if (quote.negotiate) {
 		throw new OrderError(
 			"Frete a combinar. Fale com a filial para concluir a compra."
 		);
 	}
+
 	const candidates = params.shippingServiceCode
 		? quote.options.filter((o) => o.carrierId === params.shippingServiceCode)
 		: quote.options;
+
 	const match = candidates.find(
 		(o) =>
 			Math.abs(o.priceCents - params.shippingCents) <= PRICE_TOLERANCE_CENTS
 	);
+
 	if (!match) {
 		throw new OrderError("Frete inválido, refaça o checkout");
 	}
+
 	return {
 		shippingUnverified: false,
 		shippingMethod: match.name,
@@ -482,6 +511,7 @@ async function checkAggregateStock(
 	lines: PreparedLine[]
 ): Promise<void> {
 	const variantIds = lines.map((l) => l.variant.id);
+
 	const rows = await tx
 		.select({
 			variantId: stockLevel.variantId,
@@ -492,8 +522,10 @@ async function checkAggregateStock(
 		.groupBy(stockLevel.variantId);
 
 	const totalByVariant = new Map(rows.map((r) => [r.variantId, r.total]));
+
 	for (const line of lines) {
 		const total = totalByVariant.get(line.variant.id) ?? 0;
+
 		if (total < line.cartItem.quantity) {
 			throw new OrderError(`Sem estoque para ${line.tool.name}`);
 		}
@@ -537,22 +569,27 @@ export async function placeOrder(
 	await checkAggregateStock(tx, lines);
 
 	const subtotalCents = lines.reduce((s, l) => s + l.lineTotalCents, 0);
+
 	const shippingCents =
 		verifiedShippingCents ?? numericToCents(input.shippingAmount);
+
 	let discountCents = 0;
 	let couponId: string | null = null;
+
 	if (input.couponCode) {
 		const couponLines = lines.map((l) => ({
 			toolId: l.tool.id,
 			quantity: l.cartItem.quantity,
 			basePriceCents: numericToCents(l.variant.priceAmount),
 		}));
+
 		const coupon = await validateCoupon(
 			tx,
 			input.couponCode,
 			couponLines,
 			autoPromoToolIds
 		);
+
 		if (!coupon.ok) {
 			// Anti-enumeração também neste caminho: createOrderAction valida o cupom
 			// direto (sem passar pelo apply-coupon), então a mensagem precisa ser
@@ -560,6 +597,7 @@ export async function placeOrder(
 			if (ENUMERABLE_REASONS.has(coupon.reason)) {
 				log.warn({ action: "coupon_rejected", reason: coupon.reason });
 			}
+
 			throw new OrderError(publicCouponError(coupon.reason, coupon.error));
 		}
 
@@ -568,6 +606,7 @@ export async function placeOrder(
 		const lockRes = await tx.execute(
 			sql`SELECT redemption_count, max_redemptions FROM promotion WHERE id = ${coupon.promotionId} FOR UPDATE`
 		);
+
 		const lock =
 			(
 				lockRes as unknown as {
@@ -583,6 +622,7 @@ export async function placeOrder(
 					max_redemptions: number | null;
 				}>
 			)[0];
+
 		if (!lock) {
 			// Promoção removida concorrentemente entre validateCoupon e o FOR UPDATE.
 			// Mensagem colapsada (anti-enumeração) — mesmo motivo do throw acima.
@@ -590,6 +630,7 @@ export async function placeOrder(
 				publicCouponError("invalid", "Cupom não disponível")
 			);
 		}
+
 		if (
 			lock.max_redemptions !== null &&
 			lock.redemption_count >= lock.max_redemptions
@@ -605,6 +646,7 @@ export async function placeOrder(
 		discountCents = coupon.discountCents;
 		couponId = coupon.promotionId;
 	}
+
 	const totalCents = subtotalCents - discountCents + shippingCents;
 
 	try {
@@ -620,6 +662,7 @@ export async function placeOrder(
 		if (isDocumentUniqueViolation(err)) {
 			throw new OrderError("Este CPF/CNPJ já está cadastrado em outra conta.");
 		}
+
 		throw err;
 	}
 
@@ -632,11 +675,13 @@ export async function placeOrder(
 	});
 
 	const consentVersion = "1.0";
+
 	const consentRows = [
 		{ kind: "tos" as const, granted: true },
 		{ kind: "privacy" as const, granted: true },
 		{ kind: "marketing_email" as const, granted: input.acceptMarketing },
 	];
+
 	await tx.insert(consentLog).values(
 		consentRows.map((c) => ({
 			id: crypto.randomUUID(),
@@ -652,13 +697,16 @@ export async function placeOrder(
 	const seqRow = await tx.execute(
 		sql`SELECT nextval('order_number_seq')::int AS seq`
 	);
+
 	const seq = Number(
 		(seqRow as unknown as { rows: Array<{ seq: number }> }).rows[0]?.seq ??
 			(seqRow as unknown as Array<{ seq: number }>)[0]?.seq
 	);
+
 	if (!Number.isFinite(seq)) {
 		throw new OrderError("Falha ao gerar número do pedido");
 	}
+
 	const orderNumber = formatOrderNumber(seq);
 
 	const orderId = crypto.randomUUID();

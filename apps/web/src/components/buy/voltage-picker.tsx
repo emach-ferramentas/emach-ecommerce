@@ -45,6 +45,7 @@ export function VoltagePicker({
 				{options.map((option) => {
 					const checked = option.id === value;
 					const label = voltageLabel(option.voltage);
+
 					return (
 						<label
 							className={cn(

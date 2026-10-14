@@ -14,5 +14,6 @@ export function canonicalFor(
 	const base = baseUrl.replace(TRAILING_SLASHES, "");
 	const withoutQuery = path.split("?")[0] ?? "/";
 	const trimmed = withoutQuery.replace(TRAILING_SLASHES, "");
+
 	return { canonical: `${base}${trimmed === "" ? "/" : trimmed}` };
 }

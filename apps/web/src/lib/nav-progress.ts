@@ -22,14 +22,18 @@ export function shouldTrackNavigation(
 	try {
 		const target = new URL(targetUrl, currentHref);
 		const current = new URL(currentHref);
+
 		if (target.origin !== current.origin) {
 			return false;
 		}
+
 		if (target.pathname !== current.pathname) {
 			return true;
 		}
+
 		target.searchParams.sort();
 		current.searchParams.sort();
+
 		return target.searchParams.toString() !== current.searchParams.toString();
 	} catch {
 		return false;
@@ -73,7 +77,9 @@ export function createNavProgressMachine({
 		if (next === state) {
 			return;
 		}
+
 		state = next;
+
 		for (const listener of listeners) {
 			listener(state);
 		}
@@ -98,8 +104,10 @@ export function createNavProgressMachine({
 				// Segunda navegação em voo: mantém a barra, só renova o teto.
 				clearTimeout(maxTimer);
 				maxTimer = setTimeout(toDone, maxMs);
+
 				return;
 			}
+
 			clearTimers();
 			setState("delay");
 			delayTimer = setTimeout(toActive, delayMs);
@@ -108,8 +116,10 @@ export function createNavProgressMachine({
 			if (state === "delay") {
 				clearTimers();
 				setState("idle");
+
 				return;
 			}
+
 			if (state === "active") {
 				toDone();
 			}
@@ -119,6 +129,7 @@ export function createNavProgressMachine({
 		},
 		subscribe(listener) {
 			listeners.add(listener);
+
 			return () => {
 				listeners.delete(listener);
 			};

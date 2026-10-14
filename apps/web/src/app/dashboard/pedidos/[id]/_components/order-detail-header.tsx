@@ -66,6 +66,7 @@ function NegativeNotice({
 	status: OrderStatus;
 }) {
 	const { label } = ORDER_STATUS_BADGE[status];
+
 	return (
 		<div className="flex items-center gap-3.5">
 			<span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-line-strong text-off">

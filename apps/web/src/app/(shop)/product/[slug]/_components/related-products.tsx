@@ -15,6 +15,7 @@ const RELATED_LIMIT = 4;
 const SKELETON_SLOTS = [0, 1, 2, 3] as const;
 
 const sectionClass = "border-line border-t bg-canteiro py-10 md:py-14";
+
 const gridClass =
 	"mt-[22px] grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4 xl:grid-cols-4";
 
@@ -47,6 +48,7 @@ export async function RelatedProducts({
 			if (picked.length >= RELATED_LIMIT) {
 				break;
 			}
+
 			if (!seen.has(tool.id)) {
 				picked.push(tool);
 				seen.add(tool.id);
@@ -55,8 +57,10 @@ export async function RelatedProducts({
 	}
 
 	const rootSlug = categoryPath?.split("/").filter(Boolean)[0];
+
 	if (rootSlug) {
 		const root = await getCategoryBySlug(db, rootSlug);
+
 		if (root) {
 			const { tools } = await getTools(db, {
 				categoryId: root.id,
@@ -65,6 +69,7 @@ export async function RelatedProducts({
 				offset: 0,
 				sort: "newest",
 			});
+
 			collect(tools);
 		}
 	}
@@ -76,6 +81,7 @@ export async function RelatedProducts({
 			offset: 0,
 			sort: "newest",
 		});
+
 		collect(tools);
 	}
 

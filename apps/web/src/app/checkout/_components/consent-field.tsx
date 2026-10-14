@@ -25,6 +25,7 @@ export function ConsentField({
 	touched,
 }: ConsentFieldProps) {
 	const messages = touched ? errorMessages(errors) : [];
+
 	return (
 		<div>
 			<label

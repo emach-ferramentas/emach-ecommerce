@@ -18,6 +18,7 @@ export function OrderActions({
 	const canRebuy = status === "delivered" || isTerminalNegative(status);
 
 	const buttons: React.ReactNode[] = [];
+
 	if (isPending) {
 		buttons.push(
 			<Link
@@ -40,5 +41,6 @@ export function OrderActions({
 	if (buttons.length === 0) {
 		return null;
 	}
+
 	return <div className="flex flex-col gap-2 [&>button]:w-full">{buttons}</div>;
 }

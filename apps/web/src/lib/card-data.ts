@@ -17,16 +17,20 @@ export async function getCardExtras(
 	toolIds: string[]
 ): Promise<CardExtrasByTool> {
 	const ids = [...new Set(toolIds)];
+
 	const [voltages, specs] = await Promise.all([
 		getVoltagesByTool(ids),
 		getCardSpecsByTool(ids),
 	]);
+
 	const extras: CardExtrasByTool = {};
+
 	for (const id of ids) {
 		extras[id] = {
 			specs: specs.get(id) ?? [],
 			voltages: voltages.get(id) ?? [],
 		};
 	}
+
 	return extras;
 }

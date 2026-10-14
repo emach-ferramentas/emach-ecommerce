@@ -17,11 +17,13 @@ vi.mock("@/lib/auth-client", () => ({
 
 const { default: ForgotPasswordPage } = await import("./esqueci-senha/page");
 const { LoginForm } = await import("./login/_components/login-form");
+
 const { ResetPasswordForm } = await import(
 	"./redefinir-senha/_components/reset-password-form"
 );
 
 const INPUT_TAG = /<input[^>]*>/g;
+
 const LABEL_WRAPPING_INPUT =
 	/<label class="emach-field"[^>]*>(?:(?!<\/label>)[\s\S])*<input/;
 
@@ -55,9 +57,11 @@ describe("telas de auth usam Field", () => {
 		searchParams.current = new URLSearchParams("modo=cadastro");
 		const html = renderToStaticMarkup(<LoginForm />);
 		expect(html).toContain('aria-label="Criar conta"');
+
 		for (const name of ["name", "email", "phone", "password"]) {
 			expectTextField(html, name, name);
 		}
+
 		expect(html).not.toMatch(LABEL_WRAPPING_INPUT);
 	});
 

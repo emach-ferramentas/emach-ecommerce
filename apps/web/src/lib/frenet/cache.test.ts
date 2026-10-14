@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // getRedis → null força o caminho in-memory, determinístico mesmo se o .env
 // local tiver Upstash configurado (nunca tocar Redis real em teste).
 vi.mock("@emach/redis", () => ({ getRedis: vi.fn(() => null) }));
+
 vi.mock("@/lib/evlog", () => ({ log: { error: vi.fn(), warn: vi.fn() } }));
 
 import type { Redis } from "@emach/redis";
@@ -38,6 +39,7 @@ describe("buildQuoteCacheKey", () => {
 		destinationCep: "14270000",
 		declaredValueCents: 32_068,
 	};
+
 	const pkgA = { lengthCm: 40, widthCm: 30, heightCm: 20, weightKg: 3.5 };
 	const pkgB = { lengthCm: 60, widthCm: 40, heightCm: 40, weightKg: 8 };
 
@@ -96,7 +98,9 @@ describe("cache com Redis (Upstash mockado)", () => {
 			get: overrides.get ?? vi.fn().mockResolvedValue(null),
 			set: overrides.set ?? vi.fn().mockResolvedValue("OK"),
 		};
+
 		vi.mocked(getRedis).mockReturnValue(fake as unknown as Redis);
+
 		return fake;
 	}
 

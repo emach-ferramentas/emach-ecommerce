@@ -59,6 +59,7 @@ describe("countByTab", () => {
 			"delivered",
 			"canceled",
 		]);
+
 		expect(counts.all).toBe(5);
 		expect(counts.a_pagar).toBe(1);
 		expect(counts.em_preparacao).toBe(1);

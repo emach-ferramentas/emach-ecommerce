@@ -20,6 +20,7 @@ export async function getCardSpecsByTool(
 	toolIds: string[]
 ): Promise<Map<string, string[]>> {
 	const byTool = new Map<string, FormattableAttribute[]>();
+
 	if (toolIds.length === 0) {
 		return new Map();
 	}
@@ -72,8 +73,10 @@ export async function getCardSpecsByTool(
 	}
 
 	const chips = new Map<string, string[]>();
+
 	for (const [toolId, attributes] of byTool) {
 		chips.set(toolId, specChips(attributes, CARD_SPEC_LIMIT));
 	}
+
 	return chips;
 }

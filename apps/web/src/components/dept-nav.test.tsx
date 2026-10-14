@@ -9,11 +9,13 @@ import type { StoreNav } from "@/lib/store-nav";
 // `null` simula o prerender de uma rota dinâmica: o pathname só existe no
 // request, e o usePathname suspende.
 const pathname = vi.hoisted(() => ({ current: "/" as string | null }));
+
 vi.mock("next/navigation", () => ({
 	usePathname: () => {
 		if (pathname.current === null) {
 			throw new Promise(() => undefined);
 		}
+
 		return pathname.current;
 	},
 }));
@@ -50,6 +52,7 @@ const CURRENT_LINK = /<a[^>]*aria-current="page"[^>]*>([^<]*)<\/a>/g;
 function currentLinks(at: string | null): string[] {
 	pathname.current = at;
 	const html = renderToStaticMarkup(<DeptNav nav={NAV} />);
+
 	return [...html.matchAll(CURRENT_LINK)].map((m) => m[1] ?? "");
 }
 

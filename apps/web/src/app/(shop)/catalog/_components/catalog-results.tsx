@@ -20,6 +20,7 @@ export async function CatalogResults({
 }: CatalogResultsProps) {
 	const params = await searchParams;
 	const parsed = parseCatalogSearchParams(params);
+
 	const input = {
 		cat,
 		search: parsed.search,

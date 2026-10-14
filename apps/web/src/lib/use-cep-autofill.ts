@@ -20,18 +20,23 @@ export function useCepAutofill(onFill: (address: CepAddress) => void) {
 	// promise flutuante (noVoid). Falha da action já é silenciosa por contrato.
 	function maybeLookup(rawCep: string): void {
 		const cep = rawCep.replace(/\D/g, "");
+
 		if (cep.length !== 8) {
 			// CEP incompleto (usuário editando) — aviso anterior deixa de valer.
 			setNotFound(false);
+
 			return;
 		}
+
 		if (cep === lastCep.current) {
 			// Dedup é de REDE, não de UI: redigitar o mesmo CEP inexistente
 			// (backspace + mesmo dígito) precisa reexibir o aviso que o ramo
 			// de CEP incompleto acabou de apagar.
 			setNotFound(lastNotFound.current);
+
 			return;
 		}
+
 		lastCep.current = cep;
 		lastNotFound.current = false;
 		setLoading(true);
@@ -44,10 +49,13 @@ export function useCepAutofill(onFill: (address: CepAddress) => void) {
 				if (isStale()) {
 					return;
 				}
+
 				if (result.ok) {
 					onFill(result.data);
+
 					return;
 				}
+
 				if (result.reason === "not_found") {
 					lastNotFound.current = true;
 					setNotFound(true);

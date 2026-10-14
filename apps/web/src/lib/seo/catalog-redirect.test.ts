@@ -8,6 +8,7 @@ describe("legacyCategoryRedirect", () => {
 		const out = legacyCategoryRedirect(
 			new URL(`${ORIGIN}/catalog?cat=furadeiras&sort=price-asc&page=2`)
 		);
+
 		expect(out?.toString()).toBe(
 			`${ORIGIN}/catalog/furadeiras?sort=price-asc&page=2`
 		);
@@ -59,6 +60,7 @@ describe("legacyCategoryRedirect", () => {
 		const out = legacyCategoryRedirect(
 			new URL(`${ORIGIN}/catalog?cat=..%2F..%2Fadmin`)
 		);
+
 		expect(out?.pathname).toBe("/catalog/..%2F..%2Fadmin");
 	});
 });

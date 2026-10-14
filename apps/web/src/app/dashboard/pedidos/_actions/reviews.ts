@@ -35,21 +35,25 @@ export async function createReviewAction(raw: {
 	body: string;
 }): Promise<ActionResult> {
 	const parsed = schema.safeParse(raw);
+
 	if (!parsed.success) {
 		return { ok: false, error: "Dados inválidos" };
 	}
+
 	const session = await requireCurrentClient();
 	const clientId = session.user.id;
 	const { orderId, toolId, rating, title, body } = parsed.data;
 
 	try {
 		const can = await canCreateReview(db, { clientId, orderId, toolId });
+
 		if (!can.ok) {
 			return {
 				ok: false,
 				error: REASON_MESSAGE[can.reason] ?? "Não permitido",
 			};
 		}
+
 		await db.insert(review).values({
 			id: crypto.randomUUID(),
 			toolId,
@@ -61,14 +65,17 @@ export async function createReviewAction(raw: {
 			status: "pending",
 		});
 		revalidatePath(`/dashboard/pedidos/${orderId}`);
+
 		return { ok: true };
 	} catch (err) {
 		// Race de duplo-submit: o unique (toolId,clientId,orderId) é o backstop
 		// quando duas requisições passam por canCreateReview ao mesmo tempo.
 		const code = (err as { cause?: { code?: string } })?.cause?.code;
+
 		if (code === "23505") {
 			return { ok: false, error: "Você já avaliou este produto" };
 		}
+
 		const message = err instanceof Error ? err.message : "Erro inesperado";
 		log.error({
 			action: "create_review_failed",
@@ -77,6 +84,7 @@ export async function createReviewAction(raw: {
 			toolId,
 			error: message,
 		});
+
 		return { ok: false, error: "Não foi possível enviar a avaliação" };
 	}
 }

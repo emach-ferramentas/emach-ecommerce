@@ -1,0 +1,11 @@
+pre-commit:
+  piped: true
+  jobs:
+    - name: oxlint
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+      run: bun node_modules/.bin/oxlint --fix {staged_files}
+      stage_fixed: true
+
+    - name: biome
+      run: bunx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true

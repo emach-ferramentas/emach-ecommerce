@@ -32,6 +32,7 @@ export function HeroSafeStack({
 		(k): k is Exclude<ElementKey, "product" | "cta"> =>
 			k !== "product" && k !== "cta"
 	);
+
 	// CTA sai do fluxo da pilha de texto: faixa própria em bottom-[9%] (1:1 com
 	// o incumbente), não empilhado atrás do texto que termina em bottom-[22%].
 	const cta = keys.includes("cta")
@@ -41,9 +42,11 @@ export function HeroSafeStack({
 				headingTag,
 			})
 		: null;
+
 	if (textItems.length === 0 && cta === null) {
 		return null;
 	}
+
 	return (
 		<>
 			{textItems.length > 0 && (
@@ -57,9 +60,11 @@ export function HeroSafeStack({
 							ctaFull: false,
 							headingTag,
 						});
+
 						if (content === null) {
 							return null;
 						}
+
 						return <div key={key}>{content}</div>;
 					})}
 				</div>
@@ -80,9 +85,11 @@ export function HeroStackProduct({
 	banner: Pick<Banner, "productImageUrl" | "productImageMobileUrl">;
 }) {
 	const url = banner.productImageMobileUrl ?? banner.productImageUrl;
+
 	if (url == null) {
 		return null;
 	}
+
 	// Box absoluto 1:1 com o incumbente mobile (hero-carousel.tsx HeroProduct):
 	// paridade de posição é o critério de aceite, não a aproximação 38/82 do
 	// preview do dashboard (gap conhecido, ver disclaimer). Sem escala.

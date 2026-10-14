@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { PersonalDataForm } from "./personal-data-form";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
 vi.mock("@/lib/auth-client", () => ({ authClient: {} }));
 
 const renderWithDocument = (document: string | null) =>
