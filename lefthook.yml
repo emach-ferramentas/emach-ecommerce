@@ -1,11 +1,15 @@
 pre-commit:
+  # Em série, com o oxlint depois do Biome: o formatter pode quebrar um const em
+  # várias linhas, e a linha em branco que isso exige só o oxlint --fix põe.
   piped: true
   jobs:
-    - name: oxlint
-      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
-      run: bun node_modules/.bin/oxlint --fix {staged_files}
-      stage_fixed: true
-
     - name: biome
       run: bunx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
+
+    # Sem --no-error-on-unmatched-pattern, um commit só com arquivos ignorados
+    # pelo .oxlintrc.json (ex.: tools/oxlint/anti-slop) falha com "No files found".
+    - name: oxlint
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+      run: bun node_modules/.bin/oxlint --fix --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
