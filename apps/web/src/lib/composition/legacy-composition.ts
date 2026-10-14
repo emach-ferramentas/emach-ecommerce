@@ -155,11 +155,9 @@ export function resolveComposition(
 			return parsed.data;
 		}
 
-		// console.error direto (não evlog): roda em client component, evlog é
-		// server-only — noConsole está "off" no preset ultracite deste repo
-		// (config/biome/core), então nenhum biome-ignore é necessário/efetivo
-		// aqui. Único console permitido no app; sinal operacional de schema
-		// drift, exceção registrada na spec 2026-07-30.
+		// Único console permitido no app: sinal operacional de schema drift,
+		// exceção registrada na spec 2026-07-30.
+		// biome-ignore lint/suspicious/noConsole: roda em client component e o evlog é server-only.
 		console.error("[hero] composition inválida; usando conversão legada", {
 			bannerId: banner.id,
 			issues: parsed.error.issues.slice(0, 5),

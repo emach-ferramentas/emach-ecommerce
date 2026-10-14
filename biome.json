@@ -73,6 +73,12 @@
         "useNumberNamespace": "error",
         "noInferrableTypes": "error",
         "noUselessElse": "error"
+      },
+      "suspicious": {
+        "noConsole": "error"
+      },
+      "performance": {
+        "useTopLevelRegex": "error"
       }
     }
   },
@@ -86,5 +92,63 @@
       "tailwindDirectives": true
     }
   },
-  "extends": ["ultracite/biome/core", "ultracite/biome/next"]
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next"
+  ],
+  "overrides": [
+    {
+      "includes": ["apps/web/**", "packages/ui/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "react": {
+                    "importNames": ["forwardRef", "useMemo", "useCallback"],
+                    "message": "React 19 com React Compiler: ref é prop comum e a memoização é automática. Não use forwardRef, useMemo nem useCallback."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@emach/auth/dashboard": "P0: a loja usa só a instância ecommerce do Better Auth (@emach/auth/ecommerce).",
+                  "@emach/db/schema/auth": "P0: o schema auth é do dashboard; a loja usa @emach/db/schema/client.",
+                  "react": {
+                    "importNames": ["forwardRef", "useMemo", "useCallback"],
+                    "message": "React 19 com React Compiler: ref é prop comum e a memoização é automática. Não use forwardRef, useMemo nem useCallback."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/db/scripts/**", "scripts/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
 }

@@ -33,6 +33,8 @@ Schema TS aqui é **cópia versionada** do dashboard, sincronizada via **CI PR a
 
 ## Anti-patterns banidos (P0/P1)
 
+O Biome barra a maior parte desta lista: `console` (liberado só em `scripts/` e `packages/db/scripts/`), `any`, `@ts-ignore`, `key={index}`, `<img>`, `async` em client component, barrel, `.forEach`, regex literal dentro de função, `target="_blank"` sem `rel`, `dangerouslySetInnerHTML` e, pelo `noRestrictedImports` do `biome.json`, o import de `forwardRef`, `useMemo`, `useCallback` e dos dois módulos P0 de auth. Ficam só na revisão: catch sem `log.error`, `@ts-expect-error`, `new RegExp` em loop e `React.useCallback` acessado pelo namespace (o `carousel.tsx` do shadcn ainda usa). O `noReactForwardRef` do preset React não dispara neste repo, nem ligado à mão (testado; causa provável: o `"react": "catalog:"` esconde a versão do Biome), por isso o `forwardRef` é barrado pelo import.
+
 - `console.log/warn/error` em produção. Usar `log` do evlog (`import { log } from "@/lib/evlog"`). Única exceção: `lib/composition/legacy-composition.ts` (`console.error` de composition inválida), porque roda em client component e o evlog é server-only. Em catch de server action: **sempre** `log.error({ action, ...context })` antes de retornar `{ ok: false }` — silenciar sem log é P0.
 - `: any`, `as any`, `@ts-ignore`, `@ts-expect-error` (exceto `.next/` gerado).
 - `key={index}` em `.map()` — IDs estáveis. Exceções com `biome-ignore` documentado.
