@@ -38,7 +38,7 @@ Idempotência em `stockMovement` **não** é trigger, são dois partial unique i
 ## Ownership de tabelas
 
 - **Owned-by-dashboard** (autoritativo, mudanças via PR no dashboard): `tool`, `toolVariant`, `toolCategory`, `toolImage`, `toolAttributeAssignment`, `category`, `supplier`, `supplierAuditLog`, `branch`, `stockLevel`, `userBranch`, `userActivityLog`, `promotion`, `promotionTool`, `attribute*`, `storeSettings`, schema `auth`.
-- **Owned-by-ecommerce**: tabelas `client*` (7) — `client`, `clientSession`, `clientAccount`, `clientVerification`, `clientAddress` + LGPD `clientAuditLog`, `clientExportLog`.
+- **Dono das linhas: ecommerce** (schema nasce no dashboard): tabelas `client*` (7) — `client`, `clientSession`, `clientAccount`, `clientVerification`, `clientAddress` + LGPD `clientAuditLog`, `clientExportLog`.
 - **Escrita compartilhada** (ciclo de vida do pedido): `order`, `orderItem`, `orderStatusHistory`, `orderNote`, `orderAttachment`, `orderEvent`, `refundRequest`, `stockMovement`, `review`, `consentLog`, `toolAttributeValue`.
 
 Não classificadas aqui (dono a confirmar no dashboard antes de editar): `banner`, `shippingBox`, `orderPicking`, `orderPickingItem`, `orderPickingScan`, `stockAlertSent`, `userCapabilityOverride`. Regra até lá: tratar como owned-by-dashboard (não editar `schema/*.ts` em isolamento).
