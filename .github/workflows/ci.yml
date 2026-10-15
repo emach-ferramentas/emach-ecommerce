@@ -5,8 +5,12 @@ on:
   push:
     branches: [main]
 
+# O espelho de deploy (emach-ferramentas/emach-ecommerce) recebe este arquivo e
+# tem GitHub Actions ligado, mas não tem os secrets. Todo job leva a guarda de
+# repositório e sai `skipped` lá; scripts/workflows.test.ts cobra a guarda.
 jobs:
   check-types:
+    if: github.repository == 'othavi0/emach-ecommerce'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +30,7 @@ jobs:
   # O `next build` consulta o banco no generateStaticParams. Aqui ele roda contra
   # um Postgres descartável do próprio job, nunca contra o Supabase compartilhado.
   build:
+    if: github.repository == 'othavi0/emach-ecommerce'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -65,6 +70,7 @@ jobs:
       - run: bun run --filter=web build
 
   check-env:
+    if: github.repository == 'othavi0/emach-ecommerce'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

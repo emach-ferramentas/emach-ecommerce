@@ -1,13 +1,18 @@
 name: Mirror to deploy repo
 
 # Espelha a main deste repo (canônico) para emach-ferramentas/emach-ecommerce,
-# que está conectado à Vercel e tem GitHub Actions desabilitado (só deploya).
-# Sem isso, todo deploy exige um push manual cross-account.
+# que está conectado à Vercel. Sem isso, todo deploy exige um push manual
+# cross-account.
 #
-# Requer o secret MIRROR_TOKEN: um PAT fine-grained da conta emach-ferramentas,
-# com permissão de repositório "Contents: Read and write" + "Workflows: Read and
-# write" (o último é exigido pelo GitHub para pushes que tocam .github/workflows),
-# escopado SÓ ao emach-ferramentas/emach-ecommerce.
+# O espelho recebe este arquivo junto com o resto e tem GitHub Actions ligado.
+# O job só roda neste repo e sai `skipped` lá. X vermelho no espelho não indica
+# main quebrada: o sinal é o CI deste repo.
+#
+# Requer o secret MIRROR_TOKEN: o mesmo PAT fine-grained da conta
+# emach-ferramentas usado pelo mirror do dashboard, com escopo nos dois repos de
+# deploy (emach-dashboard e emach-ecommerce) e permissão "Contents: Read and
+# write" + "Workflows: Read and write" (o último é exigido pelo GitHub para
+# pushes que tocam .github/workflows).
 
 # Roda depois do CI da main e só com ele verde: main vermelha não deploya.
 on:
@@ -27,7 +32,7 @@ concurrency:
 
 jobs:
   mirror:
-    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    if: github.repository == 'othavi0/emach-ecommerce' && ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
