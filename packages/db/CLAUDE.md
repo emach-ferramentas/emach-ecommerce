@@ -4,7 +4,7 @@
 
 Drizzle 0.45 + node-postgres + Supabase Postgres. Schema TS aqui é **cópia versionada** do `emach-dashboard` — sync via CI PR automático (ADR-0009, no `emach-dashboard`). Regras gerais na raiz.
 
-## Schema sync (ADR-0009)
+## Schema sync (ADR-0009 do dashboard)
 
 - **Mudanças de schema começam no dashboard.** O workflow `sync-db-schema.yml` do dashboard abre PR aqui (branch `chore/sync-db-schema`) quando um destes caminhos muda na `main` do dashboard, iguais ao `paths:` dele:
   - `packages/db/src/schema/**`

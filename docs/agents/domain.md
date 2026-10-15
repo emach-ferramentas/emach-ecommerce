@@ -32,7 +32,7 @@ If any of these files don't exist yet, **proceed silently**. Don't flag their ab
 └── packages/
 ```
 
-Os planos e specs antigos (`docs/superpowers/` e `plans/`) saíram do working tree em 2026-10 (#276) e ficam no histórico do git: `git log --all --oneline -- docs/superpowers plans` lista os commits, e `git show <commit>^:<caminho>` recupera um arquivo.
+Os planos e specs antigos saíram do working tree em 2026-10 (#276) e ficam no histórico do git: `git log --all --oneline -- docs/superpowers plans` lista os commits, e `git show <commit>^:<caminho>` recupera um arquivo.
 
 ## Use the glossary's vocabulary
 

@@ -1,6 +1,6 @@
 # Achados rejeitados
 
-Achados que a auditoria do skill `improve` de 2026-06-17 (commit `feafcfa`) avaliou e não levou adiante. Servem para a próxima auditoria não refazer o mesmo trabalho. A lista original estava em `plans/README.md` e saiu com o #276. Código vence: se o código mudou e o motivo abaixo não vale mais, o achado volta a ser candidato.
+Achados que a auditoria do skill `improve` de 2026-06-17 (commit `feafcfa`) avaliou e não levou adiante. Servem para a próxima auditoria não refazer o mesmo trabalho. A lista original saiu com o #276 e fica no histórico do git (`git log --all --oneline -- plans/README.md`). Código vence: se o código mudou e o motivo abaixo não vale mais, o achado volta a ser candidato.
 
 Reconferido contra a `main` em `86e38b5`.
 

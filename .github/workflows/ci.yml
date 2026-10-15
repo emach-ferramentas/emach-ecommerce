@@ -19,6 +19,7 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - run: bun check
+      - run: bun run check:docs
       - uses: actions/setup-node@v4
         with:
           node-version: 24

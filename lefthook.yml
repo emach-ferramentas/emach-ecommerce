@@ -13,3 +13,7 @@ pre-commit:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
       run: bun node_modules/.bin/oxlint --fix --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
+
+    - name: doc-paths
+      glob: "*.md"
+      run: bun run check:docs

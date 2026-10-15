@@ -60,5 +60,6 @@ test("o pre-commit roda o job biome antes do job oxlint", () => {
 	expect(lefthook["pre-commit"].jobs.map((j) => j.name)).toEqual([
 		"biome",
 		"oxlint",
+		"doc-paths",
 	]);
 });

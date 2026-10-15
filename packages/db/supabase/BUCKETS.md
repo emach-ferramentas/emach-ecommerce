@@ -41,7 +41,7 @@ Salvar a URL resultante em `tool_image.url` (uma linha por imagem, `sort_order` 
 
 O **upload/delete** das imagens é feito pelo **`emach-dashboard`** (repo irmão), via server actions que usam `supabaseAdmin` + `SUPABASE_SERVICE_ROLE_KEY`. Este repo (`emach-ecommerce`/storefront) **só lê**: consome `tool_image.url` (URL pública absoluta) direto em `<Image>`. Bucket RLS fechado para escrita; leitura pública via URL direta.
 
-> `SUPABASE_SERVICE_ROLE_KEY` e `NEXT_PUBLIC_SUPABASE_URL` são obrigatórias no schema Zod de `packages/env/src/schemas.ts:25-26` (validadas no boot e por `bun check:env`), mas nenhum código de `apps/web` usa a service role hoje (não há `supabaseAdmin`). Manter cadastradas na Vercel mesmo sem uso; a lógica de cleanup de storage vive no `emach-dashboard`.
+> `SUPABASE_SERVICE_ROLE_KEY` e `NEXT_PUBLIC_SUPABASE_URL` são obrigatórias no schema Zod de `packages/env/src/schemas.ts` (validadas no boot e por `bun check:env`), mas nenhum código de `apps/web` usa a service role hoje (não há `supabaseAdmin`). Manter cadastradas na Vercel mesmo sem uso; a lógica de cleanup de storage vive no `emach-dashboard`.
 
 ## banner-images e tool-videos
 

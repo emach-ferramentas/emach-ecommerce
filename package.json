@@ -32,6 +32,7 @@
     "db:push": "bun --cwd packages/db db:push",
     "db:studio": "turbo -F @emach/db db:studio",
     "check": "ultracite check && bun run lint:slop",
+    "check:docs": "bun scripts/check-doc-paths.ts",
     "check:env": "bun scripts/check-vercel-env.ts",
     "fix": "ultracite fix && bun node_modules/.bin/oxlint --fix",
     "lint:slop": "bun node_modules/.bin/oxlint",
