@@ -57,7 +57,7 @@ Em `stockMovement` deste repo: **`actorType='system'`** (nunca `'user'` — `use
 
 - `db` (singleton em `src/index.ts`) — uso geral em server actions.
 - `createDb()` (factory) — `@emach/auth/*` pra evitar ciclo de import com `@emach/env`. **Não consolidar.**
-- `apps/web` importa `db` de `@emach/db` direto, inclusive nas rotas e actions autenticadas (`/checkout`, `/pedidos/[number]`, `/dashboard/*`), sempre depois de `requireCurrentClient()`. A regra de isolamento é outra: `apps/web` nunca importa `@emach/db/schema/auth` nem `@emach/auth/dashboard`. `@emach/auth` usa `createDb()` para evitar o ciclo com `@emach/env`.
+- `apps/web` importa `db` de `@emach/db` direto, inclusive nas rotas e actions autenticadas (`/checkout`, `/pedidos/[number]`, `/dashboard/*`), sempre depois de `requireCurrentClient()`. A regra de isolamento é outra: `apps/web` e `packages/auth` nunca importam `@emach/db/schema/auth`. O módulo `@emach/auth/dashboard` não existe neste repo. A sessão de staff é só do dashboard. `@emach/auth` usa `createDb()` para evitar o ciclo com `@emach/env`.
 - `schema` em `src/index.ts` é registro manual e parcial. Para tabela fora dele (`refundRequest`, `orderEvent`, `banner`, `storeSettings` etc.) usar `db.select().from(tabela)`; `db.query.<tabela>` só existe para as registradas. Ao usar relational API numa tabela nova, registrar tabela e relations em `src/index.ts`.
 
 ## Atenção pós-refactor de variants

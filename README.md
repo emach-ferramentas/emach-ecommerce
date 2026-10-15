@@ -28,7 +28,7 @@ emach-ecommerce/
     ├── config/              tsconfig base
     ├── env/                 env vars tipadas (T3 Env + Zod)
     ├── db/                  Drizzle schema espelhado do dashboard + queries + triggers/RLS SQL + seeds
-    ├── auth/                Better Auth (instâncias dashboard + ecommerce isoladas)
+    ├── auth/                Better Auth (instância ecommerce: clientes, tabelas `client*`)
     ├── email/               Resend client + templates React Email
     ├── redis/               client Upstash Redis (rate limit + cache de cotação de frete)
     ├── ui/                  shadcn `base-lyra` compartilhado

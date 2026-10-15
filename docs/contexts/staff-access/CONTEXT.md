@@ -1,6 +1,6 @@
 # Staff Access
 
-A identidade, os papéis e as filiais do staff interno da EMACH. Inteiramente owned-by-dashboard — o storefront nunca toca este contexto (invariante P0: nunca importar `@emach/db/schema/auth` nem `@emach/auth/dashboard`).
+A identidade, os papéis e as filiais do staff interno da EMACH. Inteiramente owned-by-dashboard — o storefront nunca toca este contexto (invariante P0: nunca importar `@emach/db/schema/auth`). O módulo `@emach/auth/dashboard` não existe neste repo. A sessão de staff é só do dashboard.
 
 ## Language
 

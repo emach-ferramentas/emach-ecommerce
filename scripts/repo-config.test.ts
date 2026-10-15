@@ -127,3 +127,12 @@ test("o MCP do shadcn usa a versão do @emach/ui", () => {
 
 	expect(mcp).toContain(`shadcn@${ui}`);
 });
+
+test("o @emach/auth da loja exporta só a instância ecommerce", () => {
+	const exportsDoAuth = lerJson(
+		"packages/auth/package.json",
+		z.object({ exports: z.record(z.string(), z.unknown()) })
+	).exports;
+
+	expect(Object.keys(exportsDoAuth)).toEqual(["./ecommerce"]);
+});

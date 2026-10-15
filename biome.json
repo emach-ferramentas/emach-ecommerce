@@ -126,6 +126,23 @@
       }
     },
     {
+      "includes": ["packages/auth/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@emach/db/schema/auth": "P0: o pacote de auth do ecommerce usa só @emach/db/schema/client; o schema auth é do staff do dashboard."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/db/scripts/**", "scripts/**"],
       "linter": {
         "rules": {

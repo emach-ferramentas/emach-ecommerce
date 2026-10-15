@@ -13,8 +13,8 @@
 
 Duas instâncias **completamente isoladas** Better Auth no mesmo banco. Este app usa só a `ecommerce` (clientes BR via email/senha + Google OAuth).
 
-1. `apps/web` deste repo **nunca** importa `@emach/db/schema/auth` nem `@emach/auth/dashboard`. Dashboard **nunca** importa `@emach/db/schema/client` nem `@emach/auth/ecommerce`.
-2. `EcommerceSession` ≠ `DashboardSession` — não existe tipo "Session" genérico.
+1. `apps/web` e `packages/auth` deste repo **nunca** importam `@emach/db/schema/auth` (Biome barra nos dois). `@emach/auth/dashboard` não existe neste repo: a sessão de staff é só do dashboard. Dashboard **nunca** importa `@emach/db/schema/client` nem `@emach/auth/ecommerce`.
+2. A sessão da loja é `EcommerceSession`; o tipo de sessão do staff só existe no dashboard. Não existe tipo "Session" genérico.
 3. **Nunca** setar `advanced.cookies.<name>.attributes.domain = ".emach.com.br"`. Subdomínios distintos isolam por host.
 4. CPF/CNPJ e telefone: o Zod do formulário é só UX. A validação que vale roda no servidor: os `databaseHooks` de `packages/auth/src/ecommerce.ts` chamam `normalizeUserForWrite` (`packages/auth/src/normalize-user.ts`), que usa `isValidCpfCnpj`, `isValidPhone`, `normalizeDocument` e `onlyDigits` de `@emach/validators` (arquivo `packages/validators/src/cpf-cnpj.ts`). O documento é gravado sem pontuação: CPF só com dígitos, CNPJ alfanumérico em maiúsculas (#244). O telefone fica só com dígitos. Campo vazio vira `NULL` (nunca `""`), senão o unique `client_document_unique` colide no segundo cliente.
 
@@ -42,7 +42,7 @@ Fora do lint, ficam em prosa:
 ## Gotchas
 
 - **`createDb()` × `db` singleton:** `@emach/auth/*` usa `createDb()` pra evitar ciclo com `@emach/env`; resto usa `db`. Não consolidar.
-- **Rota autenticada lê e escreve pelo `@emach/db` normalmente** (`lib/orders/queries.ts`, `place-order.ts`, `_actions/*`); o `@emach/auth/ecommerce` só entrega a sessão (`requireCurrentClient`). O que nunca entra em `apps/web` é `@emach/db/schema/auth` e `@emach/auth/dashboard` (invariante P0 acima).
+- **Rota autenticada lê e escreve pelo `@emach/db` normalmente** (`lib/orders/queries.ts`, `place-order.ts`, `_actions/*`); o `@emach/auth/ecommerce` só entrega a sessão (`requireCurrentClient`). O que nunca entra em `apps/web` nem em `packages/auth` é `@emach/db/schema/auth`, e `@emach/auth/dashboard` não existe neste repo (invariante P0 acima).
 - **shadcn é Base UI (não Radix)** — style `base-lyra`. Primitivo `@base-ui/react`.
 - **`shadcn add` não passa pelo hook lint** — rodar `bun check` após adicionar componentes.
 - **`proxy.ts` (Next 16) substitui `middleware.ts`** — não criar `middleware.ts`.

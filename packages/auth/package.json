@@ -2,9 +2,6 @@
   "name": "@emach/auth",
   "type": "module",
   "exports": {
-    "./dashboard": {
-      "default": "./src/dashboard.ts"
-    },
     "./ecommerce": {
       "default": "./src/ecommerce.ts"
     }
