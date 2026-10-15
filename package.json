@@ -38,7 +38,7 @@
     "test:lint-rules": "node tools/oxlint/emach/rules/no-regexp-in-loop.test.ts && node tools/oxlint/emach/rules/require-log-in-action-catch.test.ts",
     "test:ci": "turbo run test:ci",
     "test:repo": "bun test ./.claude/hooks/ ./scripts/",
-    "prepare": "lefthook install",
+    "prepare": "if git rev-parse --git-dir > /dev/null 2>&1; then lefthook install; fi",
     "clean": "bash scripts/clean.sh",
     "clean-all": "bash scripts/clean.sh -y --cache",
     "clean-dry": "bash scripts/clean.sh --dry-run"
