@@ -1,0 +1,45 @@
+name: Drift com o dashboard
+
+# Compara os caminhos que o ecommerce copia do emach-dashboard com a main de lá
+# (scripts/check-dashboard-drift.ts). Não se chama CI de propósito: o mirror.yml
+# escuta o CI pelo nome, e drift não segura deploy.
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  drift:
+    if: github.repository == 'othavi0/emach-ecommerce'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ecommerce
+      - uses: actions/checkout@v4
+        with:
+          repository: othavi0/emach-dashboard
+          ref: main
+          path: dashboard
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ecommerce/package.json
+      - run: bun install --frozen-lockfile
+        working-directory: ecommerce
+      - run: bun ecommerce/scripts/check-dashboard-drift.ts ecommerce dashboard
+      - name: PR de sync aberto
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          url=$(gh pr list -R "$REPO" --head chore/sync-db-schema --state open --json url --jq '.[0].url // empty')
+          if [ -n "$url" ]; then
+            echo "Há PR de sync aberto: $url. Mergear resolve o drift do schema e do contrato." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Nenhum PR chore/sync-db-schema aberto. Rode o workflow_dispatch do sync-db-schema.yml no dashboard." >> "$GITHUB_STEP_SUMMARY"
+          fi
