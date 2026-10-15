@@ -1,15 +1,23 @@
 # packages/db — Convenções
 
-> **O banco é único e compartilhado entre dev e produção.** `db:apply-triggers`, `db:seed-*`, `db:anonymize-client` e drop & recreate escrevem nele: só com autorização explícita da sessão.
+> **O banco é único e compartilhado entre dev e produção.** A regra de escrita é a do dashboard, seção [Banco compartilhado: regra de escrita dos dois apps](https://github.com/othavi0/emach-dashboard/blob/main/CLAUDE.md#banco-compartilhado-regra-de-escrita-dos-dois-apps). Em resumo, `db:apply-triggers`, `db:seed-*`, `db:anonymize-client` e drop e recreate pedem autorização do user na sessão, e write pontual de poucas linhas para smoke é liberado e revertido ao terminar.
 
 Drizzle 0.45 + node-postgres + Supabase Postgres. Schema TS aqui é **cópia versionada** do `emach-dashboard` — sync via CI PR automático (ADR-0009, no `emach-dashboard`). Regras gerais na raiz.
 
 ## Schema sync (ADR-0009)
 
-- **Mudanças de schema começam no dashboard.** Workflow `sync-db-schema.yml` no dashboard abre PR aqui quando `packages/db/src/{schema,queries}` ou os SQL de `src/sql/` (`triggers.sql`, `rls.sql`) mudam na `main` do dashboard. O `rls.sql` já chegou por PR de sync (#107, #176); o glob exato do workflow está no dashboard.
+- **Mudanças de schema começam no dashboard.** O workflow `sync-db-schema.yml` do dashboard abre PR aqui (branch `chore/sync-db-schema`) quando um destes caminhos muda na `main` do dashboard, iguais ao `paths:` dele:
+  - `packages/db/src/schema/**`
+  - `packages/db/src/queries/**`
+  - `packages/db/src/utils.ts`
+  - `packages/db/src/sql/triggers.sql`
+  - `packages/db/src/sql/rls.sql`
+  - `docs/integration/admin-ecommerce.md` (o contrato, com a tabela de dono de cada tabela)
+
+  O sync copia `schema/` e `queries/` com `rsync --delete` e os quatro arquivos com `cp`. Edição local em qualquer um deles some no próximo PR de sync.
 - **Não editar `schema/*.ts` em isolamento.** Toda mudança vem por PR de sync.
 - **Pós-merge do PR sync:** rodar `bun check-types` na raiz e conferir a fixture `.github/ci/build-fixture.sql` (o job `build` do CI insere em `tool` e `tool_variant`; coluna NOT NULL nova ou CHECK novo quebram o job e travam o deploy). Os triggers o dashboard aplica; `db:apply-triggers` aqui só com autorização.
-- **`src/index.ts` (barrel singleton) está FORA do escopo do sync** (o glob cobre `schema/`, `queries/` e os SQL de `sql/`). Quando o dashboard **adiciona/remove uma relation ou tabela** (ex.: #118 removeu `supplierRelations` de `tools.ts`), o `index.ts` continua importando/registrando o símbolo antigo e **quebra o build** (`error TS2305: no exported member`) — o sync não pega isso. **Sempre rodar `bun check-types` pós-merge de PR sync** e ajustar o import/objeto `schema` em `src/index.ts` à mão. O `shippingBox` (caixas do frete) está nesse registro: PR de sync que mexe em `schema/shipping.ts` exige conferir a entrada dele em `src/index.ts`.
+- **`src/index.ts` (barrel singleton) está FORA do escopo do sync** (o sync cobre só os caminhos acima). Quando o dashboard **adiciona/remove uma relation ou tabela** (ex.: #118 removeu `supplierRelations` de `tools.ts`), o `index.ts` continua importando/registrando o símbolo antigo e **quebra o build** (`error TS2305: no exported member`) — o sync não pega isso. **Sempre rodar `bun check-types` pós-merge de PR sync** e ajustar o import/objeto `schema` em `src/index.ts` à mão. O `shippingBox` (caixas do frete) está nesse registro: PR de sync que mexe em `schema/shipping.ts` exige conferir a entrada dele em `src/index.ts`.
 
 **Drop & recreate num Postgres local ou descartável**, nunca no `DATABASE_URL` do `.env` (renames ambíguos sem TTY): `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres, public;` via pg client → de dentro de `packages/db`: `bunx drizzle-kit push && bun db:apply-triggers && bun db:seed-categories && bun db:seed-attributes` e aplicar `src/sql/rls.sql`.
 
@@ -37,17 +45,7 @@ Idempotência em `stockMovement` **não** é trigger, são dois partial unique i
 
 ## Ownership de tabelas
 
-- **Owned-by-dashboard** (autoritativo, mudanças via PR no dashboard): `tool`, `toolVariant`, `toolCategory`, `toolImage`, `toolAttributeAssignment`, `category`, `supplier`, `supplierAuditLog`, `branch`, `stockLevel`, `userBranch`, `userActivityLog`, `promotion`, `promotionTool`, `attribute*`, `storeSettings`, schema `auth`.
-- **Dono das linhas: ecommerce** (schema nasce no dashboard): tabelas `client*` (7) — `client`, `clientSession`, `clientAccount`, `clientVerification`, `clientAddress` + LGPD `clientAuditLog`, `clientExportLog`.
-- **Escrita compartilhada** (ciclo de vida do pedido): `order`, `orderItem`, `orderStatusHistory`, `orderNote`, `orderAttachment`, `orderEvent`, `refundRequest`, `stockMovement`, `review`, `consentLog`, `toolAttributeValue`.
-
-Não classificadas aqui (dono a confirmar no dashboard antes de editar): `banner`, `shippingBox`, `orderPicking`, `orderPickingItem`, `orderPickingScan`, `stockAlertSent`, `userCapabilityOverride`. Regra até lá: tratar como owned-by-dashboard (não editar `schema/*.ts` em isolamento).
-
-`cartEvent`: escrita pela loja (INSERT em `apps/web/src/lib/actions/track-cart-event.ts`); o dashboard lê e expurga (comentário em `schema/cart-events.ts`). Fica fora das três listas acima.
-
-`refundRequest`: o **storefront cria** (cliente solicita devolução); o **dashboard conduz** (revisa/aprova/estorna). `orderEvent`/`orderNote`/`orderAttachment` são majoritariamente escritos pelo dashboard no ciclo de vida.
-
-Em `stockMovement` deste repo: **`actorType='system'`** (nunca `'user'` — `user` é staff).
+O dono de cada tabela está na tabela de ownership de `docs/integration/admin-ecommerce.md`, a cópia sincronizada do contrato do dashboard. Ela vale sobre qualquer outra doc deste repo, inclusive as notas de escrita da loja (`stockMovement` com `actorType='system'`, `refundRequest` criado aqui e conduzido no dashboard, `cartEvent` só com INSERT).
 
 ## Exports
 
@@ -72,7 +70,7 @@ Em `stockMovement` deste repo: **`actorType='system'`** (nunca `'user'` — `use
 
 Padrão de assinatura: `db: NodePgDatabase<Record<string, unknown>>` parametrizado (não singleton; alias `AnyDb` em `catalog-helpers.ts`), `export type`, sem `select *` em projeções públicas (listar as colunas expostas).
 
-**Armadilha: `db.execute()` raw devolve timestamp como string.** `db.execute(sql`...`)` não passa pelo mapper de colunas do Drizzle: `timestamp` volta como `string`. As queries raw de catálogo (`tools`, `categories`, `promotions`, `reviews`) convertem com `coerceDates(obj, KEYS)` de `src/utils.ts`, com as listas `*_DATE_KEYS` de `catalog-helpers.ts`. Query raw nova que declara `Date` no tipo precisa do mesmo passo. `src/utils.ts` fica fora do glob do sync, como `src/index.ts`: se o dashboard passar a importar algo novo de `../utils`, ajustar `utils.ts` à mão e rodar `bun check-types`. Consumidas pelo storefront: `categories`, `tools`, `promotions`, `reviews`, `shipping`, `shipping-quote` e `store-settings`. `dashboard.ts`, `dashboard-period.ts`, `order-status-groups.ts` e `branch-cep.ts` chegam pelo sync e nenhum código de produção deste repo os importa; só os testes do próprio `@emach/db` (`branch-cep.test.ts`, `dashboard-helpers.test.ts`, `dashboard-period.test.ts`).
+**Armadilha: `db.execute()` raw devolve timestamp como string.** `db.execute(sql`...`)` não passa pelo mapper de colunas do Drizzle: `timestamp` volta como `string`. As queries raw de catálogo (`tools`, `categories`, `promotions`, `reviews`) convertem com `coerceDates(obj, KEYS)` de `src/utils.ts`, com as listas `*_DATE_KEYS` de `catalog-helpers.ts`. Query raw nova que declara `Date` no tipo precisa do mesmo passo. `src/utils.ts` chega pelo sync junto das queries, então não se edita aqui. Consumidas pelo storefront: `categories`, `tools`, `promotions`, `reviews`, `shipping`, `shipping-quote` e `store-settings`. `dashboard.ts`, `dashboard-period.ts`, `order-status-groups.ts` e `branch-cep.ts` chegam pelo sync e nenhum código de produção deste repo os importa; só os testes do próprio `@emach/db` (`branch-cep.test.ts`, `dashboard-helpers.test.ts`, `dashboard-period.test.ts`).
 
 ## Storage de imagens
 

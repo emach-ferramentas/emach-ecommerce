@@ -18,7 +18,7 @@ A situação de um **User**: `pending` (aguardando ativação), `active` ou `sus
 A associação entre um **User** e as **Branches** em que ele opera (`user_branch`). Owned-by-dashboard.
 
 **Capability Override**:
-Exceção de permissão de um **User** em relação à sua **Role**: concede (`grant`) ou revoga (`revoke`) uma capability, com quem aplicou (`user_capability_override`). Dono não declarado no schema: tratar como owned-by-dashboard até confirmar lá (`packages/db/CLAUDE.md`).
+Exceção de permissão de um **User** em relação à sua **Role**: concede (`grant`) ou revoga (`revoke`) uma capability, com quem aplicou (`user_capability_override`). Owned-by-dashboard, pela tabela de ownership de `docs/integration/admin-ecommerce.md` (cópia sincronizada do contrato do dashboard).
 
 **User Activity**:
 Registro de ações de um **User** do staff, com ator, ação, alvo (tipo e id) e metadados (`user_activity_log`). Owned-by-dashboard.

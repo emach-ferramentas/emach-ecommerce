@@ -5,22 +5,22 @@
 
 ## ⛔ Guardrails duros (incidentes 2026-06/07)
 
-- **Banco único dev=prod compartilhado.** NUNCA `seed`/`truncate`/`drop`/INSERT/UPDATE em dado real sem autorização explícita NESTA sessão (writes de smoke em banner/promoção de produção já foram barrados pelo classifier 3×). Subagente que toca banco recebe esta restrição colada no prompt.
-- **NUNCA `cd`/Read/Edit/`gh issue` no `emach-dashboard` a partir daqui** (ADR-0009): mudança de schema/issue do dashboard abre-se LÁ; aqui só se consome o PR de sync automático.
+- **Banco único dev=prod compartilhado.** A regra de escrita é a do dashboard, seção [Banco compartilhado: regra de escrita dos dois apps](https://github.com/othavi0/emach-dashboard/blob/main/CLAUDE.md#banco-compartilhado-regra-de-escrita-dos-dois-apps). Em resumo, comando que muda schema, apaga em massa ou não tem volta (`db:apply-triggers`, `db:seed-*`, `db:anonymize-client`, drop e recreate) pede autorização do user na sessão, e write pontual de poucas linhas para smoke é liberado e revertido ao terminar. Subagente que toca banco recebe essa regra colada no prompt.
+- **Nunca editar, commitar, abrir issue ou PR no `emach-dashboard` a partir daqui** (ADR-0009 do dashboard): mudança de schema ou de contrato começa lá, e aqui só se consome o PR de sync automático. Ler o dashboard para consultar a fonte (workflow de sync, contrato, regra do banco) é permitido.
 - CWD é a RAIZ do monorepo (turbo/bun) — nunca `cd apps/web`; paths absolutos.
 
 ## Auth — invariantes P0 (qualquer violação é bug crítico)
 
 Duas instâncias **completamente isoladas** Better Auth no mesmo banco. Este app usa só a `ecommerce` (clientes BR via email/senha + Google OAuth).
 
-1. `apps/web` e `packages/auth` deste repo **nunca** importam `@emach/db/schema/auth` (Biome barra nos dois). `@emach/auth/dashboard` não existe neste repo: a sessão de staff é só do dashboard. Dashboard **nunca** importa `@emach/db/schema/client` nem `@emach/auth/ecommerce`.
+1. `apps/web` e `packages/auth` deste repo **nunca** importam `@emach/db/schema/auth` (Biome barra nos dois). `@emach/auth/dashboard` não existe neste repo: a sessão de staff é só do dashboard. Dashboard **nunca** importa `@emach/auth/ecommerce`.
 2. A sessão da loja é `EcommerceSession`; o tipo de sessão do staff só existe no dashboard. Não existe tipo "Session" genérico.
 3. **Nunca** setar `advanced.cookies.<name>.attributes.domain = ".emach.com.br"`. Subdomínios distintos isolam por host.
 4. CPF/CNPJ e telefone: o Zod do formulário é só UX. A validação que vale roda no servidor: os `databaseHooks` de `packages/auth/src/ecommerce.ts` chamam `normalizeUserForWrite` (`packages/auth/src/normalize-user.ts`), que usa `isValidCpfCnpj`, `isValidPhone`, `normalizeDocument` e `onlyDigits` de `@emach/validators` (arquivo `packages/validators/src/cpf-cnpj.ts`). O documento é gravado sem pontuação: CPF só com dígitos, CNPJ alfanumérico em maiúsculas (#244). O telefone fica só com dígitos. Campo vazio vira `NULL` (nunca `""`), senão o unique `client_document_unique` colide no segundo cliente.
 
 ## Ownership e schema sync (ADR-0009, no `emach-dashboard`)
 
-- Schema TS (`packages/db/src/{schema,queries,sql}`) é **cópia** do dashboard, sincronizada por PR automático. **Não editar aqui**: a mudança começa lá. O job `sync-guard` do CI (`scripts/check-sync-paths.ts`) barra PR fora da branch `chore/sync-db-schema` que toque `schema/`, `queries/`, `utils.ts`, `sql/triggers.sql` ou `sql/rls.sql` de `packages/db/src/`. Dono de cada tabela, escrita compartilhada, triggers e passos pós-sync: `packages/db/CLAUDE.md`.
+- Os caminhos de `packages/db/src` listados em `packages/db/CLAUDE.md` são **cópia** do dashboard, sincronizada por PR automático. **Não editar aqui**: a mudança começa lá. O job `sync-guard` do CI (`scripts/check-sync-paths.ts`) barra PR fora da branch `chore/sync-db-schema` que toque `schema/`, `queries/`, `utils.ts`, `sql/triggers.sql` ou `sql/rls.sql` de `packages/db/src/`. Dono de cada tabela: a tabela de ownership de `docs/integration/admin-ecommerce.md`, cópia sincronizada do contrato do dashboard. Triggers e passos pós-sync: `packages/db/CLAUDE.md`.
 - A loja é dona das linhas das tabelas `client*`: só ela escreve nelas. O arquivo de schema dessas tabelas nasce no dashboard, como todo o `packages/db/src/schema/`. Escrita da loja em tabela do dashboard (`stockMovement` e similares) usa `actorType='system'`, nunca `'user'` (que é staff).
 
 ## Anti-patterns banidos (P0/P1)
@@ -118,7 +118,8 @@ Multi-context: `CONTEXT-MAP.md` na raiz indexa os bounded contexts; cada `CONTEX
 
 | Tópico | Arquivo |
 |---|---|
-| Schema sync, triggers, ownership detalhado, gotchas DB | `packages/db/CLAUDE.md` |
+| Schema sync, triggers, gotchas DB | `packages/db/CLAUDE.md` |
+| Dono de cada tabela, contrato do banco compartilhado (cópia do dashboard) | `docs/integration/admin-ecommerce.md` |
 | Sistema visual H3 completo (tokens, primitivos, regras) | `DESIGN.md` |
 | Multi-context glossário de domínio | `CONTEXT-MAP.md` |
 | Frete Frenet (cache, anti-fraude, origem, pegadinhas da API) | `apps/web/src/lib/frenet/CLAUDE.md` |
