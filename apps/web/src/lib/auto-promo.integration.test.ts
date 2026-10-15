@@ -6,7 +6,7 @@ import { disableGlobalPromos, seedTool } from "@/lib/test-helpers";
 import { autoPromoToolIdsFromMap, fetchAutoPromosByToolId } from "./auto-promo";
 
 // Integração: bate no Supabase compartilhado via withRollback. Fora do CI
-// (VITEST_UNIT_ONLY=1 / lista INTEGRATION em vitest.config.ts); roda local com
+// (VITEST_UNIT_ONLY=1 e sufixo .integration.test.ts); roda local com
 // `bun run --filter=web test`.
 const ROLLBACK = Symbol("rollback");
 

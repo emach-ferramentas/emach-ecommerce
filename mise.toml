@@ -1,7 +1,12 @@
-# Carrega o apps/web/.env no ambiente do shell ao entrar no projeto (mise activate).
-# Necessário para o MCP do plugin Resend: o Claude Code expande ${RESEND_API_KEY}
-# no .mcp.json contra o process.env do processo principal — que NÃO recebe o bloco
-# `env` do settings.json. Só o env do OS alimenta essa interpolação.
-# .env continua a fonte única de verdade (gitignored).
+# Versões iguais às do CI (scripts/repo-config.test.ts trava a paridade com o
+# packageManager do package.json e com o ci.yml).
+[tools]
+bun = "1.3.11"
+node = "24"
+
+# O MCP do plugin Resend expande ${RESEND_API_KEY} contra o process.env do
+# processo do Claude Code, que não recebe o bloco `env` do settings.json. Só essa
+# chave entra no shell, lida do apps/web/.env a cada avaliação: o app, o drizzle e
+# os testes leem o .env sozinhos.
 [env]
-_.file = "apps/web/.env"
+RESEND_API_KEY = "{{ exec(command='grep ^RESEND_API_KEY= apps/web/.env 2>/dev/null | cut -d= -f2- | xargs') }}"

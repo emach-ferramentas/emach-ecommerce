@@ -8,7 +8,7 @@ import { seedTool } from "@/lib/test-helpers";
 import { primaryImageByToolId } from "./tool-images";
 
 // Integração: bate no Supabase compartilhado via withRollback. Fora do CI
-// (lista INTEGRATION em vitest.config.ts); roda local com `bun run --filter=web test`.
+// (sufixo .integration.test.ts, ver vitest.config.ts); roda local com `bun run --filter=web test`.
 const ROLLBACK = Symbol("rollback");
 
 async function withRollback(

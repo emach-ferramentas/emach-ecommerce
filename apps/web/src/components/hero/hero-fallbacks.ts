@@ -1,5 +1,5 @@
 // Fallback: a home nunca fica sem hero quando não há banner ativo no banco.
-// Cada um carrega composition literal split-equivalente (spec 2026-07-30) e
+// Cada um carrega composition literal split-equivalente e
 // passa pelo renderer novo — nenhum caminho legado sobrevive pelos fallbacks.
 import type { HeroBanner } from "@/components/hero-carousel";
 

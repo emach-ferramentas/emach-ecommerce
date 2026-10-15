@@ -2,13 +2,6 @@
 
 > **Superseded by [ADR-0003](./0003-estoque-multi-filial.md) em 2026-05-20.**
 
-> ⚠️ **Esta decisão foi revogada. O comportamento descrito abaixo NÃO é o
-> implementado hoje.** O storefront atual apenas **valida** disponibilidade
-> agregada (`SUM(stock_level.quantity)` em todas as filiais) na criação do
-> pedido e **não** grava `stock_movement` nem debita estoque — o débito é
-> adiado para a transição `pending_payment → paid`. Ver **ADR-0003** para a
-> arquitetura vigente.
-
 ## Decisão original (histórico)
 
 Debitava-se o estoque de forma síncrona na criação do pedido

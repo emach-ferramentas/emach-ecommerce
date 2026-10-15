@@ -155,8 +155,8 @@ export function resolveComposition(
 			return parsed.data;
 		}
 
-		// Único console permitido no app: sinal operacional de schema drift,
-		// exceção registrada na spec 2026-07-30.
+		// Único console permitido no app (exceção registrada no CLAUDE.md):
+		// sinal operacional de schema drift.
 		// biome-ignore lint/suspicious/noConsole: roda em client component e o evlog é server-only.
 		console.error("[hero] composition inválida; usando conversão legada", {
 			bannerId: banner.id,

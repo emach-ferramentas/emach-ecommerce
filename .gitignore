@@ -3,8 +3,6 @@ node_modules
 
 # Superpowers brainstorm sessions
 .superpowers/
-.pnp
-.pnp.js
 # bun.lock (lockfile do gerenciador do projeto) é versionado — builds reproduzíveis.
 # Lockfiles de outros gerenciadores ficam ignorados.
 bun.lockb
@@ -44,10 +42,6 @@ lerna-debug.log*
 
 # Turbo
 .turbo
-.nx
-
-# Better-T-Stack
-.alchemy
 
 # Testing
 coverage
@@ -62,14 +56,14 @@ temp
 # Claude Code — artefatos transitórios de sessão
 .claude/scheduled_tasks.lock
 
-
-
-# Drizzle Kit migrations geradas (DB owned-by-dashboard — schema TS é a fonte de verdade local)
-# _triggers.sql (manual) permanece versionado — NÃO ignorar o diretório.
-packages/db/src/migrations/[0-9]*.sql
-packages/db/src/migrations/meta/
 .vercel
+
+# drizzle-kit generate grava aqui (out do drizzle.config.ts); o repo não versiona migrations (ADR-0002)
+packages/db/src/migrations/
 
 # graphify knowledge graph (local artifact)
 graphify-out/
 scripts/.mapdata/
+
+# O instalador de skills traz o zip junto da pasta já extraída
+.agents/skills/**/Archive.zip

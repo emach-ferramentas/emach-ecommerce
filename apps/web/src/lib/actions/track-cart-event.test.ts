@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Unit-only: todas as bordas (db, sessão, rate limit, headers) mockadas — não
-// entra na lista INTEGRATION do vitest.config.ts.
+// Unit-only: todas as bordas (db, sessão, rate limit, headers) mockadas, por
+// isso não leva o sufixo .integration.test.ts.
 const {
 	values,
 	insert,

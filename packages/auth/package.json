@@ -11,7 +11,8 @@
   },
   "scripts": {
     "check-types": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "test:ci": "bun test"
   },
   "dependencies": {
     "@emach/db": "workspace:*",

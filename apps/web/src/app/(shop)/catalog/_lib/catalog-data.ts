@@ -54,7 +54,7 @@ export interface CatalogData {
 	total: number;
 }
 
-// Composição plana e testável (integração read-only em catalog-data.test.ts).
+// Composição plana e testável (integração read-only em catalog-data.integration.test.ts).
 // A árvore não depende da categoria ativa, então parte antes do lookup de slug;
 // getCardExtras precisa dos ids retornados por getTools (serial inerente).
 export async function fetchCatalogData(

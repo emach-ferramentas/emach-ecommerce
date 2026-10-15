@@ -7,13 +7,10 @@ import type { Voltage } from "@emach/db/schema/tools";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { ActionResult, ActionResultWith } from "@/lib/actions/types";
 import { log } from "@/lib/evlog";
 import { getRebuyItems } from "@/lib/orders/rebuy-query";
 import { requireCurrentClient } from "@/lib/session";
-
-export type ActionResult<T = undefined> =
-	| { ok: true; data: T }
-	| { ok: false; error: string };
 
 const CANCELABLE = new Set(["pending_payment", "payment_failed"]);
 
@@ -91,7 +88,7 @@ export async function cancelOrderAction(raw: {
 				reason: "Cancelado pelo cliente",
 			});
 
-			return { ok: true as const, data: undefined };
+			return { ok: true as const };
 		});
 
 		if (result.ok) {
@@ -129,7 +126,7 @@ export interface RebuySnapshot {
 
 export async function rebuyAction(raw: {
 	orderId: string;
-}): Promise<ActionResult<{ items: RebuySnapshot[]; skipped: number }>> {
+}): Promise<ActionResultWith<{ items: RebuySnapshot[]; skipped: number }>> {
 	const parsed = orderIdSchema.safeParse(raw);
 
 	if (!parsed.success) {

@@ -61,12 +61,20 @@ bun run check             # Ultracite/Biome lint
 bun run fix               # auto-fix
 ```
 
+### Testes e gates
+```bash
+bun run test:ci                    # unit de todos os pacotes, sem banco (o mesmo do CI)
+bun run --filter=web test          # unit e integração do web; a integração usa o banco compartilhado
+bun run test:repo                  # hook de formatação e paridade das configs
+bun run test:lint-rules            # regras oxlint próprias; exige Node 24
+bun run check:env                  # env vars obrigatórias × Vercel
+```
+
 ### Banco de dados
 ```bash
 bun run db:push           # dev: sync schema (sem migration)
-# db:generate / db:migrate — LEGACY, NÃO USAR. Workflow é push-only; pasta migrations/ removida (ver CLAUDE.md / ADR-0006 no dashboard).
 bun run db:studio         # Drizzle Studio
-bun --cwd packages/db db:apply-triggers       # idempotente, sempre após push
+bun --cwd packages/db db:apply-triggers       # DDL no banco do .env; idempotente
 bun --cwd packages/db db:seed-categories      # 5 raízes
 bun --cwd packages/db db:seed-attributes      # specs iniciais
 bun --cwd packages/db db:check-drift          # verifica drift schema Drizzle × DB
@@ -75,25 +83,20 @@ bun --cwd packages/db db:anonymize-client <id># LGPD direito ao esquecimento
 
 ### shadcn
 ```bash
-bunx shadcn@latest add <nome> -c packages/ui
-bunx shadcn@latest diff -c packages/ui
+bun --cwd packages/ui shadcn add <nome>   # versão fixada no package.json do @emach/ui
+bun --cwd packages/ui shadcn diff
 ```
 
 ## Documentação para agentes
 
 - **`CLAUDE.md`** — log de mistakes e decisões não óbvias: guardrails de banco, ownership de tabelas, invariantes P0 de auth, anti-patterns, gotchas, deploy e CI, MCP do Resend. Servidores MCP do projeto: `.mcp.json`.
-- **`AGENTS.md`** — pointer pra agentes externos (Codex, Amp, Cursor).
 - **`docs/agents/*.md`** — config das skills de engenharia (issue tracker, triage labels, domain docs).
 - **`DESIGN.md`**: sistema visual H3 (tokens, tipografia, regras, primitivos e exceções).
 - **`packages/db/CLAUDE.md`** — convenções de schema Drizzle (FKs, enums, money, triggers, queries compartilhadas).
 - **`CONTEXT-MAP.md`** e **`docs/contexts/<slug>/CONTEXT.md`** — glossário e fronteiras dos 8 bounded contexts.
 - **`docs/adr/`** — decisões de sistema (0001 débito de estoque, superseded; 0002 ownership de migrations; 0003 estoque multi-filial; 0004 deploy e gates de CI).
-- **`PRODUCT.md`** — contexto de produto. **`docs/superpowers/{specs,plans}`** — specs e planos por feature.
+- **`PRODUCT.md`** — contexto de produto.
 
 ## Invariantes críticos
 
-1. **Auth isolada por host:** ecommerce usa `authEcommerce` (tabelas `client*`). NUNCA importar `authDashboard` ou schema `auth` aqui — quebra isolamento P0 staff × cliente.
-2. **DB compartilhada com dashboard:** mudanças em tabelas owned-by-dashboard (`tool`, `category`, `promotion`, etc) começam no repo dashboard via PR. O schema chega aqui por PR automático aberto pelo workflow `sync-db-schema.yml` do dashboard.
-3. **Commits:** Conventional Commits em **PT** (`feat:`/`fix:`/`refactor:`/`chore:`). Confirmação explícita do user antes de qualquer `git commit`/`push`.
-4. **Money:** `numeric(10,2)` em preços/custos variant, `numeric(12,2)` em totais order. Nunca `real`/`double`.
-5. **IDs:** `crypto.randomUUID()` no caller (server actions/scripts). Sem nanoid.
+Auth isolada por host, dono de cada tabela e IDs: ver `CLAUDE.md`. Dinheiro e convenções de schema: `packages/db/CLAUDE.md`. Commits seguem Conventional Commits em português (`feat:`, `fix:`, `refactor:`, `chore:`).

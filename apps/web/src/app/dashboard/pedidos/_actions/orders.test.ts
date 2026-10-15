@@ -78,7 +78,7 @@ describe("cancelOrderAction", () => {
 
 		const result = await cancelOrderAction({ orderId: "o1" });
 
-		expect(result).toEqual({ ok: true, data: undefined });
+		expect(result).toEqual({ ok: true });
 		expect(promotionUpdates()).toBe(1);
 		expect(state.inserts).toEqual([
 			{
@@ -112,7 +112,7 @@ describe("cancelOrderAction", () => {
 
 		const result = await cancelOrderAction({ orderId: "o1" });
 
-		expect(result).toEqual({ ok: true, data: undefined });
+		expect(result).toEqual({ ok: true });
 		expect(promotionUpdates()).toBe(0);
 	});
 });

@@ -9,16 +9,30 @@ name: Mirror to deploy repo
 # write" (o último é exigido pelo GitHub para pushes que tocam .github/workflows),
 # escopado SÓ ao emach-ferramentas/emach-ecommerce.
 
+# Roda depois do CI da main e só com ele verde: main vermelha não deploya.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+  # Válvula manual, só a partir da main: empurra a ponta atual dela.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mirror
+  cancel-in-progress: false
 
 jobs:
   mirror:
+    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
           # Sem isto, o checkout grava um http.extraheader com o GITHUB_TOKEN
           # deste repo, que tem precedência sobre o MIRROR_TOKEN no push e causa
@@ -27,9 +41,18 @@ jobs:
       - name: Push para emach-ferramentas/emach-ecommerce
         env:
           MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           if [ -z "$MIRROR_TOKEN" ]; then
             echo "::warning::MIRROR_TOKEN ausente — pulando mirror. Cadastre um PAT fine-grained (Contents+Workflows) da conta emach-ferramentas para ativar."
             exit 0
           fi
-          git push "https://x-access-token:${MIRROR_TOKEN}@github.com/emach-ferramentas/emach-ecommerce.git" HEAD:main
+          DESTINO="https://x-access-token:${MIRROR_TOKEN}@github.com/emach-ferramentas/emach-ecommerce.git"
+          # CI de um commit antigo que termina depois do CI de um commit novo: o
+          # destino já tem esse SHA. Sem esta saída, o push sem force falharia vermelho.
+          git fetch --quiet "$DESTINO" +main:refs/remotes/destino/main
+          if git merge-base --is-ancestor "$SHA" destino/main; then
+            echo "::notice::$SHA já está publicado."
+            exit 0
+          fi
+          git push "$DESTINO" "$SHA:refs/heads/main"

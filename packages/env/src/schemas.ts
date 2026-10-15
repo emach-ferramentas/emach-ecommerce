@@ -29,7 +29,7 @@ export const serverSchema = {
 	// obrigatórias na prática em produção (Vercel).
 	UPSTASH_REDIS_REST_URL: z.url().optional(),
 	UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
-	// Frenet — cotação de frete (spec 2026-07-02-frenet-cotacao-design.md).
+	// Frenet — cotação de frete (adapter em apps/web/src/lib/frenet).
 	// TOKEN vem do painel (painel.frenet.com.br > Dados Cadastrais). SELLER_CEP é
 	// o CEP de origem de fallback: a origem real é a filial de
 	// store_settings.shipping_origin_branch_id (getShippingSettings), e o env só

@@ -32,7 +32,7 @@ interface ProductReviewsSectionProps {
 
 // Buraco dinâmico da página de produto: lê `searchParams` (paginação/ordenação
 // das avaliações) — por isso vive sob Suspense, fora do shell cacheado. Sem
-// avaliações, renderiza a faixa escura de confiança (spec 2026-07-03 §3.5).
+// avaliações, renderiza a faixa escura de confiança.
 // As stats vêm de query live (NÃO do shell cacheado 600s): o modo da placa é
 // decidido pelo total live, e trilho/barras precisam da MESMA fonte — senão a
 // placa entra em grid com N cards ao lado de "1 avaliação" stale (code-review

@@ -11,9 +11,7 @@
   },
   "scripts": {
     "db:push": "drizzle-kit push",
-    "db:generate": "echo 'LEGACY: schema sync e via CI PR do dashboard. Em dev use db:push.' && exit 1",
     "db:studio": "drizzle-kit studio",
-    "db:migrate": "echo 'LEGACY: pasta migrations/ removida. Use db:push + db:apply-triggers.' && exit 1",
     "db:apply-triggers": "bun run scripts/apply-triggers.ts",
     "db:seed-categories": "bun run scripts/seed-categories.ts",
     "db:seed-attributes": "bun run scripts/seed-attributes.ts",
@@ -23,7 +21,8 @@
     "test:watch": "vitest",
     "test:supabase:start": "supabase start --workdir .",
     "test:supabase:stop": "supabase stop --workdir .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test:ci": "vitest run"
   },
   "dependencies": {
     "@emach/env": "workspace:*",

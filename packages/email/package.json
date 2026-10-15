@@ -4,7 +4,8 @@
   "scripts": {
     "check-types": "tsc --noEmit",
     "preview": "bun scripts/export-preview.tsx",
-    "test": "bun test"
+    "test": "bun test",
+    "test:ci": "bun test"
   },
   "exports": {
     "./company-address": {

@@ -1,24 +1,12 @@
 {
   "mcpServers": {
-    "better-t-stack": {
-      "command": "bunx",
-      "args": ["create-better-t-stack@latest", "mcp"]
-    },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
-    },
     "shadcn": {
       "command": "npx",
-      "args": ["-y", "shadcn@latest", "mcp"]
+      "args": ["-y", "shadcn@3.8.5", "mcp"]
     },
     "next-devtools": {
       "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
-    },
-    "better-auth": {
-      "type": "http",
-      "url": "https://mcp.inkeep.com/better-auth/mcp"
+      "args": ["-y", "next-devtools-mcp@0.4.0"]
     },
     "supabase": {
       "type": "http",

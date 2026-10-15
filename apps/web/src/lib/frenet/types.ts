@@ -1,4 +1,4 @@
-// Contrato da API Frenet (POST /shipping/quote) — espelha o frenetapi.apib.
+// Contrato da API Frenet (POST /shipping/quote) — espelha docs/vendor/frenet/frenetapi.apib.
 // Atenção: a chave da resposta tem typo OFICIAL ("ShippingSevicesArray", sem o
 // segundo "r") e preço/prazo chegam como STRING.
 

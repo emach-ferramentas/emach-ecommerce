@@ -17,7 +17,6 @@
   "ignorePatterns": [
     ".agents/**",
     ".claude/**",
-    ".codex/**",
     ".superpowers/**",
     ".impeccable/**",
     "graphify-out/**",

@@ -9,7 +9,8 @@
   "exports": {
     "./server": "./src/server.ts",
     "./web": "./src/web.ts",
-    "./schemas": "./src/schemas.ts"
+    "./schemas": "./src/schemas.ts",
+    "./dummies": "./src/dummies.ts"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.1",

@@ -8,7 +8,7 @@ This is a **multi-context** repo: the EMACH domain is decomposed into bounded co
 
 - **`CONTEXT-MAP.md`** at the repo root — lists the bounded contexts, where each `CONTEXT.md` lives, and how the contexts relate. Read it first.
 - The per-context **`CONTEXT.md`** under `docs/contexts/<slug>/` — read the one(s) relevant to the topic.
-- **`docs/adr/`** at the root — system-wide architectural decisions. Also check `docs/contexts/<slug>/docs/adr/` for context-scoped decisions.
+- **`docs/adr/`** at the root — architectural decisions.
 
 If any of these files don't exist yet, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`, do plugin `mattpocock-skills`; não vem versionada em `.claude/skills/`) creates them lazily as terms and decisions get resolved.
 
@@ -22,15 +22,11 @@ If any of these files don't exist yet, **proceed silently**. Don't flag their ab
 ├── CLAUDE.md                          ← canonical project guide (architecture, invariants)
 ├── DESIGN.md                          ← design system tokens + principles
 ├── docs/
-│   ├── adr/                           ← system-wide decisions
+│   ├── adr/                           ← architectural decisions
 │   ├── agents/                        ← engineering-skills config (this file lives here)
 │   └── contexts/
-│       ├── catalog/
-│       │   ├── CONTEXT.md
-│       │   └── docs/adr/              ← catalog-specific decisions (lazy)
-│       ├── ordering/
-│       │   ├── CONTEXT.md
-│       │   └── docs/adr/
+│       ├── catalog/CONTEXT.md
+│       ├── ordering/CONTEXT.md
 │       └── …                          ← one folder per bounded context
 ├── apps/
 └── packages/

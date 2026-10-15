@@ -6,13 +6,25 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", ".next/**"]
-    },
-    "lint": {
-      "dependsOn": ["^lint"]
+      "outputs": ["dist/**", ".next/**"],
+      "env": [
+        "DATABASE_URL",
+        "BETTER_AUTH_*",
+        "CORS_ORIGIN",
+        "ECOMMERCE_ORIGIN",
+        "GOOGLE_CLIENT_*",
+        "RESEND_API_KEY",
+        "EMAIL_FROM",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "UPSTASH_REDIS_REST_*",
+        "FRENET_*"
+      ]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
+    },
+    "test:ci": {
+      "cache": false
     },
     "dev": {
       "cache": false,
