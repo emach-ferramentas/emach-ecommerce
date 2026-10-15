@@ -2,9 +2,9 @@ import { db } from "@emach/db";
 import { promotion, promotionTool } from "@emach/db/schema/promotions";
 import { tool, toolVariant } from "@emach/db/schema/tools";
 import { describe, expect, it } from "vitest";
+import { computeFinalPrices } from "@/app/checkout/_lib/compute-final-prices";
 import type { DbTransaction } from "@/lib/db-executor";
 import { disableGlobalPromos } from "@/lib/test-helpers";
-import { computeFinalPrices } from "./revalidate-cart";
 
 const ROLLBACK = Symbol("rollback");
 

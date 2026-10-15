@@ -35,7 +35,7 @@ Fora do lint, ficam em prosa:
 
 ## Server actions
 
-- `"use server"` no topo, input validado com Zod, normalizar antes de persistir. Action que mexe em dado do cliente chama `requireCurrentClient()` no topo. As quatro públicas (`search`, `lookup-cep`, `track-cart-event` e `quick-view` em `lib/actions/`) não exigem sessão e por isso limitam por IP com `lib/rate-limit.ts`; action pública nova segue o mesmo padrão.
+- `"use server"` no topo, input validado com Zod, normalizar antes de persistir. Action que mexe em dado do cliente chama `requireCurrentClient()` no topo. As quatro públicas (`search`, `lookup-cep`, `track-cart-event` e `quick-view` em `lib/actions/`) não exigem sessão e por isso limitam por IP com `lib/rate-limit.ts`; action pública nova segue o mesmo padrão. `lib/actions/server-actions.guard.test.ts` trava isso: todo export async de arquivo `"use server"` chama `requireCurrentClient()` ou um limiter.
 - Retorno: `ActionResult` (sem payload) ou `ActionResultWith<T>` (`{ ok: true; data: T } | { ok: false; error: string }`), ambos em `lib/actions/types.ts`.
 - Catch: `log.error({ action, ...context })` + `{ ok: false, error: "mensagem" }`. Sem `console`.
 
