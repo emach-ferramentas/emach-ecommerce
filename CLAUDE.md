@@ -123,6 +123,7 @@ Multi-context: `CONTEXT-MAP.md` na raiz indexa os bounded contexts; cada `CONTEX
 | Multi-context glossário de domínio | `CONTEXT-MAP.md` |
 | Frete Frenet (cache, anti-fraude, origem, pegadinhas da API) | `apps/web/src/lib/frenet/CLAUDE.md` |
 | Debug no browser (aba oculta, cor errada na tela) | `docs/agents/browser-debug.md` |
+| Achados de auditoria já rejeitados (não re-auditar) | `docs/agents/achados-rejeitados.md` |
 | Skills locais, MCPs versionados | `.claude/skills/`, `.mcp.json` |
 
 Stack / scripts / envs → `package.json`, `packages/env/src/{server,web}.ts`. Schema fonte de verdade → repo irmão `emach-dashboard`.
