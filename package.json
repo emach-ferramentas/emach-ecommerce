@@ -29,7 +29,7 @@
     "build": "turbo build",
     "check-types": "turbo check-types",
     "dev:web": "turbo -F web dev",
-    "db:push": "turbo -F @emach/db db:push",
+    "db:push": "bun --cwd packages/db db:push",
     "db:studio": "turbo -F @emach/db db:studio",
     "check": "ultracite check && bun run lint:slop",
     "check:env": "bun scripts/check-vercel-env.ts",

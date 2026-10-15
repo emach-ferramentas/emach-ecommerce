@@ -1,6 +1,6 @@
 # packages/db — Convenções
 
-> **O banco é único e compartilhado entre dev e produção.** `db:push`, `db:apply-triggers`, `db:seed-*`, `db:anonymize-client` e drop & recreate escrevem nele: só com autorização explícita da sessão.
+> **O banco é único e compartilhado entre dev e produção.** `db:apply-triggers`, `db:seed-*`, `db:anonymize-client` e drop & recreate escrevem nele: só com autorização explícita da sessão.
 
 Drizzle 0.45 + node-postgres + Supabase Postgres. Schema TS aqui é **cópia versionada** do `emach-dashboard` — sync via CI PR automático (ADR-0009, no `emach-dashboard`). Regras gerais na raiz.
 
@@ -25,7 +25,7 @@ O mesmo arquivo cria a sequence `order_number_seq`, que `placeOrder` consome par
 
 Idempotência em `stockMovement` **não** é trigger, são dois partial unique indexes por `order_item_id`: `stock_movement_sale_idempotency` (`reason='saida_venda'`) e `stock_movement_return_idempotency` (`reason='devolucao_retorno'`, crédito de devolução).
 
-**RLS deny-all (#90):** `src/sql/rls.sql` (owned-by-dashboard, cópia aqui; canônico avaliado no dashboard #142) habilita RLS **sem policies** nas 14 tabelas `public` expostas via PostgREST (`tool*`, `category`, `branch`, `stock_level`, `promotion*`, `review`, `attribute_definition`, `cart_event`). O app **não usa PostgREST** — todo acesso é server-side via Drizzle/`DATABASE_URL`, role `postgres` (BYPASSRLS), então deny-all fecha a porta REST (anon/authenticated veem 0 linhas) sem afetar o app. RLS é flag de tabela (não recriada por `db:push`) — **não** precisa reaplicar pós-push. Se algum dia o client ler catálogo via `supabase-js`, terá que **adicionar policy de SELECT pra anon** — hoje não há nenhuma (deny-all real). `rls.sql` não tem script: aplicar à mão com o `DATABASE_URL` do `apps/web/.env`, que o shell não exporta (`set -a; . apps/web/.env; set +a; psql "$DATABASE_URL" -f packages/db/src/sql/rls.sql`, idempotente) depois de um banco novo ou de um drop & recreate, porque `DROP SCHEMA public CASCADE` remove o flag junto com as tabelas. Como o dashboard aplica `rls.sql` em produção: não verificado.
+**RLS deny-all (#90):** `src/sql/rls.sql` (owned-by-dashboard, cópia aqui; canônico avaliado no dashboard #142) habilita RLS **sem policies** nas 14 tabelas `public` expostas via PostgREST (`tool*`, `category`, `branch`, `stock_level`, `promotion*`, `review`, `attribute_definition`, `cart_event`). O app **não usa PostgREST** — todo acesso é server-side via Drizzle/`DATABASE_URL`, role `postgres` (BYPASSRLS), então deny-all fecha a porta REST (anon/authenticated veem 0 linhas) sem afetar o app. RLS é flag de tabela (não recriada por `drizzle-kit push`) — **não** precisa reaplicar pós-push. Se algum dia o client ler catálogo via `supabase-js`, terá que **adicionar policy de SELECT pra anon** — hoje não há nenhuma (deny-all real). `rls.sql` não tem script: aplicar à mão com o `DATABASE_URL` do `apps/web/.env`, que o shell não exporta (`set -a; . apps/web/.env; set +a; psql "$DATABASE_URL" -f packages/db/src/sql/rls.sql`, idempotente) depois de um banco novo ou de um drop & recreate, porque `DROP SCHEMA public CASCADE` remove o flag junto com as tabelas. Como o dashboard aplica `rls.sql` em produção: não verificado.
 
 ## Convenções de schema
 
@@ -80,7 +80,7 @@ Buckets públicos usados pelo storefront (leitura): `tool-images` (`tool_image.u
 
 ## Scripts úteis
 
-Estes scripts existem só em `packages/db/package.json`; a raiz tem `db:push` e `db:studio`. Da raiz, os demais rodam com `bun --cwd packages/db <script>`. O fluxo é push-only: não há migrations nem `db:generate`.
+Estes scripts existem só em `packages/db/package.json`; a raiz tem `db:studio` e um `db:push` que delega ao daqui. O `db:push` é stub que sai com erro, porque o schema muda só no dashboard. Da raiz, os demais rodam com `bun --cwd packages/db <script>`. O fluxo é push-only: não há migrations nem `db:generate`.
 
 ```bash
 bun db:apply-triggers         # DDL no banco do .env; idempotente

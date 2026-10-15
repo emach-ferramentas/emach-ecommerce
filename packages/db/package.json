@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "db:push": "drizzle-kit push",
+    "db:push": "echo 'db:push desativado: o banco é único (dev = produção) e o schema muda só no emach-dashboard, que empurra com db:sync. A mudança chega aqui pelo PR de sync.' && exit 1",
     "db:studio": "drizzle-kit studio",
     "db:apply-triggers": "bun run scripts/apply-triggers.ts",
     "db:seed-categories": "bun run scripts/seed-categories.ts",
