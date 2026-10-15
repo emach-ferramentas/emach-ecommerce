@@ -19,4 +19,4 @@ O `LICENSE` (MIT) da raiz do upstream foi copiado para cá. O `vendor/eslint-sty
 
 ## Atualizar
 
-Buscar um commit explícito do upstream, comparar `src/` com esta cópia, portar as mudanças preservando os desvios acima e atualizar este arquivo.
+Buscar um commit explícito do upstream, comparar `src/` com esta cópia, portar as mudanças preservando os desvios acima e atualizar este arquivo. O `emach-dashboard` tem a mesma cópia em `tools/oxlint/anti-slop/`: atualizar os dois juntos. Só este `UPSTREAM.md` difere entre os repos, porque cada um registra os próprios desvios.

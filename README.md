@@ -76,7 +76,7 @@ bun --cwd packages/db db:apply-triggers       # DDL no banco do .env; idempotent
 bun --cwd packages/db db:seed-categories      # 5 raízes
 bun --cwd packages/db db:seed-attributes      # specs iniciais
 bun --cwd packages/db db:check-drift          # verifica drift schema Drizzle × DB
-bun --cwd packages/db db:anonymize-client <id># LGPD direito ao esquecimento
+bun --cwd packages/db db:anonymize-client <id> # LGPD direito ao esquecimento
 ```
 
 ### shadcn
