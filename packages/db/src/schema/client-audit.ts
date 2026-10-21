@@ -22,6 +22,7 @@ export const clientAuditActionEnum = pgEnum("client_audit_action", [
 	"sessions_revoked_all",
 	"password_reset_link_generated",
 	"exported",
+	"anonymized",
 ]);
 
 export type ClientAuditAction =
@@ -47,6 +48,7 @@ export const clientAuditLog = pgTable(
 			.notNull(),
 	},
 	(table) => [
+		index("client_audit_log_actor_user_id_idx").on(table.actorUserId),
 		index("client_audit_client_created_idx").on(
 			table.clientId,
 			table.createdAt.desc()
