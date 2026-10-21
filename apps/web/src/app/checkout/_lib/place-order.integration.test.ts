@@ -144,6 +144,14 @@ async function seedSecondVariant(
 	return { toolId, variantId };
 }
 
+// CPF de teste: 11 dígitos, o formato que o CHECK client_document_format aceita.
+function randomCpfDigits(): string {
+	return Array.from(
+		crypto.getRandomValues(new Uint8Array(11)),
+		(b) => b % 10
+	).join("");
+}
+
 function buildInput(
 	items: Array<{ toolId: string; variantId: string; quantity: number }>
 ): CreateOrderInput {
@@ -368,7 +376,7 @@ describe("placeOrder (multi-filial)", () => {
 
 			const input2 = {
 				...buildInput([{ toolId, variantId, quantity: 1 }]),
-				document: crypto.randomUUID().slice(0, 11).replace(/-/g, "0"),
+				document: randomCpfDigits(),
 			};
 
 			const r1 = await placeOrder(tx, {
@@ -403,7 +411,7 @@ describe("placeOrder (multi-filial)", () => {
 		await withRollback(async (tx) => {
 			const { clientId, toolId, variantId } = await seedMultiBranch(tx, [10]);
 
-			const takenDoc = crypto.randomUUID();
+			const takenDoc = randomCpfDigits();
 			const otherId = crypto.randomUUID();
 			await tx.insert(client).values({
 				id: otherId,
