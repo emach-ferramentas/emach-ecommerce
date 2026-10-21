@@ -10,7 +10,6 @@
       "env": [
         "DATABASE_URL",
         "BETTER_AUTH_*",
-        "CORS_ORIGIN",
         "ECOMMERCE_ORIGIN",
         "GOOGLE_CLIENT_*",
         "RESEND_API_KEY",
